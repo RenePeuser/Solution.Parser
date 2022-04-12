@@ -9,21 +9,13 @@
         <Authors>Rene Peuser</Authors>
         <Company>Rene Peuser Softwaresolutions</Company>
         <Description>
-            WIP - This simple SDK contains following helpful optimizations:
-            - ApiVersioning
-            - Auto dependency resolver. Search automatically all dependencies for a type and register it.
-            - Errorhandling with middleware
-            - Logging with middleware
-            - Query security filter
-            - Optimized and simplified swagger.
-            - Ready to go base class for startup.cs
+            WIP - This simple SDK to parse solution, projects and c# files
         </Description>
         <Copyright>Copyright 2022 (c) Rene Peuser. All rights reserved.</Copyright>
         <PackageProjectUrl>https://renepeuser.visualstudio.com/SolutionParser</PackageProjectUrl>
         <RepositoryUrl>https://renepeuser.visualstudio.com/SolutionParser</RepositoryUrl>
         <PackageReleaseNotes>
             Alpha release - WIP - Currently only for Net5.x.
-            Add source link for debugging purpose
         </PackageReleaseNotes>
         <PackageTags>C#;.NetCore;Asp.NetCore;NetCore;ASPNetCore;Swagger;Swashbuckle;OpenAPI;ErrorHandling;ErrorLogging;Middleware;Startup.cs;</PackageTags>
         <PackageId>SolutionParser</PackageId>
