@@ -15,18 +15,6 @@ variables:
 
 steps:
 
-- task: gitversion/setup@0
-  displayName: Setup GitVersion Tool
-  inputs:
-    versionSpec: '5.7.0'
-    includePrerelease: true
-
-- task: gitversion/execute@0
-  displayName: Run GitVersion
-  inputs:
-    useConfigFile: true
-    configFilePath: "./GitVersion.yml"
-
 - task: UseDotNet@2
   displayName: 'Use .NET 6 Preview'
   inputs:
@@ -44,7 +32,7 @@ steps:
   displayName: Pack
   inputs:
     command: 'pack'
-    packagesToPack: './src/SolutionParser/SolutionParser.csproj'
+    packagesToPack: '.'
     versioningScheme: 'off'
 
 - task: PublishBuildArtifacts@1
