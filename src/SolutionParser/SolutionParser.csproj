@@ -1,0 +1,59 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <AnalysisLevel>latest</AnalysisLevel>
+        <Nullable>enable</Nullable>
+        <PackageLicenseFile>License.txt</PackageLicenseFile>
+        <Authors>Rene Peuser</Authors>
+        <Company>Rene Peuser Softwaresolutions</Company>
+        <Description>
+            WIP - This simple SDK contains following helpful optimizations:
+            - ApiVersioning
+            - Auto dependency resolver. Search automatically all dependencies for a type and register it.
+            - Errorhandling with middleware
+            - Logging with middleware
+            - Query security filter
+            - Optimized and simplified swagger.
+            - Ready to go base class for startup.cs
+        </Description>
+        <Copyright>Copyright 2022 (c) Rene Peuser. All rights reserved.</Copyright>
+        <PackageProjectUrl>https://renepeuser.visualstudio.com/SolutionParser</PackageProjectUrl>
+        <RepositoryUrl>https://renepeuser.visualstudio.com/SolutionParser</RepositoryUrl>
+        <PackageReleaseNotes>
+            Alpha release - WIP - Currently only for Net5.x.
+            Add source link for debugging purpose
+        </PackageReleaseNotes>
+        <PackageTags>C#;.NetCore;Asp.NetCore;NetCore;ASPNetCore;Swagger;Swashbuckle;OpenAPI;ErrorHandling;ErrorLogging;Middleware;Startup.cs;</PackageTags>
+        <PackageId>SolutionParser</PackageId>
+        <OutputType>Library</OutputType>
+        <AssemblyName>SolutionParser</AssemblyName>
+        <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    </PropertyGroup>
+
+    <!--Property group settings for source link !-->
+    <PropertyGroup>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <DebugType>embedded</DebugType>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+        <DocumentationFile>.\SolutionParser.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Argument.Check" Version="1.0.4" />
+        <PackageReference Include="Extensions.Pack" Version="0.1.1" />
+        <PackageReference Include="FileSystem.Abstraction" Version="0.1.2" />
+        <PackageReference Include="GitVersion.MsBuild" Version="5.9.0">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.Build" Version="16.11.0" />
+        <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.1.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0" />
+        <PackageReference Include="Microsoft.SourceLink.AzureRepos.Git" Version="1.1.1" PrivateAssets="All" />
+    </ItemGroup>
+
+</Project>
