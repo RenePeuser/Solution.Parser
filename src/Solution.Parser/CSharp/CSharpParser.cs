@@ -11,7 +11,7 @@ namespace Solution.Parser.CSharp
     {
         public static CSharpSyntaxTree Parse(this SyntaxTree syntaxTree)
         {
-            Throw.IfNull(() => syntaxTree);
+            Throw.IfNull(syntaxTree);
 
             var namespaceDeclarationSyntax = syntaxTree.AllOfType<NamespaceDeclarationSyntax>().FirstOrDefault();
 
@@ -34,7 +34,7 @@ namespace Solution.Parser.CSharp
 
         public static CSharpSyntaxTree Parse(this CSharpFileInfo csharpFileInfo)
         {
-            Throw.IfNull(() => csharpFileInfo);
+            Throw.IfNull(csharpFileInfo);
 
             var code = File.ReadAllText(csharpFileInfo.Value.FullName);
             var syntaxTree = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(code);

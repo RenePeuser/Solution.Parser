@@ -8,12 +8,12 @@ namespace Solution.Parser.CSharp
     [DebuggerDisplay("{" + nameof(FileName) + "}")]
     public class CSharpSyntaxTree
     {
-        private static readonly CSharpSyntaxTree sEmptyNameSpace = new CSharpSyntaxTree(new NameSpace(string.Empty),
-                                                                                        Enumerable.Empty<Using>(),
-                                                                                        Enumerable.Empty<Class>(),
-                                                                                        Enumerable.Empty<Interface>(),
-                                                                                        Enumerable.Empty<Enum>(),
-                                                                                        Enumerable.Empty<Struct>());
+        private static readonly CSharpSyntaxTree sEmptyNameSpace = new(new NameSpace(string.Empty),
+                                                                        Enumerable.Empty<Using>(),
+                                                                        Enumerable.Empty<Class>(),
+                                                                        Enumerable.Empty<Interface>(),
+                                                                        Enumerable.Empty<Enum>(),
+                                                                        Enumerable.Empty<Struct>());
 
         internal CSharpSyntaxTree(NameSpace nameSpace,
                                 IEnumerable<Using> usings,
@@ -22,12 +22,12 @@ namespace Solution.Parser.CSharp
                                 IEnumerable<Enum> enums,
                                 IEnumerable<Struct> structs)
         {
-            Throw.IfNull(() => nameSpace);
-            Throw.IfNull(() => usings);
-            Throw.IfNull(() => classes);
-            Throw.IfNull(() => interfaces);
-            Throw.IfNull(() => enums);
-            Throw.IfNull(() => structs);
+            Throw.IfNull(nameSpace);
+            Throw.IfNull(usings);
+            Throw.IfNull(classes);
+            Throw.IfNull(interfaces);
+            Throw.IfNull(enums);
+            Throw.IfNull(structs);
 
             NameSpace = nameSpace;
             Classes = classes;
