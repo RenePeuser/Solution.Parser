@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Solution.Parser.CSharp;
 using Solution.Parser.Solution;
 
 namespace Solution.Parser.Test.Solution
@@ -33,6 +35,16 @@ namespace Solution.Parser.Test.Solution
             var tcSolutionFile = sSolutionFileInfo.Parse();
 
             Assert.IsNotNull(tcSolutionFile);
+        }
+
+        [TestMethod]
+        public void Assert_That_A_CSharp_File_Can_Be_Parsed()
+        {
+            var tcSolutionFile = sSolutionFileInfo.Parse();
+
+            var csharpSyntaxTrees = tcSolutionFile.Projects.SelectMany(p => p.CSharpFileInfos).Select(c => c.Parse()).ToList();
+
+            Assert.IsTrue(csharpSyntaxTrees.Any());
         }
     }
 }
