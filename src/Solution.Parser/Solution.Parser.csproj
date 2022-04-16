@@ -19,6 +19,7 @@
         <OutputType>Library</OutputType>
         <AssemblyName>SolutionParser</AssemblyName>
         <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+        <PackageLicenseFile>License.txt</PackageLicenseFile>
     </PropertyGroup>
 
     <!--Property group settings for source link !-->
@@ -27,7 +28,6 @@
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <DebugType>embedded</DebugType>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <PackageLicenseFile>D:\AzureDevOps\Solution.Parser\License.txt</PackageLicenseFile>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
         <DocumentationFile>.\SolutionParser.xml</DocumentationFile>
@@ -51,6 +51,10 @@
         <None Include="..\..\License.txt">
             <Pack>True</Pack>
             <PackagePath></PackagePath>
+        </None>
+        <None Include="..\..\README.md">
+          <Pack>True</Pack>
+          <PackagePath>\</PackagePath>
         </None>
     </ItemGroup>
 
