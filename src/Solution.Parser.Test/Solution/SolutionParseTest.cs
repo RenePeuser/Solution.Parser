@@ -14,7 +14,7 @@ namespace Solution.Parser.Test.Solution
         public static void ClassInit(TestContext _)
         {
             sSolutionFileInfo =
-                new SolutionFileName("SolutionParser.sln").FindSolutionFileReverseFrom(
+                new SolutionFileName("Solution.Parser.sln").FindSolutionFileReverseFrom(
                     new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory));
         }
 
