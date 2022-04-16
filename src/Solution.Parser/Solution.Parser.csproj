@@ -11,10 +11,10 @@
             WIP - This simple SDK to parse solution, projects and c# files
         </Description>
         <Copyright>Copyright 2022 (c) Rene Peuser. All rights reserved.</Copyright>
-        <PackageProjectUrl>https://renepeuser.visualstudio.com/SolutionParser</PackageProjectUrl>
-        <RepositoryUrl>https://renepeuser.visualstudio.com/SolutionParser</RepositoryUrl>
-        <PackageReleaseNotes>Alpha release - WIP - Currently only for Net5.x.</PackageReleaseNotes>
-        <PackageTags>C#;.NetCore;Asp.NetCore;NetCore;ASPNetCore;Swagger;Swashbuckle;OpenAPI;ErrorHandling;ErrorLogging;Middleware;Startup.cs;</PackageTags>
+        <PackageProjectUrl>https://renepeuser.visualstudio.com/Solution.Parser</PackageProjectUrl>
+        <RepositoryUrl>https://renepeuser.visualstudio.com/Solution.Parser</RepositoryUrl>
+        <PackageReleaseNotes>Alpha release - WIP - Currently only for Net6</PackageReleaseNotes>
+        <PackageTags>C#;Solution;Project;XAML:SyntaxTree;Syntax</PackageTags>
         <PackageId>SolutionParser</PackageId>
         <OutputType>Library</OutputType>
         <AssemblyName>SolutionParser</AssemblyName>
