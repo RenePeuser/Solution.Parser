@@ -7,17 +7,15 @@
         <Nullable>enable</Nullable>
         <Authors>Rene Peuser</Authors>
         <Company>Rene Peuser Softwaresolutions</Company>
-        <Description>
-            WIP - This simple SDK to parse solution, projects and c# files
-        </Description>
+        <Description>WIP - This simple SDK to parse solution, projects and c# files</Description>
         <Copyright>Copyright 2022 (c) Rene Peuser. All rights reserved.</Copyright>
         <PackageProjectUrl>https://renepeuser.visualstudio.com/Solution.Parser</PackageProjectUrl>
         <RepositoryUrl>https://renepeuser.visualstudio.com/Solution.Parser</RepositoryUrl>
         <PackageReleaseNotes>Alpha release - WIP - Currently only for Net6</PackageReleaseNotes>
         <PackageTags>C#;Solution;Project;XAML;SyntaxTree;Syntax</PackageTags>
-        <PackageId>SolutionParser</PackageId>
+        <PackageId>Solution.Parser</PackageId>
         <OutputType>Library</OutputType>
-        <AssemblyName>SolutionParser</AssemblyName>
+        <AssemblyName>Solution.Parser</AssemblyName>
         <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
         <PackageLicenseFile>License.txt</PackageLicenseFile>
     </PropertyGroup>
@@ -30,7 +28,7 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-        <DocumentationFile>.\SolutionParser.xml</DocumentationFile>
+        <DocumentationFile>.\Solution.Parser.xml</DocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
