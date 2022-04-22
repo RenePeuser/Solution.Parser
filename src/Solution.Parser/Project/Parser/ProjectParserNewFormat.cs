@@ -82,18 +82,13 @@ namespace Solution.Parser.Project
 
         private static IEnumerable<T> GetSpecificFiles<T>(ProjectFileInfo projectFileInfo, Func<FileInfo, bool> filterFunc, Func<FileInfo, T> creatorFunc)
         {
-            var directoriesToIgnore = new[] { "bin", "obj" };
+            var allFiles = projectFileInfo.Value.Directory.EnumerateFiles("*.*", SearchOption.AllDirectories)
+                .Where(filterFunc)
+                .Where(file => file.FullName.DoesNotContain(@"\bin\") && file.FullName.DoesNotContain(@"\obj\"))
+                .Select(creatorFunc)
+                .ToList();
 
-            var directoriesToEnumerateForFiles = projectFileInfo.Value.Directory.EnumerateDirectories().Where(directory => !directoriesToIgnore.Contains(directory.Name)).ToList();
-
-            foreach (var directoriesToEnumerateForFile in directoriesToEnumerateForFiles)
-            {
-                var expectedFileInfos = directoriesToEnumerateForFile.EnumerateFiles("*.*", SearchOption.AllDirectories).Where(filterFunc).ToList();
-                foreach (var expectedFileInfo in expectedFileInfos)
-                {
-                    yield return creatorFunc(expectedFileInfo);
-                }
-            }
+            return allFiles;
         }
 
         private static IEnumerable<Package> GetPackagesFrom(ProjectFileInfo projectFileInfo)
