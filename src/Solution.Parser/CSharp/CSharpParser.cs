@@ -22,14 +22,14 @@ namespace Solution.Parser.CSharp
 
             var nameSpace = namespaceDeclarationSyntax.ToNamespace();
 
-            var usings = syntaxTree.AllOfType<UsingDirectiveSyntax>()
-                .Select(u => new Using(u.Name.Cast<NameSyntax>().GetText().ToString())).ToList();
+            var usings = syntaxTree.AllOfType<UsingDirectiveSyntax>().Select(u => new Using(u.Name.Cast<NameSyntax>().GetText().ToString())).ToList();
             var classes = syntaxTree.AllOfType<ClassDeclarationSyntax>().ToClasses().ToList();
+            var records = syntaxTree.AllOfType<RecordDeclarationSyntax>().ToRecords().ToList();
             var interfaces = syntaxTree.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces().ToList();
             var enums = syntaxTree.AllOfType<EnumDeclarationSyntax>().ToEnums().ToList();
             var structs = syntaxTree.AllOfType<StructDeclarationSyntax>().ToStructs().ToList();
 
-            return new CSharpSyntaxTree(nameSpace, usings, classes, interfaces, enums, structs);
+            return new CSharpSyntaxTree(nameSpace, usings, classes, records, interfaces, enums, structs);
         }
 
         public static CSharpSyntaxTree Parse(this CSharpFileInfo csharpFileInfo)

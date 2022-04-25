@@ -22,9 +22,10 @@ namespace Solution.Parser.CSharp
             IEnumerable<Class> nestedClasses,
             IEnumerable<Struct> nestedStructs,
             IEnumerable<Enum> nestedEnums,
-            IEnumerable<Interface> nestedInterfaces)
+            IEnumerable<Interface> nestedInterfaces,
+            string syntaxTreee)
             : base(nameSpace, name, modifiers, constructors, properties, methods, attributes, fields, interfaces,
-                baseTypes, events, eventFields, nestedClasses, nestedStructs, nestedEnums, nestedInterfaces)
+                baseTypes, events, eventFields, nestedClasses, nestedStructs, nestedEnums, nestedInterfaces, syntaxTreee)
         {
         }
     }

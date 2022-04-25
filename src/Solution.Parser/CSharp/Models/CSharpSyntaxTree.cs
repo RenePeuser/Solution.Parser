@@ -11,6 +11,7 @@ namespace Solution.Parser.CSharp
         private static readonly CSharpSyntaxTree sEmptyNameSpace = new(new NameSpace(string.Empty),
                                                                         Enumerable.Empty<Using>(),
                                                                         Enumerable.Empty<Class>(),
+                                                                        Enumerable.Empty<Record>(),
                                                                         Enumerable.Empty<Interface>(),
                                                                         Enumerable.Empty<Enum>(),
                                                                         Enumerable.Empty<Struct>());
@@ -18,6 +19,7 @@ namespace Solution.Parser.CSharp
         internal CSharpSyntaxTree(NameSpace nameSpace,
                                 IEnumerable<Using> usings,
                                 IEnumerable<Class> classes,
+                                IEnumerable<Record> records,
                                 IEnumerable<Interface> interfaces,
                                 IEnumerable<Enum> enums,
                                 IEnumerable<Struct> structs)
@@ -25,6 +27,7 @@ namespace Solution.Parser.CSharp
             Throw.IfNull(nameSpace);
             Throw.IfNull(usings);
             Throw.IfNull(classes);
+            Throw.IfNull(records);
             Throw.IfNull(interfaces);
             Throw.IfNull(enums);
             Throw.IfNull(structs);
@@ -36,6 +39,7 @@ namespace Solution.Parser.CSharp
             Interfaces = interfaces;
             Enums = enums;
             Structs = structs;
+            Records = records;
         }
 
         public string FileName { get; }
@@ -43,6 +47,8 @@ namespace Solution.Parser.CSharp
         public NameSpace NameSpace { get; }
 
         public IEnumerable<Class> Classes { get; }
+
+        public IEnumerable<Record> Records { get; }
 
         public IEnumerable<Enum> Enums { get; }
 

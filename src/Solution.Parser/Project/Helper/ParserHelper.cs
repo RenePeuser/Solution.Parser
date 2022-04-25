@@ -46,6 +46,8 @@
 
         internal static string Include { get; } = "Include";
 
+        internal static string Update { get; } = "Update";
+
         internal static string Project { get; } = "Project";
     }
 }

@@ -23,7 +23,8 @@ namespace Solution.Parser.CSharp
             IEnumerable<Class> nestedClasses,
             IEnumerable<Struct> nestedStructs,
             IEnumerable<Enum> nestedEnums,
-            IEnumerable<Interface> nestedInterfaces)
+            IEnumerable<Interface> nestedInterfaces,
+            string syntaxtTree)
             : base(nameSpace, name, modifiers, properties, methods, attributes, baseTypes, events, eventFields,
                 nestedClasses, nestedStructs, nestedEnums, nestedInterfaces)
         {
@@ -34,6 +35,7 @@ namespace Solution.Parser.CSharp
             Constructors = constructors;
             Fields = fields;
             Interfaces = interfaces;
+            SyntaxtTree = syntaxtTree;
         }
 
         public IEnumerable<Interface> Interfaces { get; }
@@ -41,5 +43,7 @@ namespace Solution.Parser.CSharp
         public IEnumerable<Constructor> Constructors { get; }
 
         public IEnumerable<Field> Fields { get; }
+
+        public string SyntaxtTree { get; }
     }
 }

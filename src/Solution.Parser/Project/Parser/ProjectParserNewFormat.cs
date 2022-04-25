@@ -83,11 +83,10 @@ namespace Solution.Parser.Project
         private static IEnumerable<T> GetSpecificFiles<T>(ProjectFileInfo projectFileInfo, Func<FileInfo, bool> filterFunc, Func<FileInfo, T> creatorFunc)
         {
             var allFiles = projectFileInfo.Value.Directory.EnumerateFiles("*.*", SearchOption.AllDirectories)
-                .Where(filterFunc)
-                .Where(file => file.FullName.DoesNotContain(@"\bin\") && file.FullName.DoesNotContain(@"\obj\"))
-                .Select(creatorFunc)
-                .ToList();
-
+                                          .Where(filterFunc)
+                                          .Where(file => file.FullName.DoesNotContain(@"\bin\") && file.FullName.DoesNotContain(@"\obj\"))
+                                          .Select(creatorFunc)
+                                          .ToList();
             return allFiles;
         }
 

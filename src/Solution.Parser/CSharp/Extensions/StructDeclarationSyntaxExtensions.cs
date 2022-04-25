@@ -34,34 +34,29 @@ namespace Solution.Parser.CSharp
             }
         }
 
-        internal static Struct ToStruct(this StructDeclarationSyntax classDeclarationSyntax)
+        internal static Struct ToStruct(this StructDeclarationSyntax structDeclarationSyntax)
         {
-            var modifiers = classDeclarationSyntax.ToModifiers().ToList();
-            var constructors = classDeclarationSyntax.AllOfType<ConstructorDeclarationSyntax>().ToConstructors()
-                .ToList();
-            var properties = classDeclarationSyntax.AllOfType<PropertyDeclarationSyntax>().ToProperties().ToList();
-            var methods = classDeclarationSyntax.AllOfType<MethodDeclarationSyntax>().ToMethods().ToList();
-            var nameSpace = classDeclarationSyntax.SyntaxTree.AllOfType<NamespaceDeclarationSyntax>().First()
-                .ToNamespace();
-            var attributesOfClass = classDeclarationSyntax.AttributeLists.ToAttributes().ToList();
-            var fields = classDeclarationSyntax.AllOfType<FieldDeclarationSyntax>().ToFields().ToList();
-            var baseTypes = classDeclarationSyntax.BaseList != null
-                ? classDeclarationSyntax.BaseList.ToBaseTypes().ToList()
-                : Enumerable.Empty<BaseType>();
-            var interfaces = classDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces().ToList();
-            var events = classDeclarationSyntax.AllOfType<EventDeclarationSyntax>().ToEvents().ToList();
-            var eventFields = classDeclarationSyntax.AllOfType<EventFieldDeclarationSyntax>().ToEventFields().ToList();
-            var nestedClasses = classDeclarationSyntax.AllOfType<ClassDeclarationSyntax>().ToClasses().ToList();
-            var nestedStructs = classDeclarationSyntax.AllOfType<StructDeclarationSyntax>().ToStructs().ToList();
-            var nestedEnums = classDeclarationSyntax.AllOfType<EnumDeclarationSyntax>().ToEnums().ToList();
-            var nestedInterfaces =
-                classDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces().ToList();
-
-            var name = classDeclarationSyntax.Identifier.ValueText;
+            var modifiers = structDeclarationSyntax.ToModifiers().ToList();
+            var constructors = structDeclarationSyntax.AllOfType<ConstructorDeclarationSyntax>().ToConstructors().ToList();
+            var properties = structDeclarationSyntax.AllOfType<PropertyDeclarationSyntax>().ToProperties().ToList();
+            var methods = structDeclarationSyntax.AllOfType<MethodDeclarationSyntax>().ToMethods().ToList();
+            var nameSpace = structDeclarationSyntax.SyntaxTree.AllOfType<NamespaceDeclarationSyntax>().First().ToNamespace();
+            var attributesOfClass = structDeclarationSyntax.AttributeLists.ToAttributes().ToList();
+            var fields = structDeclarationSyntax.AllOfType<FieldDeclarationSyntax>().ToFields().ToList();
+            var baseTypes = structDeclarationSyntax.BaseList != null ? structDeclarationSyntax.BaseList.ToBaseTypes().ToList() : Enumerable.Empty<BaseType>();
+            var interfaces = structDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces().ToList();
+            var events = structDeclarationSyntax.AllOfType<EventDeclarationSyntax>().ToEvents().ToList();
+            var eventFields = structDeclarationSyntax.AllOfType<EventFieldDeclarationSyntax>().ToEventFields().ToList();
+            var nestedClasses = structDeclarationSyntax.AllOfType<ClassDeclarationSyntax>().ToClasses().ToList();
+            var nestedStructs = structDeclarationSyntax.AllOfType<StructDeclarationSyntax>().ToStructs().ToList();
+            var nestedEnums = structDeclarationSyntax.AllOfType<EnumDeclarationSyntax>().ToEnums().ToList();
+            var nestedInterfaces = structDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces().ToList();
+            var name = structDeclarationSyntax.Identifier.ValueText;
+            var syntaxTree = structDeclarationSyntax.ToString();
 
             return new Struct(nameSpace, name, modifiers, constructors, properties, methods, attributesOfClass,
                 fields, interfaces, baseTypes, events, eventFields, nestedClasses, nestedStructs, nestedEnums,
-                nestedInterfaces);
+                nestedInterfaces, syntaxTree);
         }
 
         internal static IEnumerable<Struct> ToStructs(
