@@ -51,7 +51,7 @@ namespace Solution.Parser.CSharp
             var attributes = GetAttributes(methodDeclarationSyntax).ToImmutableList();
             var modifiers = methodDeclarationSyntax.ToModifier().ToImmutableList();
             var lineStatementsRaw = methodBody.Split(Environment.NewLine).ToImmutableList();
-            var lineStatements = lineStatementsRaw.Take(new Range(1, lineStatementsRaw.Count - 1)).ToImmutableList();
+            var lineStatements = lineStatementsRaw.Take(new Range(1, lineStatementsRaw.Count - 1)).FilterNullOrWhitespace().ToImmutableList();
 
             return new Method(methodName, parameters, returnType, methodValue, methodBody, statements, attributes, modifiers, lineStatements);
         }

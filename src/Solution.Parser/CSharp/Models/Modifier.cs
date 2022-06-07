@@ -14,6 +14,8 @@
 
         ReadOnly,
 
-        Const
+        Const,
+
+        Abstract
     }
 }
