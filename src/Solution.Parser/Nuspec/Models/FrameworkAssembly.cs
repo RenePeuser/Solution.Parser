@@ -3,7 +3,7 @@ using Argument.Check;
 
 namespace Solution.Parser.Nuspec
 {
-    [DebuggerDisplay("{" + nameof(AssemblyName) + "}")]
+    [DebuggerDisplay("{AssemblyName}")]
     public class FrameworkAssembly
     {
         internal FrameworkAssembly(string assemblyName, string targetFramework)

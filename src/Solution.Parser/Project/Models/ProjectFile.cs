@@ -8,7 +8,7 @@ using Solution.Parser.XAML;
 
 namespace Solution.Parser.Project
 {
-    [DebuggerDisplay("{" + nameof(AssemblyName) + "}")]
+    [DebuggerDisplay("{AssemblyName}")]
     public class ProjectFile
     {
         internal ProjectFile(

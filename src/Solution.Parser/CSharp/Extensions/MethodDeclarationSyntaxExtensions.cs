@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Argument.Check;
@@ -34,6 +35,12 @@ namespace Solution.Parser.CSharp
             var parameters = methodDeclarationSyntax.ParameterList.ToParameters().ToImmutableList();
             var returnType = methodDeclarationSyntax.ReturnType.ToString();
             var methodName = methodDeclarationSyntax.Identifier.ValueText;
+
+            if (methodName.Contains("AddAuthorizeWithUserSecretsMiddleware"))
+            {
+
+            }
+
             var methodValue = methodDeclarationSyntax.ToString();
             var methodBody = methodDeclarationSyntax.Body?.ToString() == null
                 ? string.Empty
@@ -43,8 +50,10 @@ namespace Solution.Parser.CSharp
                 : methodDeclarationSyntax.Body.Statements.Select(s => s.ToString()).ToImmutableList();
             var attributes = GetAttributes(methodDeclarationSyntax).ToImmutableList();
             var modifiers = methodDeclarationSyntax.ToModifier().ToImmutableList();
+            var lineStatementsRaw = methodBody.Split(Environment.NewLine).ToImmutableList();
+            var lineStatements = lineStatementsRaw.Take(new Range(1, lineStatementsRaw.Count - 1)).ToImmutableList();
 
-            return new Method(methodName, parameters, returnType, methodValue, methodBody, statements, attributes, modifiers);
+            return new Method(methodName, parameters, returnType, methodValue, methodBody, statements, attributes, modifiers, lineStatements);
         }
 
         internal static IImmutableList<Method> ToMethods(

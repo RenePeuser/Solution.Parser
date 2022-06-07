@@ -54,10 +54,11 @@ namespace Solution.Parser.CSharp
             var nestedInterfaces = recordDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces().ToImmutableList();
             var name = recordDeclarationSyntax.Identifier.ValueText;
             var syntaxTree = recordDeclarationSyntax.ToString();
+            var fullQualifiedName = $"{nameSpace.Name}.{name}";
 
             return new Record(nameSpace, name, modifiers, constructors, properties, methods, attributesOfClass, fields,
                 interfaces, baseTypes, events, eventFields, nestedClasses, nestedStructs, nestedEnums,
-                nestedInterfaces, syntaxTree);
+                nestedInterfaces, syntaxTree, fullQualifiedName);
         }
 
         internal static IImmutableList<Record> ToRecords(this IImmutableList<RecordDeclarationSyntax> recordDeclarationSyntaxes)

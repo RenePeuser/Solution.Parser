@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace Solution.Parser.XAML
 {
-    [DebuggerDisplay("{" + nameof(FullQualifiedName) + "}")]
+    [DebuggerDisplay("{FullQualifiedName}")]
     public class AttachedProperty : Property
     {
         internal AttachedProperty(int lineNumber, string className, string propertyName, string clrPropertyName,

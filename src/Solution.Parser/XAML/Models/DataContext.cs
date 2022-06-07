@@ -2,7 +2,7 @@
 
 namespace Solution.Parser.XAML
 {
-    [DebuggerDisplay("{" + nameof(FullQualifiedName) + "}")]
+    [DebuggerDisplay("{FullQualifiedName}")]
     public class DataContext
     {
         internal DataContext(string fullQualifiedName)

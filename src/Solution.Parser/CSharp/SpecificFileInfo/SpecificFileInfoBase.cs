@@ -7,7 +7,7 @@ using FileSystemInfoExtensions = Solution.Parser.Common.FileSystemInfoExtensions
 namespace Solution.Parser.CSharp
 {
     [DebuggerDisplay("{Value.FullName}")]
-    public abstract class SpecificFileInfoBase : ImmutableSemanticType<FileInfo>
+    public abstract record SpecificFileInfoBase : ImmutableSemanticType<FileInfo>
     {
         protected SpecificFileInfoBase(string path, string expectedFileExtension)
             : base(new FileInfo(path))

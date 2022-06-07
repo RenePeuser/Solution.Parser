@@ -1,8 +1,8 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Solution.Parser.XAML
 {
-    [DebuggerDisplay("{" + nameof(Value) + "}")]
+    [DebuggerDisplay("{Value}")]
     public class XamlUsing : PropertyValue
     {
         internal XamlUsing(string value, string alias, string @namespace, string assembly) : base(value)

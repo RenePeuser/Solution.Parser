@@ -2,14 +2,6 @@
 
 namespace Solution.Parser.CSharp
 {
-    [DebuggerDisplay("{" + nameof(Name) + "}")]
-    public class NameSpace
-    {
-        internal NameSpace(string name)
-        {
-            Name = name;
-        }
-
-        public string Name { get; }
-    }
+    [DebuggerDisplay("{Name}")]
+    public record NameSpace(string Name);
 }

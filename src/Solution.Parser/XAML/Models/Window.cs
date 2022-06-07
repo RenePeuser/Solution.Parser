@@ -1,9 +1,9 @@
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Diagnostics;
 
 namespace Solution.Parser.XAML
 {
-    [DebuggerDisplay("{" + nameof(TypeName) + "}")]
+    [DebuggerDisplay("{Type}")]
     public class Window : UserControl
     {
         internal Window(DataContext dataContext, ElementBase parent, string fullQualifiedName, string xName,

@@ -4,29 +4,24 @@ using System.Diagnostics;
 namespace Solution.Parser.CSharp
 {
     [DebuggerDisplay("{Name}")]
-    public record Struct : Class
-    {
-        internal Struct(
-            NameSpace nameSpace,
-            string name,
-            IImmutableList<Modifier> modifiers,
-            IImmutableList<Constructor> constructors,
-            IImmutableList<Property> properties,
-            IImmutableList<Method> methods,
-            IImmutableList<Attribute> attributes,
-            IImmutableList<Field> fields,
-            IImmutableList<Interface> interfaces,
-            IImmutableList<BaseType> baseTypes,
-            IImmutableList<Event> events,
-            IImmutableList<EventField> eventFields,
-            IImmutableList<Class> nestedClasses,
-            IImmutableList<Struct> nestedStructs,
-            IImmutableList<Enum> nestedEnums,
-            IImmutableList<Interface> nestedInterfaces,
-            string syntaxTreee)
-            : base(nameSpace, name, modifiers, constructors, properties, methods, attributes, fields, interfaces,
-                baseTypes, events, eventFields, nestedClasses, nestedStructs, nestedEnums, nestedInterfaces, syntaxTreee)
-        {
-        }
-    }
+    public record Struct(NameSpace NameSpace,
+                         string name,
+                         IImmutableList<Modifier> Modifiers,
+                         IImmutableList<Constructor> Constructors,
+                         IImmutableList<Property> Properties,
+                         IImmutableList<Method> Methods,
+                         IImmutableList<Attribute> Attributes,
+                         IImmutableList<Field> Fields,
+                         IImmutableList<Interface> Interfaces,
+                         IImmutableList<BaseType> BaseTypes,
+                         IImmutableList<Event> Events,
+                         IImmutableList<EventField> EventFields,
+                         IImmutableList<Class> NestedClasses,
+                         IImmutableList<Struct> NestedStructs,
+                         IImmutableList<Enum> NestedEnums,
+                         IImmutableList<Interface> NestedInterfaces,
+                         string SyntaxTreee,
+                         string FullQualifiedName)
+        : Class(NameSpace, name, Modifiers, Constructors, Properties, Methods, Attributes, Fields, Interfaces,
+            BaseTypes, Events, EventFields, NestedClasses, NestedStructs, NestedEnums, NestedInterfaces, SyntaxTreee, FullQualifiedName);
 }

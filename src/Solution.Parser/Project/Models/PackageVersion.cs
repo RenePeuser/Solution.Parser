@@ -2,7 +2,7 @@
 
 namespace Solution.Parser.Project
 {
-    [DebuggerDisplay("{" + nameof(Value) + "}")]
+    [DebuggerDisplay("{Value}")]
     public class PackageVersion : ImmutableSemanticType<string>
     {
         internal PackageVersion(string value)

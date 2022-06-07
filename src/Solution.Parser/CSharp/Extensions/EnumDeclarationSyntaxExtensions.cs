@@ -39,8 +39,9 @@ namespace Solution.Parser.CSharp
                 .ToImmutableList();
             var modifiers = enumDeclarationSyntax.ToModifiers().ToImmutableList();
             var name = enumDeclarationSyntax.Identifier.ValueText;
+            var fullQualifiedName = $"{nameSpace.Name}.{name}";
 
-            return new Enum(nameSpace, name, modifiers, enumFields);
+            return new Enum(nameSpace, name, modifiers, enumFields, fullQualifiedName);
         }
     }
 }

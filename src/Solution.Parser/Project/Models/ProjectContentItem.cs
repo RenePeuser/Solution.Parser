@@ -3,8 +3,8 @@ using System.IO;
 
 namespace Solution.Parser.Project
 {
-    [DebuggerDisplay("{" + nameof(Include) + "}")]
-    [DebuggerDisplay("{" + nameof(CopyToOutputDirectory) + "}")]
+    [DebuggerDisplay("{Include}")]
+    [DebuggerDisplay("{CopyToOutputDirectory}")]
     public class ProjectContentItem
     {
         internal ProjectContentItem(string include, CopyToOutputDirectory copyToOutputDirectory, FileInfo fileInfo)

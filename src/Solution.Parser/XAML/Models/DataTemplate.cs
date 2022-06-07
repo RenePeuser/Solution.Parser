@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace Solution.Parser.XAML
 {
-    [DebuggerDisplay("{" + nameof(XKey) + "}")]
+    [DebuggerDisplay("{XKey}")]
     public class DataTemplate : ElementBase
     {
         internal DataTemplate(int lineNumber, DataContext dataContext, ElementBase parent, string xName,

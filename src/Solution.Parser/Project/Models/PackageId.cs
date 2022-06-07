@@ -2,7 +2,7 @@
 
 namespace Solution.Parser.Project
 {
-    [DebuggerDisplay("{" + nameof(Value) + "}")]
+    [DebuggerDisplay("{Value}")]
     public class PackageId : ImmutableSemanticType<string>
     {
         internal PackageId(string value)

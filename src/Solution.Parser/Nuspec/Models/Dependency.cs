@@ -4,7 +4,7 @@ using Argument.Check;
 
 namespace Solution.Parser.Nuspec
 {
-    [DebuggerDisplay("{" + nameof(Id) + "}")]
+    [DebuggerDisplay("{Id}")]
     public class Dependency
     {
         internal Dependency(string id, string version, IImmutableList<string> excludes)

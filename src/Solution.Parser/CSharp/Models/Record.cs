@@ -6,26 +6,23 @@ namespace Solution.Parser.CSharp
 
 
     [DebuggerDisplay("{Name}")]
-    public record Record : Class
-    {
-        internal Record(NameSpace nameSpace,
-                        string name,
-                        IImmutableList<Modifier> modifiers,
-                        IImmutableList<Constructor> constructors,
-                        IImmutableList<Property> properties,
-                        IImmutableList<Method> methods,
-                        IImmutableList<Attribute> attributes,
-                        IImmutableList<Field> fields,
-                        IImmutableList<Interface> interfaces,
-                        IImmutableList<BaseType> baseTypes,
-                        IImmutableList<Event> events,
-                        IImmutableList<EventField> eventFields,
-                        IImmutableList<Class> nestedClasses,
-                        IImmutableList<Struct> nestedStructs,
-                        IImmutableList<Enum> nestedEnums,
-                        IImmutableList<Interface> nestedInterfaces,
-                        string syntaxTree) : base(nameSpace, name, modifiers, constructors, properties, methods, attributes, fields, interfaces, baseTypes, events, eventFields, nestedClasses, nestedStructs, nestedEnums, nestedInterfaces, syntaxTree)
-        {
-        }
-    }
+    public record Record(NameSpace NameSpace,
+                         string Name,
+                         IImmutableList<Modifier> Modifiers,
+                         IImmutableList<Constructor> Constructors,
+                         IImmutableList<Property> Properties,
+                         IImmutableList<Method> Methods,
+                         IImmutableList<Attribute> Attributes,
+                         IImmutableList<Field> Fields,
+                         IImmutableList<Interface> Interfaces,
+                         IImmutableList<BaseType> BaseTypes,
+                         IImmutableList<Event> Events,
+                         IImmutableList<EventField> EventFields,
+                         IImmutableList<Class> NestedClasses,
+                         IImmutableList<Struct> NestedStructs,
+                         IImmutableList<Enum> NestedEnums,
+                         IImmutableList<Interface> NestedInterfaces,
+                         string FullQualifiedName,
+                         string SyntaxTree) : Class(NameSpace, Name, Modifiers, Constructors, Properties, Methods, Attributes, Fields, Interfaces, BaseTypes, Events, EventFields, NestedClasses, NestedStructs, NestedEnums, NestedInterfaces,
+        SyntaxTree, FullQualifiedName);
 }

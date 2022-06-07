@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace Solution.Parser.XAML
 {
-    [DebuggerDisplay("{" + nameof(TypeName) + "}")]
+    [DebuggerDisplay("{TypeName}")]
     public class ResourceDictionary : Root
     {
         internal ResourceDictionary(DataContext dataContext, ElementBase parent, string fullQualifiedName,

@@ -1,9 +1,9 @@
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Diagnostics;
 
 namespace Solution.Parser.XAML
 {
-    [DebuggerDisplay("Name:{" + nameof(XName) + "} Key:{" + nameof(XKey) + "}")]
+    [DebuggerDisplay("Name:{XName} Key:{XKey}")]
     public class Control : ElementBase
     {
         internal Control(int lineNumber, DataContext dataContext, ElementBase parent, string xName,

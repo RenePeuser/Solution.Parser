@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace Solution.Parser.XAML
 {
-    [DebuggerDisplay("{" + nameof(Value) + "}")]
+    [DebuggerDisplay("{Value}")]
     public class PropertyValue : ImmutableSemanticType<object>
     {
         internal PropertyValue(object value) : base(value)

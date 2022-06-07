@@ -2,7 +2,7 @@
 
 namespace Solution.Parser.Project
 {
-    [DebuggerDisplay("{" + nameof(Project) + "}")]
+    [DebuggerDisplay("{Project}")]
     public class Import
     {
         internal Import(string project)

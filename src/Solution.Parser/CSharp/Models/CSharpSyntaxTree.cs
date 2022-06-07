@@ -4,7 +4,7 @@ using Argument.Check;
 
 namespace Solution.Parser.CSharp
 {
-    [DebuggerDisplay("{" + nameof(FileName) + "}")]
+    [DebuggerDisplay("{FileName}")]
     public class CSharpSyntaxTree
     {
         private static readonly CSharpSyntaxTree sEmptyNameSpace = new(new NameSpace(string.Empty),

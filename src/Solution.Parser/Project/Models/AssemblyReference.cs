@@ -2,7 +2,7 @@
 
 namespace Solution.Parser.Project
 {
-    [DebuggerDisplay("Reference = {" + nameof(HintPath) + "}")]
+    [DebuggerDisplay("Reference = {HintPath}")]
     public class AssemblyReference : ReferenceBase
     {
         internal AssemblyReference(string include, bool copyLocal, string hintPath, bool specificVersion, string name)

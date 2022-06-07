@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace Solution.Parser.XAML
 {
-    [DebuggerDisplay("{" + nameof(Name) + "}")]
+    [DebuggerDisplay("{Name}")]
     public class Property
     {
         internal Property(int lineNumber, string name, PropertyValue propertyValue)

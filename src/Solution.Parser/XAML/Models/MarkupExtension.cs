@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Solution.Parser.XAML
 {
-    [DebuggerDisplay("{" + nameof(Name) + "}")]
+    [DebuggerDisplay("{Name}")]
     public class MarkupExtension : PropertyValue
     {
         internal MarkupExtension(string value, string name) : this(value, name, ImmutableList<Property>.Empty)

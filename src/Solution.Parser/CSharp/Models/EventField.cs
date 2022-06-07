@@ -2,11 +2,6 @@
 
 namespace Solution.Parser.CSharp
 {
-    [DebuggerDisplay("{" + nameof(Name) + "}")]
-    public record EventField : Event
-    {
-        internal EventField(string type, string name) : base(type, name)
-        {
-        }
-    }
+    [DebuggerDisplay("{Name}")]
+    public record EventField(string Type, string Name) : Event(Type, Name);
 }

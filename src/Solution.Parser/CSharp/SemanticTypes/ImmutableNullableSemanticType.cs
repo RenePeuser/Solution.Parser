@@ -1,12 +1,4 @@
 ﻿namespace Solution.Parser.CSharp
 {
-    public abstract class ImmutableNullableSemanticType<T>
-    {
-        protected ImmutableNullableSemanticType(T value)
-        {
-            Value = value;
-        }
-
-        public T Value { get; }
-    }
+    public abstract record ImmutableNullableSemanticType<T>(T Value);
 }

@@ -3,11 +3,5 @@
 namespace Solution.Parser.CSharp
 {
     [DebuggerDisplay("{Name}")]
-    public record EnumField : DeclarationBase
-    {
-        internal EnumField(string name)
-            : base(name)
-        {
-        }
-    }
+    public record EnumField(string Name) : DeclarationBase(Name);
 }

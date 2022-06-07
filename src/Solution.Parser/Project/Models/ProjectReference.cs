@@ -2,7 +2,7 @@
 
 namespace Solution.Parser.Project
 {
-    [DebuggerDisplay("{" + nameof(Name) + "}")]
+    [DebuggerDisplay("{Name}")]
     public class ProjectReference : ReferenceBase
     {
         internal ProjectReference(string include, bool copyLocal, string name)

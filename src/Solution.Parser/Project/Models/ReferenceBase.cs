@@ -2,7 +2,7 @@
 
 namespace Solution.Parser.Project
 {
-    [DebuggerDisplay("{" + nameof(Include) + "}")]
+    [DebuggerDisplay("{Include}")]
     public abstract class ReferenceBase
     {
         protected ReferenceBase(string include, bool copyLocal, string name)

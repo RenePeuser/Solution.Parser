@@ -58,9 +58,11 @@ namespace Solution.Parser.CSharp
             var nestedEnums = interfaceDeclarationSyntax.AllOfType<EnumDeclarationSyntax>().ToEnums().ToImmutableList();
             var nestedInterfaces = interfaceDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces()
                 .ToImmutableList();
+            var fullQualifiedName = $"{nameSpace.Name}.{name}";
+            var syntaxTree = interfaceDeclarationSyntax.ToString();
 
             return new Interface(nameSpace, name, modifiers, properties, methods, attributesOfClass, baseTypes,
-                events, eventFields, nestedClasses, nestedStructs, nestedEnums, nestedInterfaces);
+                events, eventFields, nestedClasses, nestedStructs, nestedEnums, nestedInterfaces, fullQualifiedName, syntaxTree);
         }
     }
 }

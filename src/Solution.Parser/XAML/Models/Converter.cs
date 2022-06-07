@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace Solution.Parser.XAML
 {
-    [DebuggerDisplay("{" + nameof(Name) + "}")]
+    [DebuggerDisplay("{Name}")]
     internal class Converter
     {
         internal Converter(string name, string type)

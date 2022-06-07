@@ -5,7 +5,7 @@ using Extensions.Pack;
 
 namespace Solution.Parser.Solution
 {
-    [DebuggerDisplay("{" + nameof(Value) + "}")]
+    [DebuggerDisplay("{Value}")]
     public class SolutionFileName : ImmutableSemanticType<string>
     {
         private const string SOLUTION_FILE_EXTENSION = ".sln";

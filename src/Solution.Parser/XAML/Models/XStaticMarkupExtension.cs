@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace Solution.Parser.XAML
 {
-    [DebuggerDisplay("{" + nameof(Type) + "}")]
+    [DebuggerDisplay("{Type}")]
     public class XStaticMarkupExtension : PropertyValue
     {
         internal XStaticMarkupExtension(string value) : base(value)

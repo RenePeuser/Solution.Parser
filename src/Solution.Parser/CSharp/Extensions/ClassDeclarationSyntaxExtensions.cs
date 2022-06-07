@@ -54,10 +54,11 @@ namespace Solution.Parser.CSharp
             var nestedInterfaces = classDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces().ToImmutableList();
             var name = classDeclarationSyntax.Identifier.ValueText;
             var syntaxTree = classDeclarationSyntax.ToString();
+            var fullQualifiedName = $"{nameSpace.Name}.{name}";
 
             return new Class(nameSpace, name, modifiers, constructors, properties, methods, attributesOfClass, fields,
                 interfaces, baseTypes, events, eventFields, nestedClasses, nestedStructs, nestedEnums,
-                nestedInterfaces, syntaxTree);
+                nestedInterfaces, fullQualifiedName, syntaxTree);
         }
 
         internal static IImmutableList<Class> ToClasses(this IImmutableList<ClassDeclarationSyntax> classDeclarationSyntaxes)

@@ -3,10 +3,5 @@
 namespace Solution.Parser.CSharp
 {
     [DebuggerDisplay("{Value}")]
-    public class Initializer : ImmutableSemanticType<string>
-    {
-        internal Initializer(string value) : base(value)
-        {
-        }
-    }
+    public record Initializer(string Value) : ImmutableSemanticType<string>(Value);
 }

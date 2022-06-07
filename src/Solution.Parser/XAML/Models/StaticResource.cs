@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace Solution.Parser.XAML
 {
-    [DebuggerDisplay("{" + nameof(ResourceKey) + "}")]
+    [DebuggerDisplay("{ResourceKey}")]
     public class StaticResource : PropertyValue
     {
         internal StaticResource(string value) : base(value)
