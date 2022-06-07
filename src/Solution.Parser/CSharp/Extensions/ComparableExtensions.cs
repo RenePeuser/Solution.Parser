@@ -8,8 +8,8 @@ namespace Solution.Parser.CSharp
         internal static bool IsLessThan<T>(this T source, T target)
             where T : IComparable
         {
-            Throw.IfNull<object>(() => source);
-            Throw.IfNull<object>(() => target);
+            Throw.IfNull<object>(source);
+            Throw.IfNull<object>(target);
 
             return source.CompareTo(target) < 0;
         }
@@ -17,8 +17,8 @@ namespace Solution.Parser.CSharp
         internal static bool IsLessOrEqual<T>(this T source, T target)
             where T : IComparable
         {
-            Throw.IfNull<object>(() => source);
-            Throw.IfNull<object>(() => target);
+            Throw.IfNull<object>(source);
+            Throw.IfNull<object>(target);
 
             return !source.IsGreaterThan(target);
         }
@@ -26,8 +26,8 @@ namespace Solution.Parser.CSharp
         internal static bool IsGreaterThan<T>(this T source, T target)
             where T : IComparable
         {
-            Throw.IfNull<object>(() => source);
-            Throw.IfNull<object>(() => target);
+            Throw.IfNull<object>(source);
+            Throw.IfNull<object>(target);
 
             return source.CompareTo(target) > 0;
         }
@@ -35,8 +35,8 @@ namespace Solution.Parser.CSharp
         internal static bool IsGreaterOrEqual<T>(this T source, T target)
             where T : IComparable
         {
-            Throw.IfNull<object>(() => source);
-            Throw.IfNull<object>(() => target);
+            Throw.IfNull<object>(source);
+            Throw.IfNull<object>(target);
 
             return !source.IsLessThan(target);
         }

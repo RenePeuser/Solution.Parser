@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Immutable;
 using System.Diagnostics;
 
 namespace Solution.Parser.CSharp
 {
     [DebuggerDisplay("{" + nameof(Name) + "}")]
-    public class Field : DeclarationBase
+    public record Field : DeclarationBase
     {
-        internal Field(string name, string type, IEnumerable<Modifier> modifiers, Initializer initializer) :
+        internal Field(string name, string type, IImmutableList<Modifier> modifiers, Initializer initializer) :
             base(name)
         {
             Type = type;
@@ -16,7 +16,7 @@ namespace Solution.Parser.CSharp
 
         public string Type { get; }
 
-        public IEnumerable<Modifier> Modifiers { get; }
+        public IImmutableList<Modifier> Modifiers { get; }
 
         public Initializer Initializer { get; }
     }

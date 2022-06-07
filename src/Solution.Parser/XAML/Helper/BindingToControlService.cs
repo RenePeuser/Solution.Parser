@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace Solution.Parser.XAML
@@ -8,7 +9,7 @@ namespace Solution.Parser.XAML
         public static Control ConvertFrom<TMarkupExtension>(this Control owner, Binding binding, int lineNumber)
             where TMarkupExtension : class
         {
-            var properties = binding.ToProperties(lineNumber).ToList();
+            var properties = binding.ToProperties(lineNumber).ToImmutableList();
 
             return new Control(owner.LineNumber,
                 owner.DataContext,
@@ -17,9 +18,9 @@ namespace Solution.Parser.XAML
                 typeof(TMarkupExtension).Name,
                 null,
                 properties,
-                Enumerable.Empty<ElementBase>(),
-                Enumerable.Empty<Style>(),
-                Enumerable.Empty<DataTemplate>());
+                ImmutableList<ElementBase>.Empty,
+                ImmutableList<Style>.Empty,
+                ImmutableList<DataTemplate>.Empty);
         }
 
         private static IEnumerable<Property> ToProperties(this Binding binding, int lineNumber)

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Argument.Check;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -23,20 +24,20 @@ namespace Solution.Parser.CSharp
             }
         }
 
-        internal static IEnumerable<Enum> ToEnums(this IEnumerable<EnumDeclarationSyntax> enumDeclarationSyntaxes)
+        internal static IImmutableList<Enum> ToEnums(this IImmutableList<EnumDeclarationSyntax> enumDeclarationSyntaxes)
         {
-            return enumDeclarationSyntaxes.Select(ToEnum);
+            return enumDeclarationSyntaxes.Select(ToEnum).ToImmutableList();
         }
 
         internal static Enum ToEnum(this EnumDeclarationSyntax enumDeclarationSyntax)
         {
-            Throw.IfNull(() => enumDeclarationSyntax);
+            Throw.IfNull(enumDeclarationSyntax);
 
-            var nameSpace = enumDeclarationSyntax.SyntaxTree.AllOfType<NamespaceDeclarationSyntax>().First()
+            var nameSpace = enumDeclarationSyntax.SyntaxTree.AllOfType<NamespaceDeclarationSyntax>()[0]
                 .ToNamespace();
             var enumFields = enumDeclarationSyntax.Members.Select(m => new EnumField(m.Identifier.ValueText))
-                .ToList();
-            var modifiers = enumDeclarationSyntax.ToModifiers();
+                .ToImmutableList();
+            var modifiers = enumDeclarationSyntax.ToModifiers().ToImmutableList();
             var name = enumDeclarationSyntax.Identifier.ValueText;
 
             return new Enum(nameSpace, name, modifiers, enumFields);

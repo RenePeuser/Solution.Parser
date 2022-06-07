@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Xml.Linq;
 using Argument.Check;
@@ -16,31 +16,31 @@ namespace Solution.Parser.Project
             XDocument document,
             ProjectFileInfo projectFileInfo,
             string assemblyName,
-            IEnumerable<AssemblyReference> assemblyReferences,
-            IEnumerable<ProjectReference> projectReferences,
-            IEnumerable<ProjectType> projectTypes,
-            IEnumerable<Import> imports,
-            IEnumerable<CSharpFileInfo> csharpFileInfos,
-            IEnumerable<XAMLFileInfo> xamlFileInfos,
-            IEnumerable<ProjectContentItem> projectContentItems,
-            IEnumerable<Package> packages,
-            IEnumerable<PackageReference> packageReferences,
-            IEnumerable<string> targetFrameworkVersion,
-            IEnumerable<ProjectFile> buildDependencies,
+            IImmutableList<AssemblyReference> assemblyReferences,
+            IImmutableList<ProjectReference> projectReferences,
+            IImmutableList<ProjectType> projectTypes,
+            IImmutableList<Import> imports,
+            IImmutableList<CSharpFileInfo> csharpFileInfos,
+            IImmutableList<XAMLFileInfo> xamlFileInfos,
+            IImmutableList<ProjectContentItem> projectContentItems,
+            IImmutableList<Package> packages,
+            IImmutableList<PackageReference> packageReferences,
+            IImmutableList<string> targetFrameworkVersion,
+            IImmutableList<ProjectFile> buildDependencies,
             string buildRoot,
             string documentationFile)
         {
-            Throw.IfNull(() => document);
-            Throw.IfNull(() => projectFileInfo);
-            Throw.IfNull(() => assemblyReferences);
-            Throw.IfNull(() => projectReferences);
-            Throw.IfNull(() => projectTypes);
-            Throw.IfNull(() => imports);
-            Throw.IfNull(() => csharpFileInfos);
-            Throw.IfNull(() => xamlFileInfos);
-            Throw.IfNull(() => projectContentItems);
-            Throw.IfNull(() => packages);
-            Throw.IfNull(() => packageReferences);
+            Throw.IfNull(document);
+            Throw.IfNull(projectFileInfo);
+            Throw.IfNull(assemblyReferences);
+            Throw.IfNull(projectReferences);
+            Throw.IfNull(projectTypes);
+            Throw.IfNull(imports);
+            Throw.IfNull(csharpFileInfos);
+            Throw.IfNull(xamlFileInfos);
+            Throw.IfNull(projectContentItems);
+            Throw.IfNull(packages);
+            Throw.IfNull(packageReferences);
 
             Guid = guid;
             Document = document;
@@ -61,11 +61,11 @@ namespace Solution.Parser.Project
             PackageReferences = packageReferences;
         }
 
-        public IEnumerable<PackageReference> PackageReferences { get; }
+        public IImmutableList<PackageReference> PackageReferences { get; }
 
         public string AssemblyName { get; }
 
-        public IEnumerable<ProjectType> ProjectTypes { get; }
+        public IImmutableList<ProjectType> ProjectTypes { get; }
 
         public ProjectFileInfo ProjectFileInfo { get; }
 
@@ -73,23 +73,23 @@ namespace Solution.Parser.Project
 
         public XDocument Document { get; }
 
-        public IEnumerable<AssemblyReference> AssemblyReferences { get; }
+        public IImmutableList<AssemblyReference> AssemblyReferences { get; }
 
-        public IEnumerable<ProjectReference> ProjectReferences { get; }
+        public IImmutableList<ProjectReference> ProjectReferences { get; }
 
-        public IEnumerable<Import> Imports { get; }
+        public IImmutableList<Import> Imports { get; }
 
-        public IEnumerable<XAMLFileInfo> XAMLFileInfos { get; }
+        public IImmutableList<XAMLFileInfo> XAMLFileInfos { get; }
 
-        public IEnumerable<CSharpFileInfo> CSharpFileInfos { get; }
+        public IImmutableList<CSharpFileInfo> CSharpFileInfos { get; }
 
-        public IEnumerable<ProjectContentItem> ContentItems { get; }
+        public IImmutableList<ProjectContentItem> ContentItems { get; }
 
-        public IEnumerable<Package> Packages { get; }
+        public IImmutableList<Package> Packages { get; }
 
-        public IEnumerable<ProjectFile> BuildDependencies { get; }
+        public IImmutableList<ProjectFile> BuildDependencies { get; }
 
-        public IEnumerable<string> TargetFrameworkVersion { get; }
+        public IImmutableList<string> TargetFrameworkVersion { get; }
 
         public string BuildRoot { get; }
 

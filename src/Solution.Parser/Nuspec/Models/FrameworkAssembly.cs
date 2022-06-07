@@ -9,7 +9,7 @@ namespace Solution.Parser.Nuspec
         internal FrameworkAssembly(string assemblyName, string targetFramework)
         {
             Throw.IfNullOrWhiteSpace(() => assemblyName);
-            Throw.IfNull(() => targetFramework);
+            Throw.IfNull(targetFramework);
 
             AssemblyName = assemblyName;
             TargetFramework = targetFramework;

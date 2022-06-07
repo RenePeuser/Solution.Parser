@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Immutable;
 using System.Diagnostics;
 
 namespace Solution.Parser.CSharp
 {
     [DebuggerDisplay("{" + nameof(Name) + "}")]
-    public class Property : DeclarationWithModifiers
+    public record Property : DeclarationWithModifiers
     {
-        internal Property(string type, string name, bool isReadOnly, IEnumerable<Modifier> modifiers) : base(name,
+        internal Property(string type, string name, bool isReadOnly, IImmutableList<Modifier> modifiers) : base(name,
             modifiers)
         {
             Type = type;

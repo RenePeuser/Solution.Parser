@@ -6,7 +6,7 @@ namespace Solution.Parser.Nuspec
     {
         protected ImmutableSemanticType(T value) : base(value)
         {
-            Throw.IfNull<object>(() => value);
+            Throw.IfNull<object>(value);
         }
     }
 }

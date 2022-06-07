@@ -1,18 +1,7 @@
 ﻿using System.Diagnostics;
-using Argument.Check;
 
 namespace Solution.Parser.CSharp
 {
-    [DebuggerDisplay("{" + nameof(Name) + "}")]
-    public class DeclarationBase
-    {
-        internal DeclarationBase(string name)
-        {
-            Throw.IfNullOrWhiteSpace(() => name);
-
-            Name = name;
-        }
-
-        public string Name { get; }
-    }
+    [DebuggerDisplay("{Name}")]
+    public record DeclarationBase(string Name);
 }

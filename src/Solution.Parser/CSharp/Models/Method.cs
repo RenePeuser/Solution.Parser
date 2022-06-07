@@ -1,20 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Immutable;
 using System.Diagnostics;
 
 namespace Solution.Parser.CSharp
 {
     [DebuggerDisplay("{" + nameof(Name) + "}")]
-    public class Method : DeclarationWithModifiers
+    public record Method : DeclarationWithModifiers
     {
         internal Method(
             string name,
-            IEnumerable<Parameter> parameters,
+            IImmutableList<Parameter> parameters,
             string returnParameter,
             string methodValue,
             string methodBody,
-            IEnumerable<string> statements,
-            IEnumerable<Attribute> attributes,
-            IEnumerable<Modifier> modifiers) : base(name, modifiers)
+            IImmutableList<string> statements,
+            IImmutableList<Attribute> attributes,
+            IImmutableList<Modifier> modifiers) : base(name, modifiers)
         {
             Parameters = parameters;
             ReturnParameter = returnParameter;
@@ -24,7 +24,7 @@ namespace Solution.Parser.CSharp
             Attributes = attributes;
         }
 
-        public IEnumerable<Parameter> Parameters { get; }
+        public IImmutableList<Parameter> Parameters { get; }
 
         public string ReturnParameter { get; }
 
@@ -32,8 +32,8 @@ namespace Solution.Parser.CSharp
 
         public string MethodBody { get; }
 
-        public IEnumerable<string> Statements { get; }
+        public IImmutableList<string> Statements { get; }
 
-        public IEnumerable<Attribute> Attributes { get; }
+        public IImmutableList<Attribute> Attributes { get; }
     }
 }

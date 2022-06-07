@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 
@@ -14,10 +14,10 @@ namespace Solution.Parser.XAML
             string xName,
             string typeName,
             string xKey,
-            IEnumerable<Property> properties,
-            IEnumerable<ElementBase> controls,
-            IEnumerable<Style> styles,
-            IEnumerable<DataTemplate> dataTemplates)
+            IImmutableList<Property> properties,
+            IImmutableList<ElementBase> controls,
+            IImmutableList<Style> styles,
+            IImmutableList<DataTemplate> dataTemplates)
         {
             LineNumber = lineNumber;
             DataContext = dataContext;
@@ -43,13 +43,13 @@ namespace Solution.Parser.XAML
 
         public string XKey { get; }
 
-        public IEnumerable<Property> Properties { get; }
+        public IImmutableList<Property> Properties { get; }
 
-        public IEnumerable<ElementBase> Controls { get; }
+        public IImmutableList<ElementBase> Controls { get; }
 
-        public IEnumerable<Style> Styles { get; }
+        public IImmutableList<Style> Styles { get; }
 
-        public IEnumerable<DataTemplate> DataTemplates { get; }
+        public IImmutableList<DataTemplate> DataTemplates { get; }
 
         public Property this[string name] => FindPropertyByName(name);
 

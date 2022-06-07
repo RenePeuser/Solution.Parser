@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Immutable;
 using System.Diagnostics;
 using Solution.Parser.Project;
 
@@ -8,9 +8,9 @@ namespace Solution.Parser.Solution
     public class SolutionFile
     {
         internal SolutionFile(SolutionFileInfo solutionFileInfo,
-            IEnumerable<ProjectFile> projectFiles,
-            IEnumerable<ProjectFile> productiveProjectFiles,
-            IEnumerable<ProjectFile> unitTestProjectFiles)
+            IImmutableList<ProjectFile> projectFiles,
+            IImmutableList<ProjectFile> productiveProjectFiles,
+            IImmutableList<ProjectFile> unitTestProjectFiles)
         {
             SolutionFileInfo = solutionFileInfo;
             Projects = projectFiles;
@@ -20,10 +20,10 @@ namespace Solution.Parser.Solution
 
         public SolutionFileInfo SolutionFileInfo { get; }
 
-        public IEnumerable<ProjectFile> Projects { get; }
+        public IImmutableList<ProjectFile> Projects { get; }
 
-        public IEnumerable<ProjectFile> ProductiveProjects { get; }
+        public IImmutableList<ProjectFile> ProductiveProjects { get; }
 
-        public IEnumerable<ProjectFile> UnitTestProjects { get; }
+        public IImmutableList<ProjectFile> UnitTestProjects { get; }
     }
 }

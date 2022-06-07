@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Immutable;
+using System.Diagnostics;
 
 namespace Solution.Parser.CSharp
 {
-    public class AutoProperty : Property
+    [DebuggerDisplay("{Name}")]
+    public record AutoProperty : Property
     {
-        internal AutoProperty(string type, string name, bool isReadOnly, IEnumerable<Modifier> modifiers) : base(
+        internal AutoProperty(string type, string name, bool isReadOnly, IImmutableList<Modifier> modifiers) : base(
             type, name, isReadOnly, modifiers)
         {
         }

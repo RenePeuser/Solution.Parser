@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
@@ -24,20 +25,20 @@ namespace Solution.Parser.XAML
         public ElementBase BuildFrom(XElement element, ElementBase parent)
         {
             var properties = element.Attributes().Select(attribute => _xamlPropertyParser.ParseFrom(attribute))
-                .ToList();
+                .ToImmutableList();
 
             var controlBuilder = new ControlsBuilder();
 
-            var allSubElements = element.Descendants().ToList();
-            var controls = controlBuilder.BuildFrom(allSubElements, null).ToList();
+            var allSubElements = element.Descendants().ToImmutableList();
+            var controls = controlBuilder.BuildFrom(allSubElements, null).ToImmutableList();
 
             var typeName = element.Name.LocalName;
             var xKey = properties.FirstOrDefault(item => item.Name == "Key")?.PropertyValue?.Value.ToString();
             var xName = properties.FirstOrDefault(item => item.Name == "Name")?.PropertyValue?.Value.ToString();
 
 
-            var styles = controls.OfType<Style>().ToList();
-            var dataTemplates = controls.OfType<DataTemplate>().ToList();
+            var styles = controls.OfType<Style>().ToImmutableList();
+            var dataTemplates = controls.OfType<DataTemplate>().ToImmutableList();
 
             var dataContextProperty = properties.FirstOrDefault(item => item.Name == "DataContext")?.PropertyValue?.Value.ToString();
             var dataContext = dataContextProperty is null ? null : new DataContext(dataContextProperty);

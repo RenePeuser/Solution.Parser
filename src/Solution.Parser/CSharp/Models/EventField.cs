@@ -3,7 +3,7 @@
 namespace Solution.Parser.CSharp
 {
     [DebuggerDisplay("{" + nameof(Name) + "}")]
-    public class EventField : Event
+    public record EventField : Event
     {
         internal EventField(string type, string name) : base(type, name)
         {

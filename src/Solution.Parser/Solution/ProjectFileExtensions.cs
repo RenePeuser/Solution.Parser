@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Immutable;
 using Solution.Parser.Project;
 
 namespace Solution.Parser.Solution
@@ -6,7 +6,7 @@ namespace Solution.Parser.Solution
     internal static class ProjectFileExtensions
     {
         internal static ProjectFile UpdateProjectDependencies(this ProjectFile projectFile,
-            IEnumerable<ProjectFile> buildDependencies)
+            IImmutableList<ProjectFile> buildDependencies)
         {
             return new ProjectFile(
                 projectFile.Guid,

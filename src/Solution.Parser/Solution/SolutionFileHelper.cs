@@ -11,8 +11,8 @@ namespace Solution.Parser.Solution
         public static SolutionFileInfo FindSolutionFileReverseFrom(this SolutionFileName solutionFileName,
             DirectoryInfo startUpDirectory)
         {
-            Throw.IfNull(() => solutionFileName);
-            Throw.IfNull(() => startUpDirectory);
+            Throw.IfNull(solutionFileName);
+            Throw.IfNull(startUpDirectory);
 
             if (!startUpDirectory.Exists)
             {

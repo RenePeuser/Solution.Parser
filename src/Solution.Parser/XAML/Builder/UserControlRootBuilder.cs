@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Xml.Linq;
 using Extensions.Pack;
@@ -23,19 +24,19 @@ namespace Solution.Parser.XAML
             var documentRoot = document.Root;
 
             var properties = documentRoot.Attributes().Select(attribute => _xamlPropertyParser.ParseFrom(attribute))
-                .ToList();
+                .ToImmutableList();
 
             var controlBuilder = new ControlsBuilder();
-            var allElements = documentRoot.Descendants().ToList();
-            var controls = controlBuilder.BuildFrom(allElements, null).ToList();
+            var allElements = documentRoot.Descendants().ToImmutableList();
+            var controls = controlBuilder.BuildFrom(allElements, null).ToImmutableList();
 
             var typeName = documentRoot.Name.LocalName;
             var xKey = properties.FirstOrDefault(item => item.Name == "Key")?.PropertyValue?.Value.ToString();
             var xName = properties.FirstOrDefault(item => item.Name == "Name")?.PropertyValue?.Value.ToString();
 
 
-            var styles = controls.OfType<Style>().ToList();
-            var dataTemplates = controls.OfType<DataTemplate>().ToList();
+            var styles = controls.OfType<Style>().ToImmutableList();
+            var dataTemplates = controls.OfType<DataTemplate>().ToImmutableList();
 
             var dataContextProperty = properties.FirstOrDefault(item => item.Name == "DataContext");
             var dataContextValue = dataContextProperty?.PropertyValue?.As<MarkupExtension>()?["Type"]?.PropertyValue

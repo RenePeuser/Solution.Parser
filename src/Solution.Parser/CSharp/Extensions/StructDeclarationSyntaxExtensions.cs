@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -36,21 +37,21 @@ namespace Solution.Parser.CSharp
 
         internal static Struct ToStruct(this StructDeclarationSyntax structDeclarationSyntax)
         {
-            var modifiers = structDeclarationSyntax.ToModifiers().ToList();
-            var constructors = structDeclarationSyntax.AllOfType<ConstructorDeclarationSyntax>().ToConstructors().ToList();
-            var properties = structDeclarationSyntax.AllOfType<PropertyDeclarationSyntax>().ToProperties().ToList();
-            var methods = structDeclarationSyntax.AllOfType<MethodDeclarationSyntax>().ToMethods().ToList();
-            var nameSpace = structDeclarationSyntax.SyntaxTree.AllOfType<NamespaceDeclarationSyntax>().First().ToNamespace();
-            var attributesOfClass = structDeclarationSyntax.AttributeLists.ToAttributes().ToList();
-            var fields = structDeclarationSyntax.AllOfType<FieldDeclarationSyntax>().ToFields().ToList();
-            var baseTypes = structDeclarationSyntax.BaseList != null ? structDeclarationSyntax.BaseList.ToBaseTypes().ToList() : Enumerable.Empty<BaseType>();
-            var interfaces = structDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces().ToList();
-            var events = structDeclarationSyntax.AllOfType<EventDeclarationSyntax>().ToEvents().ToList();
-            var eventFields = structDeclarationSyntax.AllOfType<EventFieldDeclarationSyntax>().ToEventFields().ToList();
-            var nestedClasses = structDeclarationSyntax.AllOfType<ClassDeclarationSyntax>().ToClasses().ToList();
-            var nestedStructs = structDeclarationSyntax.AllOfType<StructDeclarationSyntax>().ToStructs().ToList();
-            var nestedEnums = structDeclarationSyntax.AllOfType<EnumDeclarationSyntax>().ToEnums().ToList();
-            var nestedInterfaces = structDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces().ToList();
+            var modifiers = structDeclarationSyntax.ToModifiers().ToImmutableList();
+            var constructors = structDeclarationSyntax.AllOfType<ConstructorDeclarationSyntax>().ToConstructors().ToImmutableList();
+            var properties = structDeclarationSyntax.AllOfType<PropertyDeclarationSyntax>().ToProperties().ToImmutableList();
+            var methods = structDeclarationSyntax.AllOfType<MethodDeclarationSyntax>().ToMethods().ToImmutableList();
+            var nameSpace = structDeclarationSyntax.SyntaxTree.AllOfType<NamespaceDeclarationSyntax>()[0].ToNamespace();
+            var attributesOfClass = structDeclarationSyntax.AttributeLists.ToAttributes().ToImmutableList();
+            var fields = structDeclarationSyntax.AllOfType<FieldDeclarationSyntax>().ToFields().ToImmutableList();
+            var baseTypes = structDeclarationSyntax.BaseList != null ? structDeclarationSyntax.BaseList.ToBaseTypes().ToImmutableList() : ImmutableList<BaseType>.Empty;
+            var interfaces = structDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces().ToImmutableList();
+            var events = structDeclarationSyntax.AllOfType<EventDeclarationSyntax>().ToEvents().ToImmutableList();
+            var eventFields = structDeclarationSyntax.AllOfType<EventFieldDeclarationSyntax>().ToEventFields().ToImmutableList();
+            var nestedClasses = structDeclarationSyntax.AllOfType<ClassDeclarationSyntax>().ToClasses().ToImmutableList();
+            var nestedStructs = structDeclarationSyntax.AllOfType<StructDeclarationSyntax>().ToStructs().ToImmutableList();
+            var nestedEnums = structDeclarationSyntax.AllOfType<EnumDeclarationSyntax>().ToEnums().ToImmutableList();
+            var nestedInterfaces = structDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces().ToImmutableList();
             var name = structDeclarationSyntax.Identifier.ValueText;
             var syntaxTree = structDeclarationSyntax.ToString();
 
@@ -59,10 +60,10 @@ namespace Solution.Parser.CSharp
                 nestedInterfaces, syntaxTree);
         }
 
-        internal static IEnumerable<Struct> ToStructs(
-            this IEnumerable<StructDeclarationSyntax> classDeclarationSyntaxes)
+        internal static IImmutableList<Struct> ToStructs(
+            this IImmutableList<StructDeclarationSyntax> classDeclarationSyntaxes)
         {
-            return classDeclarationSyntaxes.Select(ToStruct);
+            return classDeclarationSyntaxes.Select(ToStruct).ToImmutableList();
         }
     }
 }

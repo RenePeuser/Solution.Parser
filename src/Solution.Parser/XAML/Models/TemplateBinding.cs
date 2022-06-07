@@ -6,7 +6,7 @@ namespace Solution.Parser.XAML
     {
         public TemplateBinding(string value, PropertyValue propertyValue) : base(value)
         {
-            Throw.IfNull(() => propertyValue);
+            Throw.IfNull(propertyValue);
 
             Property = propertyValue;
         }

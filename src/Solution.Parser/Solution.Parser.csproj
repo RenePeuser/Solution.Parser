@@ -1,10 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+    <!-- Common settings !-->
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
+        <LangVersion>latestmajor</LangVersion>
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
         <AnalysisLevel>latest</AnalysisLevel>
         <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <PropertyGroup>
         <Authors>Rene Peuser</Authors>
         <Company>Rene Peuser Softwaresolutions</Company>
         <Description>WIP - This simple SDK to parse solution, projects and c# files</Description>
@@ -33,7 +38,7 @@
 
     <ItemGroup>
         <PackageReference Include="Argument.Check" Version="2.0.0-alpha.52" />
-        <PackageReference Include="Extensions.Pack" Version="1.1.0-alpha.8" />
+        <PackageReference Include="Extensions.Pack" Version="2.0.0-alpha.15" />
         <PackageReference Include="FileSystem.Abstraction" Version="0.1.2" />
         <PackageReference Include="GitVersion.MsBuild" Version="5.10.1">
             <PrivateAssets>all</PrivateAssets>

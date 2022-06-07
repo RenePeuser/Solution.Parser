@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Linq;
 using Argument.Check;
 
 namespace Solution.Parser.CSharp
@@ -9,20 +8,20 @@ namespace Solution.Parser.CSharp
     public class CSharpSyntaxTree
     {
         private static readonly CSharpSyntaxTree sEmptyNameSpace = new(new NameSpace(string.Empty),
-                                                                        Enumerable.Empty<Using>(),
-                                                                        Enumerable.Empty<Class>(),
-                                                                        Enumerable.Empty<Record>(),
-                                                                        Enumerable.Empty<Interface>(),
-                                                                        Enumerable.Empty<Enum>(),
-                                                                        Enumerable.Empty<Struct>());
+                                                                        ImmutableList<Using>.Empty,
+                                                                        ImmutableList<Class>.Empty,
+                                                                        ImmutableList<Record>.Empty,
+                                                                        ImmutableList<Interface>.Empty,
+                                                                        ImmutableList<Enum>.Empty,
+                                                                        ImmutableList<Struct>.Empty);
 
         internal CSharpSyntaxTree(NameSpace nameSpace,
-                                IEnumerable<Using> usings,
-                                IEnumerable<Class> classes,
-                                IEnumerable<Record> records,
-                                IEnumerable<Interface> interfaces,
-                                IEnumerable<Enum> enums,
-                                IEnumerable<Struct> structs)
+                                IImmutableList<Using> usings,
+                                IImmutableList<Class> classes,
+                                IImmutableList<Record> records,
+                                IImmutableList<Interface> interfaces,
+                                IImmutableList<Enum> enums,
+                                IImmutableList<Struct> structs)
         {
             Throw.IfNull(nameSpace);
             Throw.IfNull(usings);
@@ -46,17 +45,17 @@ namespace Solution.Parser.CSharp
 
         public NameSpace NameSpace { get; }
 
-        public IEnumerable<Class> Classes { get; }
+        public IImmutableList<Class> Classes { get; }
 
-        public IEnumerable<Record> Records { get; }
+        public IImmutableList<Record> Records { get; }
 
-        public IEnumerable<Enum> Enums { get; }
+        public IImmutableList<Enum> Enums { get; }
 
-        public IEnumerable<Struct> Structs { get; }
+        public IImmutableList<Struct> Structs { get; }
 
-        public IEnumerable<Interface> Interfaces { get; }
+        public IImmutableList<Interface> Interfaces { get; }
 
-        public IEnumerable<Using> Usings { get; }
+        public IImmutableList<Using> Usings { get; }
 
         public static CSharpSyntaxTree Empty()
         {

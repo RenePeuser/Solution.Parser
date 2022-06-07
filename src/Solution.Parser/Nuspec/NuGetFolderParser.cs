@@ -8,7 +8,7 @@ namespace Solution.Parser.Nuspec
     {
         public static IEnumerable<NuspecFile> Parse(DirectoryInfo directoryInfo)
         {
-            Throw.IfNull(() => directoryInfo);
+            Throw.IfNull(directoryInfo);
 
             foreach (var nuspecFileInfo in directoryInfo.EnumerateFiles("*.nuspec", SearchOption.AllDirectories))
             {

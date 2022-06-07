@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Xml.Linq;
 using Argument.Check;
 
@@ -25,7 +25,7 @@ namespace Solution.Parser.XAML
         /// </summary>
         public XamlSyntaxTree Parse(IXamlFileInfo xamlFileInfo)
         {
-            Throw.IfNull(() => xamlFileInfo);
+            Throw.IfNull(xamlFileInfo);
 
             var fileContent = xamlFileInfo.Value.ReadAllText();
 
@@ -37,7 +37,7 @@ namespace Solution.Parser.XAML
         /// </summary>
         public XamlSyntaxTree Parse(IXamlFileInfo xamlFileInfo, string xamlContent)
         {
-            Throw.IfNull(() => xamlFileInfo);
+            Throw.IfNull(xamlFileInfo);
 
             var document = XDocument.Parse(xamlContent, LoadOptions.SetLineInfo);
             try
@@ -60,7 +60,7 @@ namespace Solution.Parser.XAML
         /// </summary>
         public ElementBase Parse(XElement element)
         {
-            Throw.IfNull(() => element);
+            Throw.IfNull(element);
 
             try
             {

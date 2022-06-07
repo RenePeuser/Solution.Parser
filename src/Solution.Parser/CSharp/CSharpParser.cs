@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using Argument.Check;
 using Extensions.Pack;
@@ -13,21 +14,21 @@ namespace Solution.Parser.CSharp
         {
             Throw.IfNull(syntaxTree);
 
-            var namespaceDeclarationSyntax = syntaxTree.AllOfType<NamespaceDeclarationSyntax>().FirstOrDefault();
+            var namespaceDeclarationSyntax = syntaxTree.AllOfType<NamespaceDeclarationSyntax>();
 
-            if (namespaceDeclarationSyntax.IsNull())
+            if (namespaceDeclarationSyntax.IsEmpty())
             {
                 return CSharpSyntaxTree.Empty();
             }
 
-            var nameSpace = namespaceDeclarationSyntax.ToNamespace();
+            var nameSpace = namespaceDeclarationSyntax[0].ToNamespace();
 
-            var usings = syntaxTree.AllOfType<UsingDirectiveSyntax>().Select(u => new Using(u.Name.Cast<NameSyntax>().GetText().ToString())).ToList();
-            var classes = syntaxTree.AllOfType<ClassDeclarationSyntax>().ToClasses().ToList();
-            var records = syntaxTree.AllOfType<RecordDeclarationSyntax>().ToRecords().ToList();
-            var interfaces = syntaxTree.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces().ToList();
-            var enums = syntaxTree.AllOfType<EnumDeclarationSyntax>().ToEnums().ToList();
-            var structs = syntaxTree.AllOfType<StructDeclarationSyntax>().ToStructs().ToList();
+            var usings = syntaxTree.AllOfType<UsingDirectiveSyntax>().Select(u => new Using(u.Name.Cast<NameSyntax>().GetText().ToString())).ToImmutableList();
+            var classes = syntaxTree.AllOfType<ClassDeclarationSyntax>().ToClasses().ToImmutableList();
+            var records = syntaxTree.AllOfType<RecordDeclarationSyntax>().ToRecords().ToImmutableList();
+            var interfaces = syntaxTree.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces().ToImmutableList();
+            var enums = syntaxTree.AllOfType<EnumDeclarationSyntax>().ToEnums().ToImmutableList();
+            var structs = syntaxTree.AllOfType<StructDeclarationSyntax>().ToStructs().ToImmutableList();
 
             return new CSharpSyntaxTree(nameSpace, usings, classes, records, interfaces, enums, structs);
         }

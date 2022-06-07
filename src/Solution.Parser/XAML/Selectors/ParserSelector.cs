@@ -1,15 +1,16 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace Solution.Parser.XAML
 {
     internal class ParserSelector : IParserSelector
     {
-        private readonly IEnumerable<IPropertyValueParserBase> _propertyValueParser;
+        private readonly IImmutableList<IPropertyValueParserBase> _propertyValueParser;
 
         internal ParserSelector(IEnumerable<IPropertyValueParserBase> propertyValueParser)
         {
-            _propertyValueParser = propertyValueParser.ToList();
+            _propertyValueParser = propertyValueParser.ToImmutableList();
         }
 
         public IPropertyValueParserBase GetParserFor(string value)

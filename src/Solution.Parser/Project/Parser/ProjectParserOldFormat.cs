@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -12,19 +12,19 @@ namespace Solution.Parser.Project
         internal static ProjectFile Parse(ProjectFileInfo projectFileInfo, XDocument document)
         {
             var guid = new Guid(document.ElementBy(ParserHelper.ProjectGuid).ValueOrDefault());
-            var projectReferences = GetReferences(document, ParserHelper.ProjectReference, ProjectReferenceParser.Parse).ToList();
-            var assemblyReferences = GetReferences(document, ParserHelper.Reference, AssemblyReferenceParser.Parse).ToList();
-            var projectTypes = AnalyzeProjectTypes(document).ToList();
+            var projectReferences = GetReferences(document, ParserHelper.ProjectReference, ProjectReferenceParser.Parse).ToImmutableList();
+            var assemblyReferences = GetReferences(document, ParserHelper.Reference, AssemblyReferenceParser.Parse).ToImmutableList();
+            var projectTypes = AnalyzeProjectTypes(document).ToImmutableList();
             var assemblyName = document.ElementBy(ParserHelper.AssemblyName).ValueOrDefault();
-            var imports = GetAllImports(document).ToList();
+            var imports = GetAllImports(document).ToImmutableList();
             var csharpFiles = GetSpecificFiles(document, projectFileInfo, ParserHelper.Compile, ParserHelper.Include,
-                ClassCreator.CreateCSharpFile).ToList();
+                ClassCreator.CreateCSharpFile).ToImmutableList();
             var xamlFiles = GetSpecificFiles(document, projectFileInfo, ParserHelper.Page, ParserHelper.Include,
-                ClassCreator.CreateXAMLFile).ToList();
-            var contentItems = GetContentItems(document, projectFileInfo).ToList().ToList();
-            var packages = GetPackagesFrom(projectFileInfo, document).ToList();
-            var packageReferences = GetPackageReferencesFrom(document).ToList();
-            var targetFrameworkVersion = document.ElementBy(ParserHelper.TargetFrameworkVersion).ValueOrDefault().ToIList();
+                ClassCreator.CreateXAMLFile).ToImmutableList();
+            var contentItems = GetContentItems(document, projectFileInfo).ToImmutableList();
+            var packages = GetPackagesFrom(projectFileInfo, document).ToImmutableList();
+            var packageReferences = GetPackageReferencesFrom(document).ToImmutableList();
+            var targetFrameworkVersion = document.ElementBy(ParserHelper.TargetFrameworkVersion).ValueOrDefault().ToIList().ToImmutableList();
             var buildRoot = document.ElementBy(ParserHelper.BuildRoot).ValueOrDefault();
             var documentationFile = document.ElementBy(ParserHelper.DocumentationFile).ValueOrDefault();
 
@@ -42,7 +42,7 @@ namespace Solution.Parser.Project
                                    packages,
                                    packageReferences,
                                    targetFrameworkVersion,
-                                   Enumerable.Empty<ProjectFile>(),
+                                   ImmutableList<ProjectFile>.Empty,
                                    buildRoot,
                                    documentationFile);
         }
@@ -55,47 +55,47 @@ namespace Solution.Parser.Project
             return new Package(id, version, targetFramework);
         }
 
-        private static IEnumerable<ProjectType> AnalyzeProjectTypes(XDocument document)
+        private static IImmutableList<ProjectType> AnalyzeProjectTypes(XDocument document)
         {
             var projectTypeGuids = document.ElementBy(ParserHelper.ProjectTypeGuids);
             if (projectTypeGuids == null)
             {
-                return new[] { ProjectType.Invalid };
+                return new[] { ProjectType.Invalid }.ToImmutableList();
             }
 
             var result = projectTypeGuids.ValueOrDefault(string.Empty);
             var guidArray = result.Split(';').Select(item => new Guid(item));
-            return guidArray.Select(ProjectTypeParser.GetProjectType);
+            return guidArray.Select(ProjectTypeParser.GetProjectType).ToImmutableList();
         }
 
-        private static IEnumerable<Import> GetAllImports(XDocument document)
+        private static IImmutableList<Import> GetAllImports(XDocument document)
         {
             var result = document.ElementsBy(ParserHelper.Import);
             var imports = result.Select(item => new Import(item.AttributeBy(ParserHelper.Project).ValueOrDefault()))
-                .ToList();
+                .ToImmutableList();
             return imports;
         }
 
-        private static IEnumerable<T> GetReferences<T>(XDocument document, string localName,
-            Func<XElement, T> convertFunc) where T : ReferenceBase
+        private static IImmutableList<T> GetReferences<T>(XDocument document, string localName,
+                                                          Func<XElement, T> convertFunc) where T : ReferenceBase
         {
             var refrences = document.ElementsBy(localName);
             var result = refrences.Select(convertFunc);
-            return result;
+            return result.ToImmutableList();
         }
 
-        private static IEnumerable<T> GetSpecificFiles<T>(XDocument document, ProjectFileInfo projectFileInfo,
-            string localName, string attributeName, Func<string, T> creatorFunc)
+        private static IImmutableList<T> GetSpecificFiles<T>(XDocument document, ProjectFileInfo projectFileInfo,
+                                                             string localName, string attributeName, Func<string, T> creatorFunc)
         {
             var projectDirectoryPath = projectFileInfo.Value.Directory.FullName;
             var result = document.ElementsBy(localName)
                 .Select(element => element.AttributeBy(attributeName).ValueOrDefault())
                 .Select(item => Path.Combine(projectDirectoryPath, item))
                 .Select(creatorFunc);
-            return result;
+            return result.ToImmutableList();
         }
 
-        private static IEnumerable<ProjectContentItem> GetContentItems(XDocument document, ProjectFileInfo projectFileInfo)
+        private static IImmutableList<ProjectContentItem> GetContentItems(XDocument document, ProjectFileInfo projectFileInfo)
         {
             var projectFileDirectoryPath = projectFileInfo.Value.Directory.FullName;
             var result = document.ElementsBy(ParserHelper.Content);
@@ -109,10 +109,10 @@ namespace Solution.Parser.Project
                     return new ProjectContentItem(include, copyToOutputDirectory, fileInfo);
                 });
 
-            return contentItems;
+            return contentItems.ToImmutableList();
         }
 
-        private static IEnumerable<Package> GetPackagesFrom(ProjectFileInfo projectFileInfo, XDocument document)
+        private static IImmutableList<Package> GetPackagesFrom(ProjectFileInfo projectFileInfo, XDocument document)
         {
             var packagesConfig = "packages.config";
 
@@ -120,25 +120,25 @@ namespace Solution.Parser.Project
                 .Any(d => d.Attributes().Any(a => a.Name.LocalName == "Include" && a.Value == packagesConfig));
             if (nuGetPackageExists.IsFalse())
             {
-                return Enumerable.Empty<Package>();
+                return ImmutableList<Package>.Empty;
             }
 
             var path = new FileInfo(Path.Combine(projectFileInfo.Value.Directory.FullName, packagesConfig));
             if (path.Exists)
             {
                 var packageDocument = XDocument.Load(path.FullName);
-                return packageDocument.Descendants("package").Select(ParseElement).ToList();
+                return packageDocument.Descendants("package").Select(ParseElement).ToImmutableList();
             }
 
-            return Enumerable.Empty<Package>();
+            return ImmutableList<Package>.Empty;
         }
 
-        private static IEnumerable<PackageReference> GetPackageReferencesFrom(XDocument document)
+        private static IImmutableList<PackageReference> GetPackageReferencesFrom(XDocument document)
         {
             var packageReferences = document.ElementsBy("PackageReference");
             if (packageReferences.IsEmpty())
             {
-                return Enumerable.Empty<PackageReference>();
+                return ImmutableList<PackageReference>.Empty;
             }
 
             return packageReferences.Select(p =>
@@ -147,7 +147,7 @@ namespace Solution.Parser.Project
                 var versionAttribute = p.AttributeBy("Version");
                 var version = versionAttribute == null ? p.ElementBy("Version").Value : versionAttribute.Value;
                 return new PackageReference(include, new PackageVersion(version));
-            });
+            }).ToImmutableList();
         }
     }
 }

@@ -1,18 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Immutable;
 using System.Diagnostics;
-using Argument.Check;
 
 namespace Solution.Parser.CSharp
 {
-    [DebuggerDisplay("{" + nameof(Name) + "}")]
-    public class DeclarationWithModifiers : DeclarationBase
-    {
-        internal DeclarationWithModifiers(string name, IEnumerable<Modifier> modifiers) : base(name)
-        {
-            Modifiers = modifiers;
-            Throw.IfNull(() => modifiers);
-        }
-
-        public IEnumerable<Modifier> Modifiers { get; }
-    }
+    [DebuggerDisplay("{Name}")]
+    public record DeclarationWithModifiers(string Name, IImmutableList<Modifier> Modifiers) : DeclarationBase(Name);
 }

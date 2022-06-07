@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Argument.Check;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -29,34 +30,34 @@ namespace Solution.Parser.CSharp
             }
         }
 
-        internal static IEnumerable<Interface> ToInterfaces(
-            this IEnumerable<InterfaceDeclarationSyntax> interfaceDeclarationSyntaxes)
+        internal static IImmutableList<Interface> ToInterfaces(
+            this IImmutableList<InterfaceDeclarationSyntax> interfaceDeclarationSyntaxes)
         {
-            return interfaceDeclarationSyntaxes.Select(ToInterface);
+            return interfaceDeclarationSyntaxes.Select(ToInterface).ToImmutableList();
         }
 
         internal static Interface ToInterface(this InterfaceDeclarationSyntax interfaceDeclarationSyntax)
         {
-            Throw.IfNull(() => interfaceDeclarationSyntax);
+            Throw.IfNull(interfaceDeclarationSyntax);
 
             var name = interfaceDeclarationSyntax.Identifier.ValueText;
-            var modifiers = interfaceDeclarationSyntax.ToModifiers().ToList();
-            var properties = interfaceDeclarationSyntax.AllOfType<PropertyDeclarationSyntax>().ToProperties().ToList();
-            var methods = interfaceDeclarationSyntax.AllOfType<MethodDeclarationSyntax>().ToMethods().ToList();
-            var nameSpace = interfaceDeclarationSyntax.SyntaxTree.AllOfType<NamespaceDeclarationSyntax>().First()
+            var modifiers = interfaceDeclarationSyntax.ToModifiers().ToImmutableList();
+            var properties = interfaceDeclarationSyntax.AllOfType<PropertyDeclarationSyntax>().ToProperties().ToImmutableList();
+            var methods = interfaceDeclarationSyntax.AllOfType<MethodDeclarationSyntax>().ToMethods().ToImmutableList();
+            var nameSpace = interfaceDeclarationSyntax.SyntaxTree.AllOfType<NamespaceDeclarationSyntax>()[0]
                 .ToNamespace();
-            var attributesOfClass = interfaceDeclarationSyntax.AttributeLists.ToAttributes().ToList();
+            var attributesOfClass = interfaceDeclarationSyntax.AttributeLists.ToAttributes().ToImmutableList();
             var baseTypes = interfaceDeclarationSyntax.BaseList != null
-                ? interfaceDeclarationSyntax.BaseList.ToBaseTypes().ToList()
-                : Enumerable.Empty<BaseType>();
-            var events = interfaceDeclarationSyntax.AllOfType<EventDeclarationSyntax>().ToEvents().ToList();
+                ? interfaceDeclarationSyntax.BaseList.ToBaseTypes().ToImmutableList()
+                : ImmutableList<BaseType>.Empty;
+            var events = interfaceDeclarationSyntax.AllOfType<EventDeclarationSyntax>().ToEvents().ToImmutableList();
             var eventFields = interfaceDeclarationSyntax.AllOfType<EventFieldDeclarationSyntax>().ToEventFields()
-                .ToList();
-            var nestedClasses = interfaceDeclarationSyntax.AllOfType<ClassDeclarationSyntax>().ToClasses().ToList();
-            var nestedStructs = interfaceDeclarationSyntax.AllOfType<StructDeclarationSyntax>().ToStructs().ToList();
-            var nestedEnums = interfaceDeclarationSyntax.AllOfType<EnumDeclarationSyntax>().ToEnums().ToList();
+                .ToImmutableList();
+            var nestedClasses = interfaceDeclarationSyntax.AllOfType<ClassDeclarationSyntax>().ToClasses().ToImmutableList();
+            var nestedStructs = interfaceDeclarationSyntax.AllOfType<StructDeclarationSyntax>().ToStructs().ToImmutableList();
+            var nestedEnums = interfaceDeclarationSyntax.AllOfType<EnumDeclarationSyntax>().ToEnums().ToImmutableList();
             var nestedInterfaces = interfaceDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces()
-                .ToList();
+                .ToImmutableList();
 
             return new Interface(nameSpace, name, modifiers, properties, methods, attributesOfClass, baseTypes,
                 events, eventFields, nestedClasses, nestedStructs, nestedEnums, nestedInterfaces);

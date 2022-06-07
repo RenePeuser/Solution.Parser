@@ -7,7 +7,7 @@ namespace Solution.Parser.CSharp
     {
         internal static Parameter ToParameter(this ParameterSyntax parameterSyntax)
         {
-            Throw.IfNull(() => parameterSyntax);
+            Throw.IfNull(parameterSyntax);
 
             return new Parameter(parameterSyntax.Type.ToString(), parameterSyntax.Identifier.Text);
         }

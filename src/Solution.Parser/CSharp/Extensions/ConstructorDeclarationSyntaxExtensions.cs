@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Argument.Check;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -32,22 +33,21 @@ namespace Solution.Parser.CSharp
 
         internal static Constructor ToConstructor(this ConstructorDeclarationSyntax constructorDeclarationSyntax)
         {
-            Throw.IfNull(() => constructorDeclarationSyntax);
+            Throw.IfNull(constructorDeclarationSyntax);
 
-            var parameters = constructorDeclarationSyntax.ParameterList.ToParameters().ToList();
+            var parameters = constructorDeclarationSyntax.ParameterList.ToParameters().ToImmutableList();
             var arguments = constructorDeclarationSyntax.Initializer?.ArgumentList.Arguments.Select(a => a.ToString())
-                .ToList();
-            var modifiers = constructorDeclarationSyntax.ToModifiers();
+                .ToImmutableList();
+            var modifiers = constructorDeclarationSyntax.ToModifiers().ToImmutableList();
 
-            return new Constructor(parameters, arguments ?? Enumerable.Empty<string>(), modifiers);
+            return new Constructor(parameters, arguments ?? ImmutableList<string>.Empty, modifiers);
         }
 
-        internal static IEnumerable<Constructor> ToConstructors(
-            this IEnumerable<ConstructorDeclarationSyntax> constructorDeclarationSyntaxes)
+        internal static IImmutableList<Constructor> ToConstructors(this IImmutableList<ConstructorDeclarationSyntax> constructorDeclarationSyntaxes)
         {
-            Throw.IfNull(() => constructorDeclarationSyntaxes);
+            Throw.IfNull(constructorDeclarationSyntaxes);
 
-            return constructorDeclarationSyntaxes.Select(c => c.ToConstructor());
+            return constructorDeclarationSyntaxes.Select(c => c.ToConstructor()).ToImmutableList();
         }
     }
 }

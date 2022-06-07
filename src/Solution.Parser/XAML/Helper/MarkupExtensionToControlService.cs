@@ -1,4 +1,4 @@
-﻿using System.Linq;
+﻿using System.Collections.Immutable;
 
 namespace Solution.Parser.XAML
 {
@@ -14,9 +14,9 @@ namespace Solution.Parser.XAML
                 typeof(TMarkupExtension).Name,
                 null,
                 markupExtension.Properties,
-                Enumerable.Empty<ElementBase>(),
-                Enumerable.Empty<Style>(),
-                Enumerable.Empty<DataTemplate>());
+                ImmutableList<ElementBase>.Empty,
+                ImmutableList<Style>.Empty,
+                ImmutableList<DataTemplate>.Empty);
         }
     }
 }

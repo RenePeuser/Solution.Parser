@@ -7,7 +7,7 @@ namespace Solution.Parser.CSharp
     {
         internal static NameSpace ToNamespace(this NamespaceDeclarationSyntax namespaceDeclarationSyntax)
         {
-            Throw.IfNull(() => namespaceDeclarationSyntax);
+            Throw.IfNull(namespaceDeclarationSyntax);
 
             var fullqualifiedName = namespaceDeclarationSyntax.Name.ToString();
             return new NameSpace(fullqualifiedName);

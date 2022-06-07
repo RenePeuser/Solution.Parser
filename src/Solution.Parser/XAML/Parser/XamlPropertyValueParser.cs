@@ -1,4 +1,4 @@
-using Argument.Check;
+﻿using Argument.Check;
 
 namespace Solution.Parser.XAML
 {
@@ -14,7 +14,7 @@ namespace Solution.Parser.XAML
         public PropertyValue Parse(string value, int lineNumber)
         {
             var parser = _parserSelector.GetParserFor(value);
-            Throw.If(() => parser, item => item == null, $"No parser was found for property value: {value}");
+            Throw.If(parser, item => item == null, $"No parser was found for property value: {value}");
 
             return parser.Parse(value, lineNumber);
         }

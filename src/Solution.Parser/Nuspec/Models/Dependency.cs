@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Immutable;
 using System.Diagnostics;
 using Argument.Check;
 
@@ -7,11 +7,11 @@ namespace Solution.Parser.Nuspec
     [DebuggerDisplay("{" + nameof(Id) + "}")]
     public class Dependency
     {
-        internal Dependency(string id, string version, IEnumerable<string> excludes)
+        internal Dependency(string id, string version, IImmutableList<string> excludes)
         {
             Throw.IfNullOrWhiteSpace(() => id);
             Throw.IfNullOrWhiteSpace(() => version);
-            Throw.IfNull(() => excludes);
+            Throw.IfNull(excludes);
 
             Id = id;
             Version = version;
@@ -20,6 +20,6 @@ namespace Solution.Parser.Nuspec
 
         public string Id { get; }
         public string Version { get; }
-        public IEnumerable<string> Excludes { get; }
+        public IImmutableList<string> Excludes { get; }
     }
 }

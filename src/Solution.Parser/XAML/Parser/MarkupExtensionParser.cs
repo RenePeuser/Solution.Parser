@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Extensions.Pack;
 
@@ -45,23 +46,23 @@ namespace Solution.Parser.XAML
             var allPropertyInfos = bindingInfo.ToArray();
             allPropertyInfos[0] = bindingInfo[0].Replace(markupFullName, string.Empty);
 
-            var evaluatedMarkupExtension = EvaluateMarkupExtension(allPropertyInfos).ToList();
+            var evaluatedMarkupExtension = EvaluateMarkupExtension(allPropertyInfos).ToImmutableList();
             if (evaluatedMarkupExtension.Any(s => !s.Contains('=')))
             {
                 throw new CanNotParseMarkupException(
                     $"Could not parse markupextension:'{value}', because of missing equal expression:\r\nSample:{{MyMarkup Property1=Value1, Property2=Value2}}");
             }
 
-            var properties = ParseToProperties(evaluatedMarkupExtension, lineNumber).ToList();
+            var properties = ParseToProperties(evaluatedMarkupExtension, lineNumber).ToImmutableList();
 
             return new MarkupExtension(value, name, properties);
         }
 
-        private IEnumerable<Property> ParseToProperties(IEnumerable<string> evaluatedMarkupExtension, int lineNumber)
+        private IEnumerable<Property> ParseToProperties(IImmutableList<string> evaluatedMarkupExtension, int lineNumber)
         {
             // Damm hell workaround
-            var firstItem = evaluatedMarkupExtension.First();
-            if (evaluatedMarkupExtension.Count() == 1)
+            var firstItem = evaluatedMarkupExtension[0];
+            if (evaluatedMarkupExtension.Count == 1)
             {
                 if (!firstItem.Contains('='))
                 {
@@ -70,11 +71,11 @@ namespace Solution.Parser.XAML
                 }
             }
 
-            for (var i = 0; i < evaluatedMarkupExtension.Count(); i++)
+            for (var i = 0; i < evaluatedMarkupExtension.Count; i++)
             {
                 var declaration = evaluatedMarkupExtension.ElementAt(i);
 
-                for (var j = i + 1; j < evaluatedMarkupExtension.Count(); j++)
+                for (var j = i + 1; j < evaluatedMarkupExtension.Count; j++)
                 {
                     var nextDeclaration = evaluatedMarkupExtension.ElementAt(j);
                     if (!nextDeclaration.Contains('='))

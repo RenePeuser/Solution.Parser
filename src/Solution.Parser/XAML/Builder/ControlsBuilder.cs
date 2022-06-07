@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Xml.Linq;
 using Extensions.Pack;
 
@@ -17,7 +18,7 @@ namespace Solution.Parser.XAML
             _specificControlBuilderSelector = specificControlBuilderSelector;
         }
 
-        public IEnumerable<ElementBase> BuildFrom(IEnumerable<XElement> elements, ElementBase parent)
+        public IEnumerable<ElementBase> BuildFrom(IImmutableList<XElement> elements, ElementBase parent)
         {
             foreach (var element in elements)
             {

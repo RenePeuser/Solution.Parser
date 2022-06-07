@@ -6,7 +6,7 @@ namespace Solution.Parser.Project
     {
         protected SemanticType(T value)
         {
-            Throw.IfNull<object>(() => value);
+            Throw.IfNull<object>(value);
 
             Value = value;
         }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -36,21 +37,21 @@ namespace Solution.Parser.CSharp
 
         internal static Class ToClass(this ClassDeclarationSyntax classDeclarationSyntax)
         {
-            var modifiers = classDeclarationSyntax.ToModifiers().ToList();
-            var constructors = classDeclarationSyntax.AllOfType<ConstructorDeclarationSyntax>().ToConstructors().ToList();
-            var properties = classDeclarationSyntax.AllOfType<PropertyDeclarationSyntax>().ToProperties().ToList();
-            var methods = classDeclarationSyntax.AllOfType<MethodDeclarationSyntax>().ToMethods().ToList();
-            var nameSpace = classDeclarationSyntax.SyntaxTree.AllOfType<NamespaceDeclarationSyntax>().First().ToNamespace();
-            var attributesOfClass = classDeclarationSyntax.AttributeLists.ToAttributes().ToList();
-            var fields = classDeclarationSyntax.AllOfType<FieldDeclarationSyntax>().ToFields().ToList();
-            var baseTypes = classDeclarationSyntax.BaseList != null ? classDeclarationSyntax.BaseList.ToBaseTypes().ToList() : Enumerable.Empty<BaseType>();
-            var interfaces = classDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces().ToList();
-            var events = classDeclarationSyntax.AllOfType<EventDeclarationSyntax>().ToEvents().ToList();
-            var eventFields = classDeclarationSyntax.AllOfType<EventFieldDeclarationSyntax>().ToEventFields().ToList();
-            var nestedClasses = classDeclarationSyntax.AllOfType<ClassDeclarationSyntax>().ToClasses().ToList();
-            var nestedStructs = classDeclarationSyntax.AllOfType<StructDeclarationSyntax>().ToStructs().ToList();
-            var nestedEnums = classDeclarationSyntax.AllOfType<EnumDeclarationSyntax>().ToEnums().ToList();
-            var nestedInterfaces = classDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces().ToList();
+            var modifiers = classDeclarationSyntax.ToModifiers().ToImmutableList();
+            var constructors = classDeclarationSyntax.AllOfType<ConstructorDeclarationSyntax>().ToConstructors().ToImmutableList();
+            var properties = classDeclarationSyntax.AllOfType<PropertyDeclarationSyntax>().ToProperties().ToImmutableList();
+            var methods = classDeclarationSyntax.AllOfType<MethodDeclarationSyntax>().ToMethods().ToImmutableList();
+            var nameSpace = classDeclarationSyntax.SyntaxTree.AllOfType<NamespaceDeclarationSyntax>()[0].ToNamespace();
+            var attributesOfClass = classDeclarationSyntax.AttributeLists.ToAttributes().ToImmutableList();
+            var fields = classDeclarationSyntax.AllOfType<FieldDeclarationSyntax>().ToFields().ToImmutableList();
+            var baseTypes = classDeclarationSyntax.BaseList != null ? classDeclarationSyntax.BaseList.ToBaseTypes().ToImmutableList() : ImmutableList<BaseType>.Empty;
+            var interfaces = classDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces().ToImmutableList();
+            var events = classDeclarationSyntax.AllOfType<EventDeclarationSyntax>().ToEvents().ToImmutableList();
+            var eventFields = classDeclarationSyntax.AllOfType<EventFieldDeclarationSyntax>().ToEventFields().ToImmutableList();
+            var nestedClasses = classDeclarationSyntax.AllOfType<ClassDeclarationSyntax>().ToClasses().ToImmutableList();
+            var nestedStructs = classDeclarationSyntax.AllOfType<StructDeclarationSyntax>().ToStructs().ToImmutableList();
+            var nestedEnums = classDeclarationSyntax.AllOfType<EnumDeclarationSyntax>().ToEnums().ToImmutableList();
+            var nestedInterfaces = classDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces().ToImmutableList();
             var name = classDeclarationSyntax.Identifier.ValueText;
             var syntaxTree = classDeclarationSyntax.ToString();
 
@@ -59,9 +60,9 @@ namespace Solution.Parser.CSharp
                 nestedInterfaces, syntaxTree);
         }
 
-        internal static IEnumerable<Class> ToClasses(this IEnumerable<ClassDeclarationSyntax> classDeclarationSyntaxes)
+        internal static IImmutableList<Class> ToClasses(this IImmutableList<ClassDeclarationSyntax> classDeclarationSyntaxes)
         {
-            return classDeclarationSyntaxes.Select(ToClass);
+            return classDeclarationSyntaxes.Select(ToClass).ToImmutableList();
         }
     }
 }

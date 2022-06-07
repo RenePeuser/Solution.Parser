@@ -1,36 +1,36 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Immutable;
 using System.Diagnostics;
 using Argument.Check;
 
 namespace Solution.Parser.CSharp
 {
     [DebuggerDisplay("{Name}")]
-    public class Class : Interface
+    public record Class : Interface
     {
         internal Class(
             NameSpace nameSpace,
             string name,
-            IEnumerable<Modifier> modifiers,
-            IEnumerable<Constructor> constructors,
-            IEnumerable<Property> properties,
-            IEnumerable<Method> methods,
-            IEnumerable<Attribute> attributes,
-            IEnumerable<Field> fields,
-            IEnumerable<Interface> interfaces,
-            IEnumerable<BaseType> baseTypes,
-            IEnumerable<Event> events,
-            IEnumerable<EventField> eventFields,
-            IEnumerable<Class> nestedClasses,
-            IEnumerable<Struct> nestedStructs,
-            IEnumerable<Enum> nestedEnums,
-            IEnumerable<Interface> nestedInterfaces,
+            IImmutableList<Modifier> modifiers,
+            IImmutableList<Constructor> constructors,
+            IImmutableList<Property> properties,
+            IImmutableList<Method> methods,
+            IImmutableList<Attribute> attributes,
+            IImmutableList<Field> fields,
+            IImmutableList<Interface> interfaces,
+            IImmutableList<BaseType> baseTypes,
+            IImmutableList<Event> events,
+            IImmutableList<EventField> eventFields,
+            IImmutableList<Class> nestedClasses,
+            IImmutableList<Struct> nestedStructs,
+            IImmutableList<Enum> nestedEnums,
+            IImmutableList<Interface> nestedInterfaces,
             string syntaxtTree)
             : base(nameSpace, name, modifiers, properties, methods, attributes, baseTypes, events, eventFields,
                 nestedClasses, nestedStructs, nestedEnums, nestedInterfaces)
         {
-            Throw.IfNull(() => modifiers);
-            Throw.IfNull(() => constructors);
-            Throw.IfNull(() => fields);
+            Throw.IfNull(modifiers);
+            Throw.IfNull(constructors);
+            Throw.IfNull(fields);
 
             Constructors = constructors;
             Fields = fields;
@@ -38,11 +38,11 @@ namespace Solution.Parser.CSharp
             SyntaxtTree = syntaxtTree;
         }
 
-        public IEnumerable<Interface> Interfaces { get; }
+        public IImmutableList<Interface> Interfaces { get; }
 
-        public IEnumerable<Constructor> Constructors { get; }
+        public IImmutableList<Constructor> Constructors { get; }
 
-        public IEnumerable<Field> Fields { get; }
+        public IImmutableList<Field> Fields { get; }
 
         public string SyntaxtTree { get; }
     }

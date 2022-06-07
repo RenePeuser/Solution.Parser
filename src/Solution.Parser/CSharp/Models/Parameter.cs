@@ -3,7 +3,7 @@
 namespace Solution.Parser.CSharp
 {
     [DebuggerDisplay("{" + nameof(Name) + "}")]
-    public class Parameter : DeclarationBase
+    public record Parameter : DeclarationBase
     {
         internal Parameter(string type, string name) : base(name)
         {

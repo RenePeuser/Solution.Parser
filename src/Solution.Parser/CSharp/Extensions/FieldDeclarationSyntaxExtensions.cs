@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Argument.Check;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -9,18 +10,18 @@ namespace Solution.Parser.CSharp
     {
         internal static Field ToField(this FieldDeclarationSyntax fieldDeclarationSyntax)
         {
-            Throw.IfNull(() => fieldDeclarationSyntax);
+            Throw.IfNull(fieldDeclarationSyntax);
 
             var type = fieldDeclarationSyntax.Declaration.Type.ToString();
             var name = fieldDeclarationSyntax.Declaration.Variables[0].Identifier.Text;
-            var bindingFlags = fieldDeclarationSyntax.ToBindingFlags().ToList();
+            var bindingFlags = fieldDeclarationSyntax.ToBindingFlags().ToImmutableList();
             var initializer = fieldDeclarationSyntax.Declaration.Variables[0].Initializer.ToInitializer();
             return new Field(name, type, bindingFlags, initializer);
         }
 
-        public static IEnumerable<Field> ToFields(this IEnumerable<FieldDeclarationSyntax> fieldDeclarationSyntaxes)
+        public static IImmutableList<Field> ToFields(this IImmutableList<FieldDeclarationSyntax> fieldDeclarationSyntaxes)
         {
-            return fieldDeclarationSyntaxes.Select(f => f.ToField());
+            return fieldDeclarationSyntaxes.Select(f => f.ToField()).ToImmutableList();
         }
 
         private static IEnumerable<Modifier> ToBindingFlags(this FieldDeclarationSyntax fieldDeclarationSyntax)

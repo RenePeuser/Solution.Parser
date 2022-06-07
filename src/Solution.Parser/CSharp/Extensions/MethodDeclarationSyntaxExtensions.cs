@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Argument.Check;
 using Extensions.Pack;
@@ -10,7 +11,7 @@ namespace Solution.Parser.CSharp
     {
         internal static IEnumerable<Modifier> ToModifier(this MethodDeclarationSyntax methodDeclarationSyntax)
         {
-            Throw.IfNull(() => methodDeclarationSyntax);
+            Throw.IfNull(methodDeclarationSyntax);
 
             foreach (var syntaxToken in methodDeclarationSyntax.Modifiers)
             {
@@ -28,9 +29,9 @@ namespace Solution.Parser.CSharp
 
         internal static Method ToMethod(this MethodDeclarationSyntax methodDeclarationSyntax)
         {
-            Throw.IfNull(() => methodDeclarationSyntax);
+            Throw.IfNull(methodDeclarationSyntax);
 
-            var parameters = methodDeclarationSyntax.ParameterList.ToParameters().ToList();
+            var parameters = methodDeclarationSyntax.ParameterList.ToParameters().ToImmutableList();
             var returnType = methodDeclarationSyntax.ReturnType.ToString();
             var methodName = methodDeclarationSyntax.Identifier.ValueText;
             var methodValue = methodDeclarationSyntax.ToString();
@@ -38,28 +39,27 @@ namespace Solution.Parser.CSharp
                 ? string.Empty
                 : methodDeclarationSyntax.Body.ToString();
             var statements = methodBody.IsEmpty()
-                ? Enumerable.Empty<string>()
-                : methodDeclarationSyntax.Body.Statements.Select(s => s.ToString()).ToList();
-            var attributes = GetAttributes(methodDeclarationSyntax).ToList();
-            var modifiers = methodDeclarationSyntax.ToModifier();
+                ? ImmutableList<string>.Empty
+                : methodDeclarationSyntax.Body.Statements.Select(s => s.ToString()).ToImmutableList();
+            var attributes = GetAttributes(methodDeclarationSyntax).ToImmutableList();
+            var modifiers = methodDeclarationSyntax.ToModifier().ToImmutableList();
 
-            return new Method(methodName, parameters, returnType, methodValue, methodBody, statements, attributes,
-                modifiers);
+            return new Method(methodName, parameters, returnType, methodValue, methodBody, statements, attributes, modifiers);
         }
 
-        internal static IEnumerable<Method> ToMethods(
-            this IEnumerable<MethodDeclarationSyntax> methodDeclarationSyntaxes)
+        internal static IImmutableList<Method> ToMethods(
+            this IImmutableList<MethodDeclarationSyntax> methodDeclarationSyntaxes)
         {
-            Throw.IfNull(() => methodDeclarationSyntaxes);
+            Throw.IfNull(methodDeclarationSyntaxes);
 
-            return methodDeclarationSyntaxes.Select(m => m.ToMethod());
+            return methodDeclarationSyntaxes.Select(m => m.ToMethod()).ToImmutableList();
         }
 
-        private static IEnumerable<Attribute> GetAttributes(MethodDeclarationSyntax methodDeclarationSyntax)
+        private static IImmutableList<Attribute> GetAttributes(MethodDeclarationSyntax methodDeclarationSyntax)
         {
-            return from attrList in methodDeclarationSyntax.AttributeLists
-                   from attr in attrList.Attributes
-                   select new Attribute(attr.Name.ToString(), attr.ArgumentList?.Arguments.Select(arg => arg.ToString()).ToList());
+            return (from attrList in methodDeclarationSyntax.AttributeLists
+                    from attr in attrList.Attributes
+                    select new Attribute(attr.Name.ToString(), attr.ArgumentList?.Arguments.Select(arg => arg.ToString()).ToImmutableList())).ToImmutableList();
         }
     }
 }

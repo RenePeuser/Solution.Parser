@@ -4,7 +4,6 @@
     {
         protected ImmutableSemanticType(T value) : base(value)
         {
-            // Throw.IfNull<object>(() => value);
         }
     }
 }
