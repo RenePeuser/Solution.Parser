@@ -55,10 +55,11 @@ namespace Solution.Parser.CSharp
             var name = recordDeclarationSyntax.Identifier.ValueText;
             var syntaxTree = recordDeclarationSyntax.ToString();
             var fullQualifiedName = $"{nameSpace.Name}.{name}";
+            var parameters = recordDeclarationSyntax.ParameterList?.ToParameters() ?? ImmutableList<Parameter>.Empty;
 
             return new Record(nameSpace, name, modifiers, constructors, properties, methods, attributesOfClass, fields,
                 interfaces, baseTypes, events, eventFields, nestedClasses, nestedStructs, nestedEnums,
-                nestedInterfaces, syntaxTree, fullQualifiedName);
+                nestedInterfaces, parameters, syntaxTree, fullQualifiedName);
         }
 
         internal static IImmutableList<Record> ToRecords(this IImmutableList<RecordDeclarationSyntax> recordDeclarationSyntaxes)
