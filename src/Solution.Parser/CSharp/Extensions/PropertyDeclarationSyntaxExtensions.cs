@@ -30,6 +30,12 @@ namespace Solution.Parser.CSharp
                     case "static":
                         yield return Modifier.Static;
                         break;
+                    case "const":
+                        yield return Modifier.Const;
+                        break;
+                    case "abstract":
+                        yield return Modifier.Abstract;
+                        break;
                 }
             }
         }

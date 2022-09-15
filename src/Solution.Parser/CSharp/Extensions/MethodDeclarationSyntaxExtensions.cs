@@ -24,6 +24,21 @@ namespace Solution.Parser.CSharp
                     case "internal":
                         yield return Modifier.Internal;
                         break;
+                    case "protected":
+                        yield return Modifier.Protected;
+                        break;
+                    case "private":
+                        yield return Modifier.Private;
+                        break;
+                    case "static":
+                        yield return Modifier.Static;
+                        break;
+                    case "const":
+                        yield return Modifier.Const;
+                        break;
+                    case "abstract":
+                        yield return Modifier.Abstract;
+                        break;
                 }
             }
         }
