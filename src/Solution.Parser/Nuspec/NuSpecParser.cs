@@ -13,17 +13,18 @@ namespace Solution.Parser.Nuspec
 
 
             var frameworkAssemblies = document.ElementsBy("frameworkAssembly").Select(element =>
-                new FrameworkAssembly(element.Attribute("assemblyName").Value,
-                    element.Attribute("targetFramework").Value)).ToImmutableList();
+            {
+                return new FrameworkAssembly(element.Attribute("assemblyName")?.Value ?? string.Empty, element.Attribute("targetFramework")?.Value ?? string.Empty);
+            }).ToImmutableList();
 
 
 
             var dependencies = document.ElementsBy("dependency")
-                .Select(element => new Dependency(element.Attribute("id").Value,
-                    element.Attribute("version").Value,
+                .Select(element => new Dependency(element.Attribute("id")?.Value ?? string.Empty,
+                    element.Attribute("version")?.Value ?? string.Empty,
                     element.Attribute("exclude").IsNull()
                         ? ImmutableList<string>.Empty
-                        : element.Attribute("exclude").Value.Split(',').ToImmutableList()))
+                        : element.Attribute("exclude")?.Value.Split(',').ToImmutableList() ?? ImmutableList<string>.Empty))
                 .ToImmutableList();
 
             return new NuspecFile(nuspecFileInfo, document, frameworkAssemblies, dependencies);

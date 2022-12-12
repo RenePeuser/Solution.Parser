@@ -2,12 +2,12 @@
 
 namespace Solution.Parser.XAML
 {
-    internal class UrlValueParser : PropertyValueParserBase
+    internal sealed class UrlValueParser : PropertyValueParserBase
     {
         public override Predicate<string> IsThisTheCorrectParserFor { get; } =
             item => item.Contains(",,,") || item.Contains("://");
 
-        public override PropertyValue Parse(string value, int lineNumber)
+        public override PropertyValue? Parse(string value, int lineNumber)
         {
             return new PropertyValue(value.Trim('\''));
         }

@@ -6,7 +6,7 @@ namespace Solution.Parser.XAML
     public class AttachedProperty : Property
     {
         internal AttachedProperty(int lineNumber, string className, string propertyName, string clrPropertyName,
-            PropertyValue propertyValue) : base(lineNumber, propertyName, propertyValue)
+            PropertyValue? propertyValue) : base(lineNumber, propertyName, propertyValue)
         {
             ClassName = className;
             FullQualifiedName = $"{className}.{propertyName}";

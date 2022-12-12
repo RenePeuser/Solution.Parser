@@ -9,7 +9,7 @@ using FileInfo = System.IO.FileInfo;
 namespace Solution.Parser.XAML
 {
     [DebuggerDisplay("{Value.FullName}")]
-    public abstract class SpecificFileInfoBase : ImmutableSemanticType<IFileInfo>, ISpecificFileInfo
+    public abstract class SpecificFileInfoBase : ImmutableSemanticType<IFileInfo>
     {
         protected SpecificFileInfoBase(string path, string expectedFileExtension) : base(
             new FileSystem.Abstraction.FileInfo(new FileInfo(path)))

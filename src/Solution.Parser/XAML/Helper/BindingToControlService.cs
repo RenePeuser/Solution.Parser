@@ -5,17 +5,17 @@ namespace Solution.Parser.XAML
 {
     public static class BindingToControlService
     {
-        public static Control ConvertFrom<TMarkupExtension>(this Control owner, Binding binding, int lineNumber)
+        public static Control ConvertFrom<TMarkupExtension>(this Control? owner, Binding binding, int lineNumber)
             where TMarkupExtension : class
         {
             var properties = binding.ToProperties(lineNumber).ToImmutableList();
 
-            return new Control(owner.LineNumber,
-                owner.DataContext,
+            return new Control(owner?.LineNumber ?? 0,
+                owner?.DataContext,
                 owner,
-                null,
+                string.Empty,
                 typeof(TMarkupExtension).Name,
-                null,
+                string.Empty,
                 properties,
                 ImmutableList<ElementBase>.Empty,
                 ImmutableList<Style>.Empty,

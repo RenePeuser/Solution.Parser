@@ -9,8 +9,8 @@ namespace Solution.Parser.Nuspec
     {
         internal Dependency(string id, string version, IImmutableList<string> excludes)
         {
-            Throw.IfNullOrWhiteSpace(() => id);
-            Throw.IfNullOrWhiteSpace(() => version);
+            Throw.IfNullOrWhiteSpace(id);
+            Throw.IfNullOrWhiteSpace(version);
             Throw.IfNull(excludes);
 
             Id = id;

@@ -52,12 +52,6 @@ namespace Solution.Parser.XAML
             }
         }
 
-        // <summary>
-        /// When you parse an
-        /// <see cref="XElement" />
-        /// think on it that it is parsed also with line numbers,
-        /// otherwise no line number is available.
-        /// </summary>
         public ElementBase Parse(XElement element)
         {
             Throw.IfNull(element);

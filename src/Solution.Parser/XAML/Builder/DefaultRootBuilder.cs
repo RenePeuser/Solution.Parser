@@ -2,11 +2,12 @@
 using System.Collections.Immutable;
 using System.Linq;
 using System.Xml.Linq;
+using Argument.Check;
 using Extensions.Pack;
 
 namespace Solution.Parser.XAML
 {
-    internal class DefaultRootBuilder : IConcreteRootBuilder
+    internal sealed class DefaultRootBuilder : IConcreteRootBuilder
     {
         private readonly IXamlPropertyParser _xamlPropertyParser;
 
@@ -21,24 +22,22 @@ namespace Solution.Parser.XAML
 
         public Root BuildFrom(XDocument document, IXamlFileInfo xamlFileInfo)
         {
-            var documentRoot = document.Root;
+            var documentRoot = Throw.IfNull(document.Root);
 
-            var properties = documentRoot.Attributes().Select(attribute => _xamlPropertyParser.ParseFrom(attribute))
-                .ToImmutableList();
+            var properties = documentRoot.Attributes().Select(attribute => _xamlPropertyParser.ParseFrom(attribute)!).ToImmutableList();
 
             var controlBuilder = new ControlsBuilder();
             var allElements = documentRoot.Descendants().ToImmutableList();
             var controls = controlBuilder.BuildFrom(allElements, null).ToImmutableList();
 
             var typeName = documentRoot.Name.LocalName;
-            var xKey = properties.FirstOrDefault(item => item.Name == "Key")?.PropertyValue?.Value.ToString();
-            var xName = properties.FirstOrDefault(item => item.Name == "Name")?.PropertyValue?.Value.ToString();
+            var xKey = properties.FirstOrDefault(item => item.Name == "Key")?.PropertyValue?.Value?.ToString() ?? string.Empty;
+            var xName = properties.FirstOrDefault(item => item.Name == "Name")?.PropertyValue?.Value?.ToString() ?? string.Empty;
 
             var styles = controls.OfType<Style>().ToImmutableList();
             var dataTemplates = controls.OfType<DataTemplate>().ToImmutableList();
 
-            var dataContextProperty = properties.FirstOrDefault(item => item.Name == "DataContext")?.PropertyValue
-                ?.Value.ToString();
+            var dataContextProperty = properties.FirstOrDefault(item => item.Name == "DataContext")?.PropertyValue?.Value?.ToString() ?? string.Empty;
             var dataContext = dataContextProperty.IsNull() ? null : new DataContext(dataContextProperty);
             var fullQualifiedName = xamlFileInfo.FileNameWithoutExtension;
 

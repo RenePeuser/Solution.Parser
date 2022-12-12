@@ -3,11 +3,11 @@ using System.Linq;
 
 namespace Solution.Parser.XAML
 {
-    internal class AttachedPropertyParser : PropertyValueParserBase
+    internal sealed class AttachedPropertyParser : PropertyValueParserBase
     {
         public override Predicate<string> IsThisTheCorrectParserFor { get; } = item => item.Contains('.');
 
-        public override PropertyValue Parse(string value, int lineNumber)
+        public override PropertyValue? Parse(string value, int lineNumber)
         {
             var trimStart = new[] { '{', '(' };
             var trimEnd = new[] { '}', ')' };

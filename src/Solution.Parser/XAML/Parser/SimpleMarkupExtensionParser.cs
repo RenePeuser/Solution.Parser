@@ -3,11 +3,11 @@ using System.Linq;
 
 namespace Solution.Parser.XAML
 {
-    internal class SimpleMarkupExtensionParser : PropertyValueParserBase
+    internal sealed class SimpleMarkupExtensionParser : PropertyValueParserBase
     {
         public override Predicate<string> IsThisTheCorrectParserFor { get; } = item => item.Contains(':');
 
-        public override PropertyValue Parse(string value, int lineNumber)
+        public override PropertyValue? Parse(string value, int lineNumber)
         {
             var markupExtension = value[1..^1];
             var bindingInfo = markupExtension.Split(',');

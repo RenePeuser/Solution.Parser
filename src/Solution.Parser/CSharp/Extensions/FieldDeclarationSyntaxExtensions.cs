@@ -15,7 +15,7 @@ namespace Solution.Parser.CSharp
             var type = fieldDeclarationSyntax.Declaration.Type.ToString();
             var name = fieldDeclarationSyntax.Declaration.Variables[0].Identifier.Text;
             var bindingFlags = fieldDeclarationSyntax.ToBindingFlags().ToImmutableList();
-            var initializer = fieldDeclarationSyntax.Declaration.Variables[0].Initializer.ToInitializer();
+            var initializer = fieldDeclarationSyntax.Declaration.Variables[0].Initializer?.ToInitializer();
             return new Field(name, type, bindingFlags, initializer);
         }
 

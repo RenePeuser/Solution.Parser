@@ -5,7 +5,7 @@ using Extensions.Pack;
 
 namespace Solution.Parser.XAML
 {
-    internal class ControlsBuilder : IControlBuilder
+    internal sealed class ControlsBuilder : IControlBuilder
     {
         private readonly ISpecificControlBuilderSelector _specificControlBuilderSelector;
 
@@ -18,7 +18,7 @@ namespace Solution.Parser.XAML
             _specificControlBuilderSelector = specificControlBuilderSelector;
         }
 
-        public IEnumerable<ElementBase> BuildFrom(IImmutableList<XElement> elements, ElementBase parent)
+        public IEnumerable<ElementBase> BuildFrom(IImmutableList<XElement> elements, ElementBase? parent)
         {
             foreach (var element in elements)
             {
@@ -32,10 +32,10 @@ namespace Solution.Parser.XAML
             }
         }
 
-        public ElementBase BuildFrom(XElement element, ElementBase parent)
+        public ElementBase BuildFrom(XElement element, ElementBase? parent)
         {
             var builder = _specificControlBuilderSelector.GetBuilderFor(element);
-            return builder?.BuildFrom(element, parent);
+            return builder.BuildFrom(element, parent);
         }
     }
 }

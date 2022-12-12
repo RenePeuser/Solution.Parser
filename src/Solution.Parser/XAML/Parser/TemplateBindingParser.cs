@@ -3,7 +3,7 @@ using Extensions.Pack;
 
 namespace Solution.Parser.XAML
 {
-    internal class TemplateBindingParser : PropertyValueParserBase
+    internal sealed class TemplateBindingParser : PropertyValueParserBase
     {
         private readonly IXamlPropertyValueParser _xamlPropertyValueParser;
 
@@ -28,7 +28,7 @@ namespace Solution.Parser.XAML
         public override Predicate<string> IsThisTheCorrectParserFor { get; } =
             item => item.StartWith("{TemplateBinding");
 
-        public override PropertyValue Parse(string value, int lineNumber)
+        public override PropertyValue? Parse(string value, int lineNumber)
         {
             var newValue = value[..^1];
             var templateBinding = newValue.Replace("{TemplateBinding", string.Empty);

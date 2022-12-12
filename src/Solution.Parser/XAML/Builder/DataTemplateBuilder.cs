@@ -7,7 +7,7 @@ using Extensions.Pack;
 
 namespace Solution.Parser.XAML
 {
-    internal class DataTemplateBuilder : ISpecificControlBuilder
+    internal sealed class DataTemplateBuilder : ISpecificControlBuilder
     {
         private readonly IXamlPropertyParser _xamlPropertyParser;
 
@@ -22,7 +22,7 @@ namespace Solution.Parser.XAML
 
         public Predicate<XElement> IsThisTheBuilderFor { get; } = item => item.Name.LocalName == "DataTemplate";
 
-        public ElementBase BuildFrom(XElement element, ElementBase parent)
+        public ElementBase BuildFrom(XElement element, ElementBase? parent)
         {
             var properties = element.Attributes().Select(attribute => _xamlPropertyParser.ParseFrom(attribute))
                 .ToImmutableList();
@@ -33,14 +33,14 @@ namespace Solution.Parser.XAML
             var controls = controlBuilder.BuildFrom(allSubElements, null).ToImmutableList();
 
             var typeName = element.Name.LocalName;
-            var xKey = properties.FirstOrDefault(item => item.Name == "Key")?.PropertyValue?.Value.ToString();
-            var xName = properties.FirstOrDefault(item => item.Name == "Name")?.PropertyValue?.Value.ToString();
+            var xKey = properties.FirstOrDefault(item => item.Name == "Key")?.PropertyValue?.Value?.ToString() ?? string.Empty;
+            var xName = properties.FirstOrDefault(item => item.Name == "Name")?.PropertyValue?.Value?.ToString() ?? string.Empty;
 
 
             var styles = controls.OfType<Style>().ToImmutableList();
             var dataTemplates = controls.OfType<DataTemplate>().ToImmutableList();
 
-            var dataContextProperty = properties.FirstOrDefault(item => item.Name == "DataContext")?.PropertyValue?.Value.ToString();
+            var dataContextProperty = properties.FirstOrDefault(item => item.Name == "DataContext")?.PropertyValue?.Value?.ToString() ?? string.Empty;
             var dataContext = dataContextProperty is null ? null : new DataContext(dataContextProperty);
 
             var lineNumber = element.Cast<IXmlLineInfo>().LineNumber;

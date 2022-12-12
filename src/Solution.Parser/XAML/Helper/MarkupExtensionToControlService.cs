@@ -4,15 +4,15 @@ namespace Solution.Parser.XAML
 {
     public static class MarkupExtensionToControlService
     {
-        public static Control ConvertFrom<TMarkupExtension>(this Control owner, MarkupExtension markupExtension)
+        public static Control ConvertFrom<TMarkupExtension>(this Control? owner, MarkupExtension markupExtension)
             where TMarkupExtension : class
         {
-            return new Control(owner.LineNumber,
-                owner.DataContext,
+            return new Control(owner?.LineNumber ?? 0,
+                owner?.DataContext,
                 owner,
-                null,
+                string.Empty,
                 typeof(TMarkupExtension).Name,
-                null,
+                string.Empty,
                 markupExtension.Properties,
                 ImmutableList<ElementBase>.Empty,
                 ImmutableList<Style>.Empty,

@@ -48,7 +48,7 @@ namespace Solution.Parser.Solution
             return newProject;
         }
 
-        private class ProjectToProjectSolutionItem
+        private sealed class ProjectToProjectSolutionItem
         {
             internal ProjectToProjectSolutionItem(ProjectInSolution projectInSolution, ProjectFile projectFile)
             {

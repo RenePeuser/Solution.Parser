@@ -6,6 +6,6 @@ namespace Solution.Parser.XAML
     {
         public abstract Predicate<string> IsThisTheCorrectParserFor { get; }
 
-        public abstract PropertyValue Parse(string value, int lineNumber);
+        public abstract PropertyValue? Parse(string value, int lineNumber);
     }
 }

@@ -1,13 +1,13 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Solution.Parser.XAML
 {
     [DebuggerDisplay("{Value}")]
-    public class PropertyValue : ImmutableSemanticType<object>
+    public class PropertyValue : ImmutableSemanticType<object?>
     {
-        internal PropertyValue(object value) : base(value)
+        internal PropertyValue(object? value) : base(value)
         {
-            ValueText = Value?.ToString();
+            ValueText = Value?.ToString() ?? string.Empty;
         }
 
         public string ValueText { get; }

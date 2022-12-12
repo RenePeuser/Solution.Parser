@@ -2,7 +2,7 @@
 
 namespace Solution.Parser.XAML
 {
-    internal class RootBuilder : IRootBuilder
+    internal sealed class RootBuilder : IRootBuilder
     {
         private readonly IRootSelector _rootSelector;
 

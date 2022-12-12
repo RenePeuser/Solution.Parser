@@ -57,12 +57,8 @@ namespace Solution.Parser.CSharp
             }
 
             var methodValue = methodDeclarationSyntax.ToString();
-            var methodBody = methodDeclarationSyntax.Body?.ToString() == null
-                ? string.Empty
-                : methodDeclarationSyntax.Body.ToString();
-            var statements = methodBody.IsEmpty()
-                ? ImmutableList<string>.Empty
-                : methodDeclarationSyntax.Body.Statements.Select(s => s.ToString()).ToImmutableList();
+            var methodBody = methodDeclarationSyntax.Body?.ToString() == null ? string.Empty : methodDeclarationSyntax.Body.ToString();
+            var statements = methodBody.IsEmpty() ? ImmutableList<string>.Empty : methodDeclarationSyntax.Body?.Statements.Select(s => s.ToString()).ToImmutableList() ?? ImmutableList<string>.Empty;
             var attributes = GetAttributes(methodDeclarationSyntax).ToImmutableList();
             var modifiers = methodDeclarationSyntax.ToModifier().ToImmutableList();
             var lineStatementsRaw = methodBody.Split(Environment.NewLine).ToImmutableList();
@@ -84,7 +80,7 @@ namespace Solution.Parser.CSharp
         {
             return (from attrList in methodDeclarationSyntax.AttributeLists
                     from attr in attrList.Attributes
-                    select new Attribute(attr.Name.ToString(), attr.ArgumentList?.Arguments.Select(arg => arg.ToString()).ToImmutableList())).ToImmutableList();
+                    select new Attribute(attr.Name.ToString(), attr.ArgumentList?.Arguments.Select(arg => arg.ToString()).ToImmutableList() ?? ImmutableList<string>.Empty)).ToImmutableList();
         }
     }
 }

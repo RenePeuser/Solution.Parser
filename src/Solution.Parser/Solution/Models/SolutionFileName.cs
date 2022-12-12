@@ -13,7 +13,7 @@ namespace Solution.Parser.Solution
         public SolutionFileName(string value)
             : base(value)
         {
-            Throw.IfNullOrWhiteSpace(() => value);
+            Throw.IfNullOrWhiteSpace(value);
 
             if (!value.EndWith(SOLUTION_FILE_EXTENSION))
             {

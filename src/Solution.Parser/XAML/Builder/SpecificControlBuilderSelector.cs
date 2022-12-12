@@ -2,10 +2,11 @@
 using System.Collections.Immutable;
 using System.Linq;
 using System.Xml.Linq;
+using Argument.Check;
 
 namespace Solution.Parser.XAML
 {
-    internal class SpecificControlBuilderSelector : ISpecificControlBuilderSelector
+    internal sealed class SpecificControlBuilderSelector : ISpecificControlBuilderSelector
     {
         private readonly IImmutableList<ISpecificControlBuilder> _specificControlBuilders;
 
@@ -24,7 +25,8 @@ namespace Solution.Parser.XAML
 
         public ISpecificControlBuilder GetBuilderFor(XElement xElement)
         {
-            return _specificControlBuilders.FirstOrDefault(builder => builder.IsThisTheBuilderFor(xElement));
+            var builder = _specificControlBuilders.FirstOrDefault(builder => builder.IsThisTheBuilderFor(xElement));
+            return Throw.IfNull(builder);
         }
     }
 }

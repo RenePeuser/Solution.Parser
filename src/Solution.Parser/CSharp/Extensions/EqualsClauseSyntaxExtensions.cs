@@ -4,7 +4,7 @@ namespace Solution.Parser.CSharp
 {
     internal static class EqualsClauseSyntaxExtensions
     {
-        internal static Initializer ToInitializer(this EqualsValueClauseSyntax equalsValueClauseSyntax)
+        internal static Initializer? ToInitializer(this EqualsValueClauseSyntax equalsValueClauseSyntax)
         {
             if (equalsValueClauseSyntax == null)
             {

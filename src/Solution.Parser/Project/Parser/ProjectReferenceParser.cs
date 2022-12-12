@@ -7,9 +7,9 @@ namespace Solution.Parser.Project
     {
         internal static ProjectReference Parse(XElement element)
         {
-            var include = element.AttributeBy(ParserHelper.Include).ToString();
-            var copyLocal = element.ElementBy(ParserHelper.Private).ToBool(true);
-            var name = element.ElementBy(ParserHelper.Name).ValueOrDefault(string.Empty);
+            var include = element.AttributeBy(ParserHelper.Include)?.ToString() ?? string.Empty;
+            var copyLocal = element.ElementBy(ParserHelper.Private)?.ToBool(true) ?? true;
+            var name = element.ElementBy(ParserHelper.Name)?.ValueOrDefault(string.Empty) ?? string.Empty;
 
             return new ProjectReference(include, copyLocal, name);
         }

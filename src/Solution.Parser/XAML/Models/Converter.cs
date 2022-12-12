@@ -3,7 +3,7 @@ using System.Diagnostics;
 namespace Solution.Parser.XAML
 {
     [DebuggerDisplay("{Name}")]
-    internal class Converter
+    internal sealed class Converter
     {
         internal Converter(string name, string type)
         {

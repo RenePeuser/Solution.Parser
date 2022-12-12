@@ -2,7 +2,7 @@
 
 namespace Solution.Parser.XAML
 {
-    internal class XamlPropertyValueParser : IXamlPropertyValueParser
+    internal sealed class XamlPropertyValueParser : IXamlPropertyValueParser
     {
         private readonly ParserSelector _parserSelector;
 
@@ -11,11 +11,9 @@ namespace Solution.Parser.XAML
             _parserSelector = parserSelector;
         }
 
-        public PropertyValue Parse(string value, int lineNumber)
+        public PropertyValue? Parse(string value, int lineNumber)
         {
             var parser = _parserSelector.GetParserFor(value);
-            Throw.If(parser, item => item == null, $"No parser was found for property value: {value}");
-
             return parser.Parse(value, lineNumber);
         }
     }

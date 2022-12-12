@@ -7,7 +7,7 @@ using Extensions.Pack;
 
 namespace Solution.Parser.XAML
 {
-    internal class ResourceDictionaryBuilder : ISpecificControlBuilder
+    internal sealed class ResourceDictionaryBuilder : ISpecificControlBuilder
     {
         private readonly IXamlPropertyParser _xamlPropertyParser;
 
@@ -22,24 +22,23 @@ namespace Solution.Parser.XAML
 
         public Predicate<XElement> IsThisTheBuilderFor { get; } = item => item.Name.LocalName == "ResourceDictionary";
 
-        public ElementBase BuildFrom(XElement element, ElementBase parent)
+        public ElementBase BuildFrom(XElement element, ElementBase? parent)
         {
             var name = element.Name.LocalName;
 
-            var properties = element.Attributes().Select(attribute => _xamlPropertyParser.ParseFrom(attribute))
+            var properties = element.Attributes().Select(attribute => _xamlPropertyParser.ParseFrom(attribute)!)
                 .ToImmutableList();
 
             var controlBuilder = new ControlsBuilder();
             var controls = controlBuilder.BuildFrom(element.Descendants().ToImmutableList(), null).ToImmutableList();
 
             var typeName = element.Name.LocalName;
-            var key = properties.FirstOrDefault(item => item.Name == "Key")?.PropertyValue?.Value.ToString();
+            var key = properties.FirstOrDefault(item => item.Name == "Key")?.PropertyValue?.Value?.ToString() ?? string.Empty;
 
             var styles = controls.OfType<Style>().ToImmutableList();
             var dataTemplates = controls.OfType<DataTemplate>().ToImmutableList();
 
-            var dataContextProperty = properties.FirstOrDefault(item => item.Name == "DataContext")?.PropertyValue
-                ?.Value.ToString();
+            var dataContextProperty = properties.FirstOrDefault(item => item.Name == "DataContext")?.PropertyValue?.Value?.ToString() ?? string.Empty;
             var dataContext = dataContextProperty.IsNull() ? null : new DataContext(dataContextProperty);
 
             var lineNumber = element.Cast<IXmlLineInfo>().LineNumber;

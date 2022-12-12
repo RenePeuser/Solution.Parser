@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Solution.Parser.XAML
 {
@@ -7,7 +7,7 @@ namespace Solution.Parser.XAML
     {
         internal XStaticMarkupExtension(string value) : base(value)
         {
-            Type = Value.ToString();
+            Type = Value?.ToString() ?? string.Empty;
         }
 
         public string Type { get; }

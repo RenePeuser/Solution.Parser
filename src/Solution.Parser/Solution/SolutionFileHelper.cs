@@ -8,8 +8,7 @@ namespace Solution.Parser.Solution
 {
     public static class SolutionFileHelper
     {
-        public static SolutionFileInfo FindSolutionFileReverseFrom(this SolutionFileName solutionFileName,
-            DirectoryInfo startUpDirectory)
+        public static SolutionFileInfo? FindSolutionFileReverseFrom(this SolutionFileName solutionFileName, DirectoryInfo startUpDirectory)
         {
             Throw.IfNull(solutionFileName);
             Throw.IfNull(startUpDirectory);
@@ -23,30 +22,11 @@ namespace Solution.Parser.Solution
             return result;
         }
 
-        public static DirectoryInfo FindDirectoryFrom(this DirectoryInfo startUpDirectory, string nameOfDirectory)
+        private static SolutionFileInfo? FindSolutionFileFrom(this SolutionFileName solutionFileName, DirectoryInfo? startUpDirectory)
         {
             while (startUpDirectory != null)
             {
-                var expectedDirectoryInfo = startUpDirectory.EnumerateDirectories()
-                    .FirstOrDefault(item => item.Name.EqualsToIgnoringCase(nameOfDirectory));
-                if (expectedDirectoryInfo != null)
-                {
-                    return expectedDirectoryInfo;
-                }
-
-                startUpDirectory = startUpDirectory.Parent;
-            }
-
-            return null;
-        }
-
-        private static SolutionFileInfo FindSolutionFileFrom(this SolutionFileName solutionFileName,
-            DirectoryInfo startUpDirectory)
-        {
-            while (startUpDirectory != null)
-            {
-                var solutionFile = startUpDirectory.EnumerateFiles()
-                    .FirstOrDefault(item => item.Name.EqualsTo(solutionFileName.Value));
+                var solutionFile = startUpDirectory.EnumerateFiles().FirstOrDefault(item => item.Name.EqualsTo(solutionFileName.Value));
                 if (solutionFile != null)
                 {
                     return new SolutionFileInfo(solutionFile.FullName);

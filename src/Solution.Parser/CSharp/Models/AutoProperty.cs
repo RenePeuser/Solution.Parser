@@ -7,5 +7,6 @@ namespace Solution.Parser.CSharp
     public record AutoProperty(string Type,
                                string Name,
                                bool IsReadOnly,
-                               IImmutableList<Modifier> Modifiers) : Property(Type, Name, IsReadOnly, Modifiers);
+                               IImmutableList<Modifier> Modifiers,
+                               string SyntaxTree) : Property(Type, Name, IsReadOnly, Modifiers, SyntaxTree);
 }

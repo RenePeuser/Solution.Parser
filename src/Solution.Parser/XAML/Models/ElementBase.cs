@@ -9,8 +9,8 @@ namespace Solution.Parser.XAML
     {
         internal ElementBase(
             int lineNumber,
-            DataContext dataContext,
-            ElementBase parent,
+            DataContext? dataContext,
+            ElementBase? parent,
             string xName,
             string typeName,
             string xKey,
@@ -33,9 +33,9 @@ namespace Solution.Parser.XAML
 
         public int LineNumber { get; }
 
-        public DataContext DataContext { get; }
+        public DataContext? DataContext { get; }
 
-        public ElementBase Parent { get; }
+        public ElementBase? Parent { get; }
 
         public string TypeName { get; }
 
@@ -51,13 +51,13 @@ namespace Solution.Parser.XAML
 
         public IImmutableList<DataTemplate> DataTemplates { get; }
 
-        public Property this[string name] => FindPropertyByName(name);
+        public Property? this[string name] => FindPropertyByName(name);
 
-        private Property FindPropertyByName(string name)
+        private Property? FindPropertyByName(string name)
         {
             if (name.Contains('.'))
             {
-                return Properties.OfType<AttachedProperty>().FirstOrDefault(a => a.FullQualifiedName == name);
+                return Properties.OfType<AttachedProperty>().FirstOrDefault(a => a.FullQualifiedName == name) ?? null;
             }
 
             return Properties.FirstOrDefault(p => p.Name == name);

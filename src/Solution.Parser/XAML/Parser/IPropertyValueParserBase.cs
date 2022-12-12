@@ -6,6 +6,6 @@ namespace Solution.Parser.XAML
     {
         Predicate<string> IsThisTheCorrectParserFor { get; }
 
-        PropertyValue Parse(string value, int lineNumber);
+        PropertyValue? Parse(string value, int lineNumber);
     }
 }

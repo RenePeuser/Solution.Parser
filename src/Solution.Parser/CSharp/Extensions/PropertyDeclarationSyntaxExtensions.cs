@@ -46,10 +46,11 @@ namespace Solution.Parser.CSharp
 
             var propertyType = propertyDeclarationSyntax.Type.ToString();
             var propertyName = propertyDeclarationSyntax.Identifier.Text;
-            var isReadOnly = propertyDeclarationSyntax.ToString().DoesNotContain(" set");
+            var isReadOnly = propertyDeclarationSyntax.ToString().DoesNotContain("set;");
             var modifiers = propertyDeclarationSyntax.ToModifiers().ToImmutableList();
+            var syntaxTree = propertyDeclarationSyntax.ToString();
 
-            return new Property(propertyType, propertyName, isReadOnly, modifiers);
+            return new Property(propertyType, propertyName, isReadOnly, modifiers, syntaxTree);
         }
 
         internal static IImmutableList<Property> ToProperties(this IImmutableList<PropertyDeclarationSyntax> propertyDeclarationSyntaxes)

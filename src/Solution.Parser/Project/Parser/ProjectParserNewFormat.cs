@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using Extensions.Pack;
+using Microsoft.CodeAnalysis;
 
 namespace Solution.Parser.Project
 {
@@ -31,16 +32,16 @@ namespace Solution.Parser.Project
             var contentItems = ImmutableList<ProjectContentItem>.Empty;
             var assemblyReferences = ImmutableList<AssemblyReference>.Empty;
 
-            var assemblyName = document.ElementBy(ParserHelper.AssemblyName).ValueOrDefault();
+            var assemblyName = document.ElementBy(ParserHelper.AssemblyName)?.ValueOrDefault() ?? string.Empty;
 
             var imports = GetAllImports(document).ToImmutableList();
-            var targetFrameworkVersion = document.ElementBy(ParserHelper.TargetFrameworkNewFormat).ValueOrDefault();
-            var targetFrameworkVersions = document.ElementBy(ParserHelper.TargetFrameworksNewFormat)?.ValueOrDefault()?.Split(';').ToImmutableList();
+            var targetFrameworkVersion = document.ElementBy(ParserHelper.TargetFrameworkNewFormat)?.ValueOrDefault();
+            var targetFrameworkVersions = document.ElementBy(ParserHelper.TargetFrameworksNewFormat)?.ValueOrDefault()?.Split(';').ToImmutableList() ?? ImmutableList<string>.Empty;
 
             var targetVersions = targetFrameworkVersion.IsNotNull() ? targetFrameworkVersion.ToIList().ToImmutableList() : targetFrameworkVersions;
 
-            var buildRoot = document.ElementBy(ParserHelper.BuildRoot).ValueOrDefault();
-            var documentationFile = document.ElementBy(ParserHelper.DocumentationFile).ValueOrDefault();
+            var buildRoot = document.ElementBy(ParserHelper.BuildRoot)?.ValueOrDefault() ?? string.Empty;
+            var documentationFile = document.ElementBy(ParserHelper.DocumentationFile)?.ValueOrDefault() ?? string.Empty;
 
             return new ProjectFile(guid, document, projectFileInfo, assemblyName, assemblyReferences,
                 projectReferences,
@@ -50,9 +51,9 @@ namespace Solution.Parser.Project
 
         private static Package ParseElement(XElement element)
         {
-            var id = new PackageId(element.Attribute("id").Value);
-            var version = new PackageVersion(element.Attribute("version").Value);
-            var targetFramework = new PackageTargetFrameworkVersion(element.Attribute("targetFramework").Value);
+            var id = new PackageId(element.Attribute("id")?.Value ?? string.Empty);
+            var version = new PackageVersion(element.Attribute("version")?.Value ?? string.Empty);
+            var targetFramework = new PackageTargetFrameworkVersion(element.Attribute("targetFramework")?.Value ?? string.Empty);
             return new Package(id, version, targetFramework);
         }
 
@@ -69,7 +70,7 @@ namespace Solution.Parser.Project
         private static IImmutableList<Import> GetAllImports(XDocument document)
         {
             var result = document.ElementsBy(ParserHelper.Import);
-            var imports = result.Select(item => new Import(item.AttributeBy(ParserHelper.Project).ValueOrDefault()))
+            var imports = result.Select(item => new Import(item.AttributeBy(ParserHelper.Project)?.ValueOrDefault() ?? string.Empty))
                 .ToImmutableList();
             return imports;
         }
@@ -83,18 +84,17 @@ namespace Solution.Parser.Project
 
         private static IImmutableList<T> GetSpecificFiles<T>(ProjectFileInfo projectFileInfo, Func<FileInfo, bool> filterFunc, Func<FileInfo, T> creatorFunc)
         {
-            var allFiles = projectFileInfo.Value.Directory.EnumerateFiles("*.*", SearchOption.AllDirectories)
-                                          .Where(filterFunc)
-                                          .Where(file => file.FullName.DoesNotContain(@"\bin\") && file.FullName.DoesNotContain(@"\obj\"))
-                                          .Select(creatorFunc)
-                                          .ToImmutableList();
+            var allFiles = projectFileInfo.Value.Directory!.EnumerateFiles("*.*", SearchOption.AllDirectories)
+                                                           .Where(filterFunc)
+                                                           .Where(file => file.FullName.DoesNotContain(@"\bin\") && file.FullName.DoesNotContain(@"\obj\"))
+                                                           .Select(creatorFunc)
+                                                           .ToImmutableList();
             return allFiles;
         }
 
         private static IImmutableList<Package> GetPackagesFrom(ProjectFileInfo projectFileInfo)
         {
-            var packagesConfigFileInfo =
-                new FileInfo(Path.Combine(projectFileInfo.Value.Directory.FullName, "packages.config"));
+            var packagesConfigFileInfo = new FileInfo(Path.Combine(projectFileInfo.Value.Directory!.FullName, "packages.config"));
             if (packagesConfigFileInfo.Exists.IsFalse())
             {
                 return ImmutableList<Package>.Empty;
@@ -114,12 +114,12 @@ namespace Solution.Parser.Project
 
             return packageReferences.Select(p =>
             {
-                var include = p.AttributeBy("Include")?.Value is null ? p.AttributeBy("Update").Value : p.AttributeBy("Include")?.Value;
+                var include = p.AttributeBy("Include")?.Value is null ? p.AttributeBy("Update")?.Value : p.AttributeBy("Include")?.Value;
                 var versionAttribute = p.AttributeBy("Version");
                 var version = versionAttribute == null
-                    ? p.ElementBy("Version").Value
+                    ? p.ElementBy("Version")?.Value
                     : versionAttribute.Value;
-                return new PackageReference(include, new PackageVersion(version));
+                return new PackageReference(include ?? string.Empty, new PackageVersion(version ?? string.Empty));
             }).ToImmutableList();
         }
     }

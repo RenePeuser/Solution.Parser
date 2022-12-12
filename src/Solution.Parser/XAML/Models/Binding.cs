@@ -2,9 +2,9 @@ namespace Solution.Parser.XAML
 {
     public class Binding : PropertyValue
     {
-        internal Binding(string value, PropertyValue path, PropertyValue source, PropertyValue converter,
-            PropertyValue converterParameter, string mode, string updateSourceTrigger, string elementName,
-            RelativeSource relativeSource, PropertyValue fallbackValue, StringFormat stringFormat) : base(value)
+        internal Binding(string value, PropertyValue? path, PropertyValue? source, PropertyValue? converter,
+            PropertyValue? converterParameter, string mode, string updateSourceTrigger, string elementName,
+            RelativeSource? relativeSource, PropertyValue? fallbackValue, StringFormat? stringFormat) : base(value)
         {
             Path = path;
             Source = source;
@@ -19,13 +19,13 @@ namespace Solution.Parser.XAML
         }
 
 
-        public PropertyValue Path { get; }
+        public PropertyValue? Path { get; }
 
-        public PropertyValue Source { get; }
+        public PropertyValue? Source { get; }
 
-        public PropertyValue Converter { get; }
+        public PropertyValue? Converter { get; }
 
-        public PropertyValue ConverterParameter { get; }
+        public PropertyValue? ConverterParameter { get; }
 
         public string Mode { get; }
 
@@ -33,10 +33,10 @@ namespace Solution.Parser.XAML
 
         public string ElementName { get; }
 
-        public RelativeSource RelativeSource { get; }
+        public RelativeSource? RelativeSource { get; }
 
-        public PropertyValue FallbackValue { get; }
+        public PropertyValue? FallbackValue { get; }
 
-        public StringFormat StringFormat { get; }
+        public StringFormat? StringFormat { get; }
     }
 }

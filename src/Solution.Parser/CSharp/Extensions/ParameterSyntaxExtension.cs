@@ -9,7 +9,9 @@ namespace Solution.Parser.CSharp
         {
             Throw.IfNull(parameterSyntax);
 
-            return new Parameter(parameterSyntax.Type.ToString(), parameterSyntax.Identifier.Text);
+            var attributes = parameterSyntax.AttributeLists.ToAttributes();
+
+            return new Parameter(parameterSyntax.Type?.ToString() ?? string.Empty, parameterSyntax.Identifier.Text, attributes);
         }
     }
 }

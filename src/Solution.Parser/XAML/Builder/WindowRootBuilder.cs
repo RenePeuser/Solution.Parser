@@ -2,11 +2,12 @@
 using System.Collections.Immutable;
 using System.Linq;
 using System.Xml.Linq;
+using Argument.Check;
 using Extensions.Pack;
 
 namespace Solution.Parser.XAML
 {
-    internal class WindowRootBuilder : IConcreteRootBuilder
+    internal sealed class WindowRootBuilder : IConcreteRootBuilder
     {
         private readonly IXamlPropertyParser _xamlPropertyParser;
 
@@ -21,7 +22,7 @@ namespace Solution.Parser.XAML
 
         public Root BuildFrom(XDocument document, IXamlFileInfo xamlFileInfo)
         {
-            var documentRoot = document.Root;
+            var documentRoot = Throw.IfNull(document.Root);
 
             var properties = documentRoot.Attributes().Select(attribute => _xamlPropertyParser.ParseFrom(attribute))
                 .ToImmutableList();
@@ -31,18 +32,17 @@ namespace Solution.Parser.XAML
             var controls = controlBuilder.BuildFrom(allElements, null).ToImmutableList();
 
             var typeName = documentRoot.Name.LocalName;
-            var xKey = properties.FirstOrDefault(item => item.Name == "Key")?.PropertyValue?.Value.ToString();
-            var xName = properties.FirstOrDefault(item => item.Name == "Name")?.PropertyValue?.Value.ToString();
+            var xKey = properties.FirstOrDefault(item => item.Name == "Key")?.PropertyValue?.Value?.ToString() ?? string.Empty;
+            var xName = properties.FirstOrDefault(item => item.Name == "Name")?.PropertyValue?.Value?.ToString() ?? string.Empty;
 
             var styles = controls.OfType<Style>().ToImmutableList();
             var dataTemplates = controls.OfType<DataTemplate>().ToImmutableList();
 
             var dataContextProperty = properties.FirstOrDefault(item => item.Name == "DataContext");
-            var dataContextValue = dataContextProperty?.PropertyValue?.As<MarkupExtension>()?["Type"]?.PropertyValue
-                ?.ValueText;
+            var dataContextValue = dataContextProperty?.PropertyValue?.As<MarkupExtension>()?["Type"]?.PropertyValue?.ValueText ?? string.Empty;
 
             var dataContext = dataContextProperty.IsNull() ? null : new DataContext(dataContextValue);
-            var fullQualifiedName = properties.FirstOrDefault(p => p.Name == "Class")?.PropertyValue?.ValueText;
+            var fullQualifiedName = properties.FirstOrDefault(p => p.Name == "Class")?.PropertyValue?.ValueText ?? string.Empty;
 
             return new Window(dataContext, null, fullQualifiedName, xName, typeName, xKey, properties, controls,
                 styles, dataTemplates);

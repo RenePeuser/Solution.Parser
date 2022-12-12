@@ -7,5 +7,6 @@ namespace Solution.Parser.CSharp
     public record Property(string Type,
                            string Name,
                            bool IsReadOnly,
-                           IImmutableList<Modifier> Modifiers) : DeclarationWithModifiers(Name, Modifiers);
+                           IImmutableList<Modifier> Modifiers,
+                           string SyntaxTree) : DeclarationWithModifiers(Name, Modifiers);
 }

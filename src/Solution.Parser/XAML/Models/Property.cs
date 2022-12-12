@@ -5,7 +5,7 @@ namespace Solution.Parser.XAML
     [DebuggerDisplay("{Name}")]
     public class Property
     {
-        internal Property(int lineNumber, string name, PropertyValue propertyValue)
+        internal Property(int lineNumber, string name, PropertyValue? propertyValue)
         {
             LineNumber = lineNumber;
             Name = name;
@@ -16,6 +16,6 @@ namespace Solution.Parser.XAML
 
         public string Name { get; }
 
-        public PropertyValue PropertyValue { get; }
+        public PropertyValue? PropertyValue { get; }
     }
 }

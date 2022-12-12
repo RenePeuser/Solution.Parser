@@ -6,7 +6,7 @@ namespace Solution.Parser.XAML
 {
     internal interface IControlBuilder
     {
-        IEnumerable<ElementBase> BuildFrom(IImmutableList<XElement> elements, ElementBase parent);
-        ElementBase BuildFrom(XElement element, ElementBase parent);
+        IEnumerable<ElementBase> BuildFrom(IImmutableList<XElement> elements, ElementBase? parent);
+        ElementBase BuildFrom(XElement element, ElementBase? parent);
     }
 }

@@ -44,7 +44,7 @@ namespace Solution.Parser.CSharp
         internal static bool IsInRange<T>(this T source, T lowerLimit, T upperLimit)
             where T : IComparable
         {
-            Throw.IfLessThan(() => upperLimit, lowerLimit);
+            Throw.IfLessThan(upperLimit, lowerLimit);
 
             return source.IsLessOrEqual(upperLimit) && source.IsGreaterOrEqual(lowerLimit);
         }
@@ -52,7 +52,7 @@ namespace Solution.Parser.CSharp
         internal static bool IsOutOfRange<T>(this T source, T lowerLimit, T upperLimit)
             where T : IComparable
         {
-            Throw.IfLessThan(() => upperLimit, lowerLimit);
+            Throw.IfLessThan(upperLimit, lowerLimit);
 
             return !source.IsInRange(lowerLimit, upperLimit);
         }

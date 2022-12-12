@@ -6,7 +6,7 @@ using Extensions.Pack;
 
 namespace Solution.Parser.XAML
 {
-    internal class MarkupExtensionParser : PropertyValueParserBase
+    internal sealed class MarkupExtensionParser : PropertyValueParserBase
     {
         private readonly IXamlPropertyValueParser _xamlPropertyValueParser;
 
@@ -28,7 +28,7 @@ namespace Solution.Parser.XAML
             item.Contains(':') && !(item.ToUpperInvariant().EqualsTo("X:NULL") ||
                                     item.ToUpperInvariant().EqualsTo("{X:NULL}"));
 
-        public override PropertyValue Parse(string value, int lineNumber)
+        public override PropertyValue? Parse(string value, int lineNumber)
         {
             // ToDo fix it. We need faster and better parse logic.
 

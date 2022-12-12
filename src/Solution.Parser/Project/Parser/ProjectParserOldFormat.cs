@@ -11,11 +11,11 @@ namespace Solution.Parser.Project
     {
         internal static ProjectFile Parse(ProjectFileInfo projectFileInfo, XDocument document)
         {
-            var guid = new Guid(document.ElementBy(ParserHelper.ProjectGuid).ValueOrDefault());
+            var guid = new Guid(document.ElementBy(ParserHelper.ProjectGuid)?.ValueOrDefault() ?? string.Empty);
             var projectReferences = GetReferences(document, ParserHelper.ProjectReference, ProjectReferenceParser.Parse).ToImmutableList();
             var assemblyReferences = GetReferences(document, ParserHelper.Reference, AssemblyReferenceParser.Parse).ToImmutableList();
             var projectTypes = AnalyzeProjectTypes(document).ToImmutableList();
-            var assemblyName = document.ElementBy(ParserHelper.AssemblyName).ValueOrDefault();
+            var assemblyName = document.ElementBy(ParserHelper.AssemblyName)?.ValueOrDefault() ?? string.Empty;
             var imports = GetAllImports(document).ToImmutableList();
             var csharpFiles = GetSpecificFiles(document, projectFileInfo, ParserHelper.Compile, ParserHelper.Include,
                 ClassCreator.CreateCSharpFile).ToImmutableList();
@@ -24,9 +24,9 @@ namespace Solution.Parser.Project
             var contentItems = GetContentItems(document, projectFileInfo).ToImmutableList();
             var packages = GetPackagesFrom(projectFileInfo, document).ToImmutableList();
             var packageReferences = GetPackageReferencesFrom(document).ToImmutableList();
-            var targetFrameworkVersion = document.ElementBy(ParserHelper.TargetFrameworkVersion).ValueOrDefault().ToIList().ToImmutableList();
-            var buildRoot = document.ElementBy(ParserHelper.BuildRoot).ValueOrDefault();
-            var documentationFile = document.ElementBy(ParserHelper.DocumentationFile).ValueOrDefault();
+            var targetFrameworkVersion = document.ElementBy(ParserHelper.TargetFrameworkVersion)?.ValueOrDefault().ToIList().FilterNullObjects().ToImmutableList() ?? ImmutableList<string>.Empty;
+            var buildRoot = document.ElementBy(ParserHelper.BuildRoot)?.ValueOrDefault() ?? string.Empty;
+            var documentationFile = document.ElementBy(ParserHelper.DocumentationFile)?.ValueOrDefault() ?? string.Empty;
 
             return new ProjectFile(guid,
                                    document,
@@ -49,9 +49,9 @@ namespace Solution.Parser.Project
 
         private static Package ParseElement(XElement element)
         {
-            var id = new PackageId(element.Attribute("id").Value);
-            var version = new PackageVersion(element.Attribute("version").Value);
-            var targetFramework = new PackageTargetFrameworkVersion(element.Attribute("targetFramework").Value);
+            var id = new PackageId(element.Attribute("id")?.Value ?? string.Empty);
+            var version = new PackageVersion(element.Attribute("version")?.Value ?? string.Empty);
+            var targetFramework = new PackageTargetFrameworkVersion(element.Attribute("targetFramework")?.Value ?? string.Empty);
             return new Package(id, version, targetFramework);
         }
 
@@ -63,7 +63,7 @@ namespace Solution.Parser.Project
                 return new[] { ProjectType.Invalid }.ToImmutableList();
             }
 
-            var result = projectTypeGuids.ValueOrDefault(string.Empty);
+            var result = projectTypeGuids.ValueOrDefault(string.Empty) ?? string.Empty;
             var guidArray = result.Split(';').Select(item => new Guid(item));
             return guidArray.Select(ProjectTypeParser.GetProjectType).ToImmutableList();
         }
@@ -71,7 +71,7 @@ namespace Solution.Parser.Project
         private static IImmutableList<Import> GetAllImports(XDocument document)
         {
             var result = document.ElementsBy(ParserHelper.Import);
-            var imports = result.Select(item => new Import(item.AttributeBy(ParserHelper.Project).ValueOrDefault()))
+            var imports = result.Select(item => new Import(item.AttributeBy(ParserHelper.Project)?.ValueOrDefault() ?? string.Empty))
                 .ToImmutableList();
             return imports;
         }
@@ -87,27 +87,25 @@ namespace Solution.Parser.Project
         private static IImmutableList<T> GetSpecificFiles<T>(XDocument document, ProjectFileInfo projectFileInfo,
                                                              string localName, string attributeName, Func<string, T> creatorFunc)
         {
-            var projectDirectoryPath = projectFileInfo.Value.Directory.FullName;
+            var projectDirectoryPath = projectFileInfo.Value.Directory!.FullName;
             var result = document.ElementsBy(localName)
-                .Select(element => element.AttributeBy(attributeName).ValueOrDefault())
-                .Select(item => Path.Combine(projectDirectoryPath, item))
+                .Select(element => element.AttributeBy(attributeName)?.ValueOrDefault())
+                .Select(item => Path.Combine(projectDirectoryPath, item ?? string.Empty))
                 .Select(creatorFunc);
             return result.ToImmutableList();
         }
 
         private static IImmutableList<ProjectContentItem> GetContentItems(XDocument document, ProjectFileInfo projectFileInfo)
         {
-            var projectFileDirectoryPath = projectFileInfo.Value.Directory.FullName;
+            var projectFileDirectoryPath = projectFileInfo.Value.Directory!.FullName;
             var result = document.ElementsBy(ParserHelper.Content);
-            var contentItems = result.Select(
-                item =>
-                {
-                    var include = item.AttributeBy(ParserHelper.Include).ValueOrDefault();
-                    var copyToOutputDirectory = item.ElementBy(ParserHelper.CopyToOutputDirectory).ValueOrDefault()
-                        .ToCopyToOutputDirectory();
-                    var fileInfo = new FileInfo(Path.Combine(projectFileDirectoryPath, include));
-                    return new ProjectContentItem(include, copyToOutputDirectory, fileInfo);
-                });
+            var contentItems = result.Select(item =>
+            {
+                var include = item.AttributeBy(ParserHelper.Include)?.ValueOrDefault(string.Empty);
+                var copyToOutputDirectory = item.ElementBy(ParserHelper.CopyToOutputDirectory)?.ValueOrDefault()?.ToCopyToOutputDirectory() ?? CopyToOutputDirectory.DoNotCopy;
+                var fileInfo = new FileInfo(Path.Combine(projectFileDirectoryPath, include ?? string.Empty));
+                return new ProjectContentItem(include ?? string.Empty, copyToOutputDirectory, fileInfo);
+            });
 
             return contentItems.ToImmutableList();
         }
@@ -123,7 +121,7 @@ namespace Solution.Parser.Project
                 return ImmutableList<Package>.Empty;
             }
 
-            var path = new FileInfo(Path.Combine(projectFileInfo.Value.Directory.FullName, packagesConfig));
+            var path = new FileInfo(Path.Combine(projectFileInfo.Value.Directory!.FullName, packagesConfig));
             if (path.Exists)
             {
                 var packageDocument = XDocument.Load(path.FullName);
@@ -143,9 +141,9 @@ namespace Solution.Parser.Project
 
             return packageReferences.Select(p =>
             {
-                var include = p.AttributeBy("Include").Value;
+                var include = p.AttributeBy("Include")?.Value ?? string.Empty;
                 var versionAttribute = p.AttributeBy("Version");
-                var version = versionAttribute == null ? p.ElementBy("Version").Value : versionAttribute.Value;
+                var version = versionAttribute == null ? p.ElementBy("Version")?.Value ?? string.Empty : versionAttribute.Value;
                 return new PackageReference(include, new PackageVersion(version));
             }).ToImmutableList();
         }

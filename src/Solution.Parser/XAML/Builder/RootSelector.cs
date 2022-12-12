@@ -1,10 +1,11 @@
 ﻿using System.Collections.Immutable;
 using System.Linq;
 using System.Xml.Linq;
+using Argument.Check;
 
 namespace Solution.Parser.XAML
 {
-    internal class RootSelector : IRootSelector
+    internal sealed class RootSelector : IRootSelector
     {
         private readonly IImmutableList<IConcreteRootBuilder> _rootBuilders;
 
@@ -22,7 +23,10 @@ namespace Solution.Parser.XAML
 
         public IConcreteRootBuilder GetRootBuilderFor(XDocument document)
         {
-            return _rootBuilders.FirstOrDefault(builder => builder.IsThisTheSelectorFor(document.Root.Name.LocalName));
+            Throw.IfNull(document.Root);
+
+            var builder = _rootBuilders.FirstOrDefault(builder => builder.IsThisTheSelectorFor(document.Root.Name.LocalName));
+            return Throw.IfNull(builder);
         }
     }
 }

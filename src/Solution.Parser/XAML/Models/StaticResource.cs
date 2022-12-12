@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Solution.Parser.XAML
 {
@@ -7,7 +7,7 @@ namespace Solution.Parser.XAML
     {
         internal StaticResource(string value) : base(value)
         {
-            ResourceKey = Value.ToString();
+            ResourceKey = Value?.ToString() ?? string.Empty;
         }
 
         public string ResourceKey { get; }

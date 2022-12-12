@@ -7,6 +7,6 @@ namespace Solution.Parser.XAML
     {
         Predicate<XElement> IsThisTheBuilderFor { get; }
 
-        ElementBase BuildFrom(XElement element, ElementBase parent);
+        ElementBase BuildFrom(XElement element, ElementBase? parent);
     }
 }

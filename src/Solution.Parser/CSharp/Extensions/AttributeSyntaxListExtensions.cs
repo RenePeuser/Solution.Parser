@@ -13,7 +13,7 @@ namespace Solution.Parser.CSharp
             {
                 return list.Attributes.Select(a =>
                 {
-                    return new Attribute(a.ToString(), a.ArgumentList?.Arguments.Select(p => p.ToString()).ToImmutableList());
+                    return new Attribute(a.ToString(), a.ArgumentList?.Arguments.Select(p => p.ToString()).ToImmutableList() ?? ImmutableList<string>.Empty);
                 }).ToImmutableList();
             }).ToImmutableList();
         }

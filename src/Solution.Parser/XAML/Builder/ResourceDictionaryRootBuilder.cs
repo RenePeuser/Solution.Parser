@@ -2,10 +2,11 @@
 using System.Collections.Immutable;
 using System.Linq;
 using System.Xml.Linq;
+using Argument.Check;
 
 namespace Solution.Parser.XAML
 {
-    internal class ResourceDictionaryRootBuilder : IConcreteRootBuilder
+    internal sealed class ResourceDictionaryRootBuilder : IConcreteRootBuilder
     {
         private readonly IXamlPropertyParser _xamlPropertyParser;
 
@@ -21,10 +22,9 @@ namespace Solution.Parser.XAML
         public Root BuildFrom(XDocument document, IXamlFileInfo xamlFileInfo)
         {
             var name = xamlFileInfo.FileNameWithoutExtension;
-            var documentRoot = document.Root;
+            var documentRoot = Throw.IfNull(document.Root);
 
-            var properties = documentRoot.Attributes().Select(attribute => _xamlPropertyParser.ParseFrom(attribute))
-                .ToImmutableList();
+            var properties = documentRoot.Attributes().Select(attribute => _xamlPropertyParser.ParseFrom(attribute)!).ToImmutableList();
 
             var controlBuilder = new ControlsBuilder();
             var controls = controlBuilder.BuildFrom(documentRoot.Descendants().ToImmutableList(), null).ToImmutableList();
@@ -33,7 +33,7 @@ namespace Solution.Parser.XAML
             var dataTemplates = controls.OfType<DataTemplate>().ToImmutableList();
             var fullQualifiedName = xamlFileInfo.FileNameWithoutExtension;
 
-            return new ResourceDictionary(null, null, fullQualifiedName, name, typeName, null, properties, controls,
+            return new ResourceDictionary(null, null, fullQualifiedName, name, typeName, string.Empty, properties, controls,
                 styles, dataTemplates);
         }
 

@@ -7,5 +7,5 @@ namespace Solution.Parser.CSharp
     public record Field(string Name,
                         string Type,
                         IImmutableList<Modifier> Modifiers,
-                        Initializer Initializer) : DeclarationBase(Name);
+                        Initializer? Initializer) : DeclarationBase(Name);
 }

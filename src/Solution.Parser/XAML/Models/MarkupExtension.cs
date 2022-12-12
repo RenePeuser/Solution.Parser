@@ -21,6 +21,6 @@ namespace Solution.Parser.XAML
 
         public IImmutableList<Property> Properties { get; }
 
-        public Property this[string name] => Properties.FirstOrDefault(p => p.Name == name);
+        public Property? this[string name] => Properties.FirstOrDefault(p => p.Name == name);
     }
 }
