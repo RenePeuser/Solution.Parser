@@ -20,6 +20,7 @@ namespace Solution.Parser.CSharp
                         IImmutableList<Struct> NestedStructs,
                         IImmutableList<Enum> NestedEnums,
                         IImmutableList<Interface> NestedInterfaces,
+                        IImmutableList<Parameter> Parameters,
                         string FullQualifiedName,
                         string SyntaxTree) : Interface(NameSpace, Name, Modifiers, Properties, Methods, Attributes, BaseTypes, Events, EventFields,
         NestedClasses, NestedStructs, NestedEnums, NestedInterfaces, FullQualifiedName, SyntaxTree);

@@ -50,13 +50,14 @@ namespace Solution.Parser.CSharp
 
             var nameSpace = enumDeclarationSyntax.SyntaxTree.AllOfType<NamespaceDeclarationSyntax>()[0]
                 .ToNamespace();
-            var enumFields = enumDeclarationSyntax.Members.Select(m => new EnumField(m.Identifier.ValueText))
+            var enumFields = enumDeclarationSyntax.Members.Select(m => new EnumField(m.Identifier.ValueText, m.SyntaxTree.ToString()))
                 .ToImmutableList();
             var modifiers = enumDeclarationSyntax.ToModifiers().ToImmutableList();
             var name = enumDeclarationSyntax.Identifier.ValueText;
             var fullQualifiedName = $"{nameSpace.Name}.{name}";
+            var syntaxTree = enumDeclarationSyntax.ToString();
 
-            return new Enum(nameSpace, name, modifiers, enumFields, fullQualifiedName);
+            return new Enum(nameSpace, name, modifiers, enumFields, fullQualifiedName, syntaxTree);
         }
     }
 }

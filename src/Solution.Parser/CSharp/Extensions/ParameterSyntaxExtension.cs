@@ -11,7 +11,7 @@ namespace Solution.Parser.CSharp
 
             var attributes = parameterSyntax.AttributeLists.ToAttributes();
 
-            return new Parameter(parameterSyntax.Type?.ToString() ?? string.Empty, parameterSyntax.Identifier.Text, attributes);
+            return new Parameter(parameterSyntax.Type?.ToString() ?? string.Empty, parameterSyntax.Identifier.Text, attributes, parameterSyntax.SyntaxTree.ToString());
         }
     }
 }

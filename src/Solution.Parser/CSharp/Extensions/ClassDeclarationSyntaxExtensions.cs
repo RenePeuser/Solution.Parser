@@ -58,10 +58,11 @@ namespace Solution.Parser.CSharp
             var name = classDeclarationSyntax.Identifier.ValueText;
             var syntaxTree = classDeclarationSyntax.ToString();
             var fullQualifiedName = $"{nameSpace.Name}.{name}";
+            var parameters = constructors.MaxBy(c => c.Parameters.Count)?.Parameters ?? ImmutableList<Parameter>.Empty;
 
             return new Class(nameSpace, name, modifiers, constructors, properties, methods, attributesOfClass, fields,
                 interfaces, baseTypes, events, eventFields, nestedClasses, nestedStructs, nestedEnums,
-                nestedInterfaces, fullQualifiedName, syntaxTree);
+                nestedInterfaces, parameters, fullQualifiedName, syntaxTree);
         }
 
         internal static IImmutableList<Class> ToClasses(this IImmutableList<ClassDeclarationSyntax> classDeclarationSyntaxes)

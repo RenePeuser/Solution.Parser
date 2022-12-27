@@ -65,7 +65,7 @@ namespace Solution.Parser.CSharp
             var lineStatements = lineStatementsRaw.Take(new Range(1, lineStatementsRaw.Count - 1)).FilterNullOrWhitespace().ToImmutableList();
 
 
-            return new Method(methodName, parameters, returnType, methodValue, methodBody, statements, attributes, modifiers, lineStatements);
+            return new Method(methodName, parameters, returnType, methodValue, methodBody, statements, attributes, modifiers, lineStatements, methodDeclarationSyntax.SyntaxTree.ToString());
         }
 
         internal static IImmutableList<Method> ToMethods(
@@ -80,7 +80,7 @@ namespace Solution.Parser.CSharp
         {
             return (from attrList in methodDeclarationSyntax.AttributeLists
                     from attr in attrList.Attributes
-                    select new Attribute(attr.Name.ToString(), attr.ArgumentList?.Arguments.Select(arg => arg.ToString()).ToImmutableList() ?? ImmutableList<string>.Empty)).ToImmutableList();
+                    select new Attribute(attr.Name.ToString(), attr.ArgumentList?.Arguments.Select(arg => arg.ToString()).ToImmutableList() ?? ImmutableList<string>.Empty, attr.SyntaxTree.ToString())).ToImmutableList();
         }
     }
 }

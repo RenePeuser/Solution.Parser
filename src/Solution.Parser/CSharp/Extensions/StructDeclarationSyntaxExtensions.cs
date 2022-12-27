@@ -59,9 +59,11 @@ namespace Solution.Parser.CSharp
             var syntaxTree = structDeclarationSyntax.ToString();
             var fullQualifiedName = $"{nameSpace.Name}.{name}";
 
+            var parameters = constructors.MaxBy(c => c.Parameters.Count)?.Parameters ?? ImmutableList<Parameter>.Empty;
+
             return new Struct(nameSpace, name, modifiers, constructors, properties, methods, attributesOfClass,
                 fields, interfaces, baseTypes, events, eventFields, nestedClasses, nestedStructs, nestedEnums,
-                nestedInterfaces, syntaxTree, fullQualifiedName);
+                nestedInterfaces, parameters, syntaxTree, fullQualifiedName);
         }
 
         internal static IImmutableList<Struct> ToStructs(

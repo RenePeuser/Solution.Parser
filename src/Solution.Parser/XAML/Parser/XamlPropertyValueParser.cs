@@ -1,6 +1,4 @@
-﻿using Argument.Check;
-
-namespace Solution.Parser.XAML
+﻿namespace Solution.Parser.XAML
 {
     internal sealed class XamlPropertyValueParser : IXamlPropertyValueParser
     {

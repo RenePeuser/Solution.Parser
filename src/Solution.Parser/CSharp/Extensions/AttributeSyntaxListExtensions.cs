@@ -15,7 +15,7 @@ namespace Solution.Parser.CSharp
                 {
                     var name = a.Name.ToString();
                     var immutableList = a.ArgumentList?.Arguments.Select(p => p.ToString()).ToImmutableList() ?? ImmutableList<string>.Empty;
-                    return new Attribute(name, immutableList);
+                    return new Attribute(name, immutableList, a.SyntaxTree.ToString());
                 }).ToImmutableList();
             }).ToImmutableList();
         }

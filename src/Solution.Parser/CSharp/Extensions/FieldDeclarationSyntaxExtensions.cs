@@ -16,7 +16,8 @@ namespace Solution.Parser.CSharp
             var name = fieldDeclarationSyntax.Declaration.Variables[0].Identifier.Text;
             var bindingFlags = fieldDeclarationSyntax.ToBindingFlags().ToImmutableList();
             var initializer = fieldDeclarationSyntax.Declaration.Variables[0].Initializer?.ToInitializer();
-            return new Field(name, type, bindingFlags, initializer);
+
+            return new Field(name, type, bindingFlags, initializer, fieldDeclarationSyntax.SyntaxTree.ToString());
         }
 
         public static IImmutableList<Field> ToFields(this IImmutableList<FieldDeclarationSyntax> fieldDeclarationSyntaxes)

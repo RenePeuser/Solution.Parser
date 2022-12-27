@@ -18,7 +18,7 @@ namespace Solution.Parser.CSharp
             Throw.IfNull(eventDeclarationSyntax);
 
             return new EventField(eventDeclarationSyntax.Declaration.Type.ToString(),
-                eventDeclarationSyntax.Declaration.Variables.First().Identifier.ValueText);
+                eventDeclarationSyntax.Declaration.Variables.First().Identifier.ValueText, eventDeclarationSyntax.SyntaxTree.ToString());
         }
     }
 }

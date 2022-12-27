@@ -12,5 +12,6 @@ namespace Solution.Parser.CSharp
                          IImmutableList<string> Statements,
                          IImmutableList<Attribute> Attributes,
                          IImmutableList<Modifier> Modifiers,
-                         IImmutableList<string> LineStatements) : DeclarationWithModifiers(Name, Modifiers);
+                         IImmutableList<string> LineStatements,
+                         string SyntaxTree) : DeclarationWithModifiers(Name, Modifiers, SyntaxTree);
 }

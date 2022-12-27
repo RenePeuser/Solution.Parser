@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using Extensions.Pack;
-using Microsoft.CodeAnalysis;
 
 namespace Solution.Parser.Project
 {

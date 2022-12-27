@@ -16,7 +16,9 @@ namespace Solution.Parser.CSharp
         {
             Throw.IfNull(eventDeclarationSyntax);
 
-            return new Event(eventDeclarationSyntax.Type.ToString(), eventDeclarationSyntax.Identifier.ValueText);
+            return new Event(eventDeclarationSyntax.Type.ToString(),
+                             eventDeclarationSyntax.Identifier.ValueText,
+                             eventDeclarationSyntax.SyntaxTree.ToString());
         }
     }
 }
