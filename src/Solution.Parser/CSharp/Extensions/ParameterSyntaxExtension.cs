@@ -1,6 +1,5 @@
 ﻿using Argument.Check;
 using Extensions.Pack;
-using Microsoft.Build.Framework;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Solution.Parser.CSharp
