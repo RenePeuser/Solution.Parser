@@ -51,4 +51,8 @@
         </None>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\Extensions.Pack\src\Extensions.Pack\Extensions.Pack.csproj" />
+    </ItemGroup>
+
 </Project>
