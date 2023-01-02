@@ -80,7 +80,7 @@ namespace Solution.Parser.CSharp
         {
             return (from attrList in methodDeclarationSyntax.AttributeLists
                     from attr in attrList.Attributes
-                    select new Attribute(attr.Name.ToString(), attr.ArgumentList?.Arguments.Select(arg => arg.ToString()).ToImmutableList() ?? ImmutableList<string>.Empty, attr.SyntaxTree.ToString())).ToImmutableList();
+                    select new Attribute(attr.Name.ToString(), attr.ArgumentList?.Arguments.Select(arg => arg.ToString()).ToImmutableList() ?? ImmutableList<string>.Empty, attr.Parent?.ToString() ?? string.Empty)).ToImmutableList();
         }
     }
 }
