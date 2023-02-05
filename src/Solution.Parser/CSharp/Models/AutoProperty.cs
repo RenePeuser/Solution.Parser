@@ -8,5 +8,6 @@ namespace Solution.Parser.CSharp
                                string Name,
                                bool IsReadOnly,
                                IImmutableList<Modifier> Modifiers,
-                               string SyntaxTree) : Property(Type, Name, IsReadOnly, Modifiers, SyntaxTree);
+                               string SyntaxTree,
+                               string FullQualifiedName) : Property(Type, Name, IsReadOnly, Modifiers, SyntaxTree, FullQualifiedName);
 }

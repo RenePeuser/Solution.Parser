@@ -18,5 +18,5 @@ namespace Solution.Parser.CSharp
                             IImmutableList<Enum> NestedEnums,
                             IImmutableList<Interface> NestedInterfaces,
                             string FullQualifiedName,
-                            string SyntaxTree) : DeclarationWithModifiers(Name, Modifiers,SyntaxTree);
+                            string SyntaxTree) : DeclarationWithModifiers(Name, FullQualifiedName, Modifiers,SyntaxTree);
 }

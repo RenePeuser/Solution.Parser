@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Extensions.Pack;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Solution.Parser.CSharp
@@ -57,12 +58,54 @@ namespace Solution.Parser.CSharp
             var nestedInterfaces = classDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces().ToImmutableList();
             var name = classDeclarationSyntax.Identifier.ValueText;
             var syntaxTree = classDeclarationSyntax.ToString();
-            var fullQualifiedName = $"{nameSpace.Name}.{name}";
+            var fullQualifiedName = BuildFullQualifiedName(classDeclarationSyntax);
             var parameters = constructors.MaxBy(c => c.Parameters.Count)?.Parameters ?? ImmutableList<Parameter>.Empty;
 
             return new Class(nameSpace, name, modifiers, constructors, properties, methods, attributesOfClass, fields,
                 interfaces, baseTypes, events, eventFields, nestedClasses, nestedStructs, nestedEnums,
                 nestedInterfaces, parameters, fullQualifiedName, syntaxTree);
+        }
+
+        internal static string BuildFullQualifiedName(ClassDeclarationSyntax recordDeclarationSyntax)
+        {
+            var getFullQualifiedName = GetFullQualifiedName().Reverse();
+
+            var flattenParentNameSpaceQualifiers = getFullQualifiedName.Flatten(".");
+            var fullQualifiedName = $"{flattenParentNameSpaceQualifiers}.{recordDeclarationSyntax.Identifier.ValueText}";
+            return fullQualifiedName;
+
+            IEnumerable<string> GetFullQualifiedName()
+            {
+                var parent = recordDeclarationSyntax.Parent;
+                while (parent.IsNotNull())
+                {
+                    switch (parent)
+                    {
+                        case null:
+                            break;
+                        case ClassDeclarationSyntax classDeclarationSyntax:
+                            parent = parent.Parent;
+                            yield return classDeclarationSyntax.Identifier.ValueText;
+                            break;
+                        case InterfaceDeclarationSyntax interfaceDeclarationSyntax:
+                            parent = parent.Parent;
+                            yield return interfaceDeclarationSyntax.Identifier.ValueText;
+                            break;
+                        case RecordDeclarationSyntax recordDeclarationSyntax:
+                            parent = parent.Parent;
+                            yield return recordDeclarationSyntax.Identifier.ValueText;
+                            break;
+                        case NamespaceDeclarationSyntax namespaceDeclarationSyntax:
+                            parent = null;
+                            yield return namespaceDeclarationSyntax.ToNamespace().Name;
+                            break;
+                        default:
+                            parent = null;
+                            yield return string.Empty;
+                            break;
+                    }
+                }
+            }
         }
 
         internal static IImmutableList<Class> ToClasses(this IImmutableList<ClassDeclarationSyntax> classDeclarationSyntaxes)

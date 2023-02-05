@@ -49,8 +49,51 @@ namespace Solution.Parser.CSharp
             var isReadOnly = propertyDeclarationSyntax.ToString().DoesNotContain("set;");
             var modifiers = propertyDeclarationSyntax.ToModifiers().ToImmutableList();
             var syntaxTree = propertyDeclarationSyntax.ToString();
+            var fullqualifiedName = BuildFullQualifiedName(propertyDeclarationSyntax);
 
-            return new Property(propertyType, propertyName, isReadOnly, modifiers, syntaxTree);
+            return new Property(propertyType, propertyName, isReadOnly, modifiers, syntaxTree, fullqualifiedName);
+        }
+
+        internal static string BuildFullQualifiedName(PropertyDeclarationSyntax recordDeclarationSyntax)
+        {
+            var getFullQualifiedName = GetFullQualifiedName().Reverse();
+
+            var flattenParentNameSpaceQualifiers = getFullQualifiedName.Flatten(".");
+            var fullQualifiedName = $"{flattenParentNameSpaceQualifiers}.{recordDeclarationSyntax.Identifier.ValueText}";
+            return fullQualifiedName;
+
+            IEnumerable<string> GetFullQualifiedName()
+            {
+                var parent = recordDeclarationSyntax.Parent;
+                while (parent.IsNotNull())
+                {
+                    switch (parent)
+                    {
+                        case null:
+                            break;
+                        case ClassDeclarationSyntax classDeclarationSyntax:
+                            parent = parent.Parent;
+                            yield return classDeclarationSyntax.Identifier.ValueText;
+                            break;
+                        case InterfaceDeclarationSyntax interfaceDeclarationSyntax:
+                            parent = parent.Parent;
+                            yield return interfaceDeclarationSyntax.Identifier.ValueText;
+                            break;
+                        case RecordDeclarationSyntax recordDeclarationSyntax:
+                            parent = parent.Parent;
+                            yield return recordDeclarationSyntax.Identifier.ValueText;
+                            break;
+                        case NamespaceDeclarationSyntax namespaceDeclarationSyntax:
+                            parent = null;
+                            yield return namespaceDeclarationSyntax.ToNamespace().Name;
+                            break;
+                        default:
+                            parent = null;
+                            yield return string.Empty;
+                            break;
+                    }
+                }
+            }
         }
 
         internal static IImmutableList<Property> ToProperties(this IImmutableList<PropertyDeclarationSyntax> propertyDeclarationSyntaxes)

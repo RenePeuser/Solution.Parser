@@ -9,5 +9,5 @@ namespace Solution.Parser.CSharp
                        IImmutableList<Modifier> Modifiers,
                        IImmutableList<EnumField> EnumFields,
                        string FullQualifiedName,
-                       string SyntaxTree) : DeclarationWithModifiers(Name, Modifiers, SyntaxTree);
+                       string SyntaxTree) : DeclarationWithModifiers(Name, FullQualifiedName, Modifiers, SyntaxTree);
 }

@@ -63,9 +63,51 @@ namespace Solution.Parser.CSharp
             var modifiers = methodDeclarationSyntax.ToModifier().ToImmutableList();
             var lineStatementsRaw = methodBody.Split(Environment.NewLine).ToImmutableList();
             var lineStatements = lineStatementsRaw.Take(new Range(1, lineStatementsRaw.Count - 1)).FilterNullOrWhitespace().ToImmutableList();
+            var fullqualifiedName = BuildFullQualifiedName(methodDeclarationSyntax);
 
+            return new Method(methodName, parameters, returnType, methodValue, methodBody, statements, attributes, modifiers, lineStatements, methodDeclarationSyntax.SyntaxTree.ToString(), fullqualifiedName);
+        }
 
-            return new Method(methodName, parameters, returnType, methodValue, methodBody, statements, attributes, modifiers, lineStatements, methodDeclarationSyntax.SyntaxTree.ToString());
+        internal static string BuildFullQualifiedName(MethodDeclarationSyntax recordDeclarationSyntax)
+        {
+            var getFullQualifiedName = GetFullQualifiedName().Reverse();
+
+            var flattenParentNameSpaceQualifiers = getFullQualifiedName.Flatten(".");
+            var fullQualifiedName = $"{flattenParentNameSpaceQualifiers}.{recordDeclarationSyntax.Identifier.ValueText}";
+            return fullQualifiedName;
+
+            IEnumerable<string> GetFullQualifiedName()
+            {
+                var parent = recordDeclarationSyntax.Parent;
+                while (parent.IsNotNull())
+                {
+                    switch (parent)
+                    {
+                        case null:
+                            break;
+                        case ClassDeclarationSyntax classDeclarationSyntax:
+                            parent = parent.Parent;
+                            yield return classDeclarationSyntax.Identifier.ValueText;
+                            break;
+                        case InterfaceDeclarationSyntax interfaceDeclarationSyntax:
+                            parent = parent.Parent;
+                            yield return interfaceDeclarationSyntax.Identifier.ValueText;
+                            break;
+                        case RecordDeclarationSyntax recordDeclarationSyntax:
+                            parent = parent.Parent;
+                            yield return recordDeclarationSyntax.Identifier.ValueText;
+                            break;
+                        case NamespaceDeclarationSyntax namespaceDeclarationSyntax:
+                            parent = null;
+                            yield return namespaceDeclarationSyntax.ToNamespace().Name;
+                            break;
+                        default:
+                            parent = null;
+                            yield return string.Empty;
+                            break;
+                    }
+                }
+            }
         }
 
         internal static IImmutableList<Method> ToMethods(

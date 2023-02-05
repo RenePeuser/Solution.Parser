@@ -3,5 +3,5 @@
 namespace Solution.Parser.CSharp
 {
     [DebuggerDisplay("{Name}")]
-    public record DeclarationBase(string Name, string SyntaxTree);
+    public record DeclarationBase(string Name, string FullQualifiedName, string SyntaxTree);
 }
