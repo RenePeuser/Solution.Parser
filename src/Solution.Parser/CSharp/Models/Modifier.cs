@@ -16,6 +16,8 @@
 
         Const,
 
-        Abstract
+        Abstract,
+
+        Partial
     }
 }
