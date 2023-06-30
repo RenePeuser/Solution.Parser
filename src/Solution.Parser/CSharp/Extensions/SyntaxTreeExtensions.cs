@@ -21,8 +21,21 @@ namespace Solution.Parser.CSharp
 
         internal static NameSpace GetNamespace(this SyntaxTree syntaxTree)
         {
+            var @namespace = GetNamespaceOrDefault(syntaxTree);
+            Throw.IfNull(@namespace);
+
+            return @namespace;
+        }
+
+        internal static NameSpace? GetNamespaceOrDefault(this SyntaxTree syntaxTree)
+        {
             var namespaceDeclarationSyntax = syntaxTree.AllOfType<NamespaceDeclarationSyntax>();
             var fileScopedNamespaceDeclarationSyntaxes = syntaxTree.AllOfType<FileScopedNamespaceDeclarationSyntax>();
+
+            if (namespaceDeclarationSyntax.IsEmpty() && fileScopedNamespaceDeclarationSyntaxes.IsEmpty())
+            {
+                return null;
+            }
 
             var nameSpace = namespaceDeclarationSyntax.Any() ? namespaceDeclarationSyntax[0].ToNamespace() : fileScopedNamespaceDeclarationSyntaxes[0].ToNamespace();
             return nameSpace;

@@ -14,7 +14,12 @@ public static class CSharpParser
     {
         Throw.IfNull(syntaxTree);
 
-        var nameSpace = syntaxTree.GetNamespace();
+        var nameSpace = syntaxTree.GetNamespaceOrDefault();
+
+        if (nameSpace.IsNull())
+        {
+            return CSharpSyntaxTree.Empty();
+        }
 
         var usings = syntaxTree.AllOfType<UsingDirectiveSyntax>().Select(u =>
         {
