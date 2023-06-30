@@ -21,6 +21,7 @@ namespace Solution.Parser.Test.Solution
             _sSolutionFileInfo = Throw.IfNull(solutionFile);
         }
 
+
         [TestMethod]
         public void Assert_That_User_Nuget_Folder_Was_Found()
         {
