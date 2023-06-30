@@ -54,8 +54,7 @@ namespace Solution.Parser.CSharp
             var modifiers = interfaceDeclarationSyntax.ToModifiers().ToImmutableList();
             var properties = interfaceDeclarationSyntax.AllOfType<PropertyDeclarationSyntax>().ToProperties().ToImmutableList();
             var methods = interfaceDeclarationSyntax.AllOfType<MethodDeclarationSyntax>().ToMethods().ToImmutableList();
-            var nameSpace = interfaceDeclarationSyntax.SyntaxTree.AllOfType<NamespaceDeclarationSyntax>()[0]
-                .ToNamespace();
+            var nameSpace = interfaceDeclarationSyntax.SyntaxTree.GetNamespace();
             var attributesOfClass = interfaceDeclarationSyntax.AttributeLists.ToAttributes().ToImmutableList();
             var baseTypes = interfaceDeclarationSyntax.BaseList != null
                 ? interfaceDeclarationSyntax.BaseList.ToBaseTypes().ToImmutableList()

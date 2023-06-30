@@ -44,7 +44,7 @@ namespace Solution.Parser.CSharp
             var constructors = structDeclarationSyntax.AllOfType<ConstructorDeclarationSyntax>().ToConstructors().ToImmutableList();
             var properties = structDeclarationSyntax.AllOfType<PropertyDeclarationSyntax>().ToProperties().ToImmutableList();
             var methods = structDeclarationSyntax.AllOfType<MethodDeclarationSyntax>().ToMethods().ToImmutableList();
-            var nameSpace = structDeclarationSyntax.SyntaxTree.AllOfType<NamespaceDeclarationSyntax>()[0].ToNamespace();
+            var nameSpace = structDeclarationSyntax.SyntaxTree.GetNamespace();
             var attributesOfClass = structDeclarationSyntax.AttributeLists.ToAttributes().ToImmutableList();
             var fields = structDeclarationSyntax.AllOfType<FieldDeclarationSyntax>().ToFields().ToImmutableList();
             var baseTypes = structDeclarationSyntax.BaseList != null ? structDeclarationSyntax.BaseList.ToBaseTypes().ToImmutableList() : ImmutableList<BaseType>.Empty;

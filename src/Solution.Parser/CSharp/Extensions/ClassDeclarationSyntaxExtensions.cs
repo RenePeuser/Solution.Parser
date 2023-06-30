@@ -48,7 +48,7 @@ namespace Solution.Parser.CSharp
             var constructors = classDeclarationSyntax.AllOfType<ConstructorDeclarationSyntax>().ToConstructors().ToImmutableList();
             var properties = classDeclarationSyntax.AllOfType<PropertyDeclarationSyntax>().ToProperties().ToImmutableList();
             var methods = classDeclarationSyntax.AllOfType<MethodDeclarationSyntax>().ToMethods().ToImmutableList();
-            var nameSpace = classDeclarationSyntax.SyntaxTree.AllOfType<NamespaceDeclarationSyntax>()[0].ToNamespace();
+            var nameSpace = classDeclarationSyntax.SyntaxTree.GetNamespace();
             var attributesOfClass = classDeclarationSyntax.AttributeLists.ToAttributes().ToImmutableList();
             var fields = classDeclarationSyntax.AllOfType<FieldDeclarationSyntax>().ToFields().ToImmutableList();
             var baseTypes = classDeclarationSyntax.BaseList != null ? classDeclarationSyntax.BaseList.ToBaseTypes().ToImmutableList() : ImmutableList<BaseType>.Empty;
@@ -63,6 +63,11 @@ namespace Solution.Parser.CSharp
             var syntaxTree = classDeclarationSyntax.ToString();
             var fullQualifiedName = BuildFullQualifiedName(classDeclarationSyntax);
             var parameters = constructors.MaxBy(c => c.Parameters.Count)?.Parameters ?? ImmutableList<Parameter>.Empty;
+
+            if (fullQualifiedName.StartWith("."))
+            {
+
+            }
 
             return new Class(nameSpace, name, modifiers, constructors, properties, methods, attributesOfClass, fields,
                 interfaces, baseTypes, events, eventFields, nestedClasses, nestedStructs, nestedEnums,
@@ -101,6 +106,10 @@ namespace Solution.Parser.CSharp
                         case NamespaceDeclarationSyntax namespaceDeclarationSyntax:
                             parent = null;
                             yield return namespaceDeclarationSyntax.ToNamespace().Name;
+                            break;
+                        case FileScopedNamespaceDeclarationSyntax fileScopedNamespaceDeclarationSyntax:
+                            parent = null;
+                            yield return fileScopedNamespaceDeclarationSyntax.ToNamespace().Name;
                             break;
                         default:
                             parent = null;

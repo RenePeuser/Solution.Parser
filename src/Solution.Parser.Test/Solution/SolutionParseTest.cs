@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using Argument.Check;
@@ -45,6 +46,18 @@ namespace Solution.Parser.Test.Solution
             var csharpSyntaxTrees = tcSolutionFile.Projects.SelectMany(p => p.CSharpFileInfos).Select(c => c.Parse()).ToList();
 
             Assert.IsTrue(csharpSyntaxTrees.Any());
+        }
+
+        [TestMethod]
+        public void File_Scoped_Namespaces_Should_Be_Parseable_Too()
+        {
+            var tcSolutionFile = _sSolutionFileInfo.Parse();
+
+            var csharpSyntaxTrees = tcSolutionFile.Projects.SelectMany(p => p.CSharpFileInfos).Select(c => c.Parse()).ToList();
+
+            var csharpParser = csharpSyntaxTrees.SelectMany(csharp => csharp.Classes).Where(c => c.Name == "CSharpParser").ToImmutableList();
+
+            Assert.AreEqual("Solution.Parser.CSharp.CSharpParser", csharpParser[0].FullQualifiedName);
         }
     }
 }

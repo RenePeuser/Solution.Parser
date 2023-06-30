@@ -48,10 +48,8 @@ namespace Solution.Parser.CSharp
         {
             Throw.IfNull(enumDeclarationSyntax);
 
-            var nameSpace = enumDeclarationSyntax.SyntaxTree.AllOfType<NamespaceDeclarationSyntax>()[0]
-                .ToNamespace();
-            var enumFields = enumDeclarationSyntax.Members.Select(m => new EnumField(m.Identifier.ValueText, m.SyntaxTree.ToString()))
-                .ToImmutableList();
+            var nameSpace = enumDeclarationSyntax.SyntaxTree.GetNamespace();
+            var enumFields = enumDeclarationSyntax.Members.Select(m => new EnumField(m.Identifier.ValueText, m.SyntaxTree.ToString())).ToImmutableList();
             var modifiers = enumDeclarationSyntax.ToModifiers().ToImmutableList();
             var name = enumDeclarationSyntax.Identifier.ValueText;
             var fullQualifiedName = $"{nameSpace.Name}.{name}";

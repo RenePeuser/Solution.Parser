@@ -47,7 +47,7 @@ namespace Solution.Parser.CSharp
             var constructors = recordDeclarationSyntax.AllOfType<ConstructorDeclarationSyntax>().ToConstructors().ToImmutableList();
             var properties = recordDeclarationSyntax.AllOfType<PropertyDeclarationSyntax>().ToProperties().ToImmutableList();
             var methods = recordDeclarationSyntax.AllOfType<MethodDeclarationSyntax>().ToMethods().ToImmutableList();
-            var nameSpace = recordDeclarationSyntax.SyntaxTree.AllOfType<NamespaceDeclarationSyntax>()[0].ToNamespace();
+            var nameSpace = recordDeclarationSyntax.SyntaxTree.GetNamespace();
             var attributesOfClass = recordDeclarationSyntax.AttributeLists.ToAttributes().ToImmutableList();
             var fields = recordDeclarationSyntax.AllOfType<FieldDeclarationSyntax>().ToFields().ToImmutableList();
             var baseTypes = recordDeclarationSyntax.BaseList != null ? recordDeclarationSyntax.BaseList.ToBaseTypes().ToImmutableList() : ImmutableList<BaseType>.Empty;
