@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using Argument.Check;
@@ -26,7 +27,7 @@ namespace Solution.Parser.Solution
         {
             while (startUpDirectory != null)
             {
-                var solutionFile = startUpDirectory.EnumerateFiles().FirstOrDefault(item => item.Name.EqualsTo(solutionFileName.Value));
+                var solutionFile = startUpDirectory.EnumerateFiles().FirstOrDefault(item => item.Name.ToLower(CultureInfo.InvariantCulture).EqualsTo(solutionFileName.Value.ToLower(CultureInfo.InvariantCulture)));
                 if (solutionFile != null)
                 {
                     return new SolutionFileInfo(solutionFile.FullName);
