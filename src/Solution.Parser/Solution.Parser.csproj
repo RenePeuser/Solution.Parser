@@ -27,6 +27,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="NuGet.Configuration" Version="6.6.1" />
+        <PackageReference Include="NuGet.Versioning" Version="6.6.1" />
         <PackageReference Include="Argument.Check" Version="3.0.1" />
         <PackageReference Include="Extensions.Pack" Version="3.0.3" />
         <PackageReference Include="FileSystem.Abstraction" Version="0.1.2" />
