@@ -6,7 +6,7 @@
         <Copyright>Copyright 2022 (c) Rene Peuser. All rights reserved.</Copyright>
         <PackageProjectUrl>https://renepeuser.visualstudio.com/Solution.Parser</PackageProjectUrl>
         <RepositoryUrl>https://renepeuser.visualstudio.com/Solution.Parser</RepositoryUrl>
-        <PackageReleaseNotes>Alpha release - WIP - Currently only for Net6</PackageReleaseNotes>
+        <PackageReleaseNotes>Introduce API parsing</PackageReleaseNotes>
         <PackageTags>C#;Solution;Project;XAML;SyntaxTree;Syntax</PackageTags>
         <PackageId>Solution.Parser</PackageId>
         <OutputType>Library</OutputType>
