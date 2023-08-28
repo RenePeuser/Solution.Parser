@@ -44,23 +44,17 @@ namespace Solution.Parser.AspNet
         }
 
         internal IImmutableList<MethodInfos> Parse(IImmutableList<Method> methods,
-                                                   IImmutableList<string> baseUrl,
+                                                   IImmutableList<string> baseUrls,
                                                    IImmutableList<MethodInfo> reflectionTypes,
                                                    IImmutableList<CSharpSyntaxTree> syntaxTrees)
         {
             // Only methods which represents a http endpoint
             var publicMethods = methods.Where(m => m.Attributes.Any(attribute => attribute.Name.StartWith("Http"))).ToImmutableList();
-            return publicMethods.SelectMany(method =>
-            {
-                return baseUrl.Select(url =>
-                {
-                    return Parse(method, url, reflectionTypes, syntaxTrees);
-                });
-            }).ToImmutableList();
+            return publicMethods.Select(method => Parse(method, baseUrls, reflectionTypes, syntaxTrees)).ToImmutableList();
         }
 
         private MethodInfos Parse(Method method,
-                                  string baseUrl,
+                                  IImmutableList<string> baseUrls,
                                   IImmutableList<MethodInfo> reflectionTypes,
                                   IImmutableList<CSharpSyntaxTree> syntaxTrees)
         {
@@ -85,7 +79,7 @@ namespace Solution.Parser.AspNet
             var swaggerOperation = method.Attributes.FirstOrDefault(a => a.Name == "SwaggerOperation");
             var swaggerOperationId = swaggerOperation?.Arguments.FirstOrDefault(a => a.Contains("OperationId"))?.Split("=").Last().Replace(@"""", string.Empty)?.Trim() ?? string.Empty;
             var produceResponseType = GetProduceResponseType(method);
-            var relativeUrl = _urlBuilder.BuildFrom(baseUrl, method);
+            var relativeUrl = _urlBuilder.BuildFrom(baseUrls, method);
             var reflectionParameters = methodReflection.GetParameters().ToImmutableList();
             var allModels = _dataTypeFinder.FindDataType(methodReflection, syntaxTrees).ToImmutableList();
             var parameters = _parameterNormalizer.Normalize(method, reflectionParameters, allModels);
@@ -98,7 +92,7 @@ namespace Solution.Parser.AspNet
                 SwaggerOperationId = swaggerOperationId,
                 HttpAction = httpAction,
                 ProduceResponseTypes = produceResponseType,
-                RelativeUrl = relativeUrl,
+                RelativeUrls = relativeUrl,
                 Parameters = parameters,
                 ResponseType = responseType,
                 RequestType = null, // ToDo not sure how realy to detect ot many possibilities here,

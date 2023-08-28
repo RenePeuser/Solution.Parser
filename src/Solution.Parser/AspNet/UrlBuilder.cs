@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Immutable;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Extensions.Pack;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,17 +36,47 @@ namespace Solution.Parser.AspNet
             _queryBuilder = queryBuilder;
         }
 
-        internal string BuildFrom(string baseUrl, Method method)
+        internal IImmutableList<string> BuildFrom(IImmutableList<string> baseUrls, Method method)
         {
-            var httpAttribute = method.Attributes.FirstOrDefault(a => a.Name.StartWith("Http"));
-            var httpMethodRoute = httpAttribute?.Arguments.FirstOrDefault()?.Trim('"') ?? string.Empty;
-            var relativeUrl = $"{baseUrl.TrimEnd('/')}/{httpMethodRoute.TrimStart('/')}";
+            var immutableListBuilder = ImmutableList.CreateBuilder<string>();
 
-            var routeOnMethod = method.Attributes.FirstOrDefault(a => a.Name == "Route")?.Arguments.FirstOrDefault()?.Trim('"');
-            if (routeOnMethod.IsNotNullOrWhiteSpace())
+            // 1. Iterate over all base urls
+            foreach (var baseUrl in baseUrls)
             {
-                relativeUrl = $"{baseUrl.TrimEnd('/')}/{routeOnMethod}/{httpMethodRoute.TrimStart('/')}";
+                // 2. Iterate over all http methods
+                var httpMethods = method.Attributes.Where(a => a.Name.StartWith("Http")).ToImmutableList();
+                foreach (var httpMethod in httpMethods)
+                {
+                    var httpMethodRoute = httpMethod.Arguments.FirstOrDefault()?.Trim('"') ?? string.Empty;
+
+                    // 3. Iterate over all routes
+                    var routes = method.Attributes.Where(a => a.Name == "Route").Select(a => a.Arguments.FirstOrDefault()?.Trim('"')).FilterNullObjects().ToImmutableList();
+
+                    if (routes.IsEmpty())
+                    {
+                        var urlWithParams = BuildUrlInternal(method, baseUrl, string.Empty, httpMethodRoute);
+                        immutableListBuilder.Add(urlWithParams);
+
+                        continue;
+                    }
+
+                    foreach (var route in routes)
+                    {
+                        var urlWithParams = BuildUrlInternal(method, baseUrl, route, httpMethodRoute);
+                        immutableListBuilder.Add(urlWithParams);
+                    }
+                }
+
             }
+
+            return immutableListBuilder.ToImmutable();
+        }
+
+        private string BuildUrlInternal(Method method, string baseUrl, string route, string httpMethodTemplate)
+        {
+            var relativeUrl = route.IsNullOrWhiteSpace() ?
+                                    $"{baseUrl.TrimEnd('/')}/{httpMethodTemplate.TrimStart('/')}" :
+                                    $"{baseUrl.TrimEnd('/')}/{route}/{httpMethodTemplate.TrimStart('/')}";
 
             var urlParameters = _parameterRegEx.Matches(relativeUrl).Select(m => m.Value);
             urlParameters.ForEach(param =>

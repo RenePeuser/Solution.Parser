@@ -13,7 +13,7 @@ namespace Solution.Parser.AspNet
 
         public required string HttpAction { get; init; } = string.Empty;
 
-        public required string RelativeUrl { get; init; } = string.Empty;
+        public required IImmutableList<string> RelativeUrls { get; init; } = ImmutableList<string>.Empty;
 
         public required IImmutableList<Parameter> Parameters { get; init; } = ImmutableList<Parameter>.Empty;
 

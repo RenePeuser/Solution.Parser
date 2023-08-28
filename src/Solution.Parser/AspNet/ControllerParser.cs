@@ -62,19 +62,20 @@ namespace Solution.Parser.AspNet
                 var normalizedVersion = $"V{version.Replace(".0", string.Empty) // V1.0 => V1
                                                    .Replace(".", "_")}"; // V1.1 => V1_1}"
 
-                var baseUrl = controller.Attributes.Where(a => a.Name == "Route").Select(a => a.Arguments?.FirstOrDefault()?.Replace("{version:apiVersion}", version.ToLowerInvariant()).Trim('"') ?? string.Empty).ToImmutableList();
+                // 2. Get all declared base routes
+                var baseUrls = controller.Attributes.Where(a => a.Name == "Route").Select(a => a.Arguments?.FirstOrDefault()?.Replace("{version:apiVersion}", version.ToLowerInvariant()).Trim('"') ?? string.Empty).ToImmutableList();
 
-                // 2. Now parse all methods
+                // 3. Now parse all methods
                 var methodReflection = controllerType.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance).ToImmutableList();
-                var methods = _methodParser.Parse(controller.Methods, baseUrl, methodReflection, syntaxTrees);
+                var methods = _methodParser.Parse(controller.Methods, baseUrls, methodReflection, syntaxTrees);
 
-                // 3. Return controller infos
+                // 4. Return controller infos
                 yield return new ControllerInfo
                 {
                     Name = controller.Name,
                     DomainName = controller.Name.Replace("Controller", string.Empty),
                     Version = new VersionInfo(version, normalizedVersion),
-                    BaseUrls = baseUrl,
+                    BaseUrls = baseUrls,
                     Methods = methods,
                     Attributes = controller.Attributes
                 };
