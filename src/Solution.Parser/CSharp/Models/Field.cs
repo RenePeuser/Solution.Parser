@@ -8,5 +8,6 @@ namespace Solution.Parser.CSharp
                         string Type,
                         IImmutableList<Modifier> Modifiers,
                         Initializer? Initializer,
-                        string SyntaxTree) : DeclarationBase(Name, Name, SyntaxTree);
+                        string SyntaxTree,
+                        string FilePath) : DeclarationBase(Name, Name, SyntaxTree, FilePath);
 }

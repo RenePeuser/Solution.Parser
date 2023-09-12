@@ -9,5 +9,6 @@ namespace Solution.Parser.CSharp
                            bool IsReadOnly,
                            IImmutableList<Modifier> Modifiers,
                            string SyntaxTree,
-                           string FullQualifiedName) : DeclarationWithModifiers(Name, FullQualifiedName, Modifiers, SyntaxTree);
+                           string FullQualifiedName,
+                           string FilePath) : DeclarationWithModifiers(Name, FullQualifiedName, Modifiers, SyntaxTree, FilePath);
 }

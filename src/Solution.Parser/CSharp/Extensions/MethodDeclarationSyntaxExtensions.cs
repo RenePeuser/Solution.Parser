@@ -43,11 +43,11 @@ namespace Solution.Parser.CSharp
             }
         }
 
-        internal static Method ToMethod(this MethodDeclarationSyntax methodDeclarationSyntax)
+        internal static Method ToMethod(this MethodDeclarationSyntax methodDeclarationSyntax, string filePath)
         {
             Throw.IfNull(methodDeclarationSyntax);
 
-            var parameters = methodDeclarationSyntax.ParameterList.ToParameters().ToImmutableList();
+            var parameters = methodDeclarationSyntax.ParameterList.ToParameters(filePath).ToImmutableList();
             var returnType = methodDeclarationSyntax.ReturnType.ToString();
             var methodName = methodDeclarationSyntax.Identifier.ValueText;
 
@@ -59,13 +59,24 @@ namespace Solution.Parser.CSharp
             var methodValue = methodDeclarationSyntax.ToString();
             var methodBody = methodDeclarationSyntax.Body?.ToString() == null ? string.Empty : methodDeclarationSyntax.Body.ToString();
             var statements = methodBody.IsEmpty() ? ImmutableList<string>.Empty : methodDeclarationSyntax.Body?.Statements.Select(s => s.ToString()).ToImmutableList() ?? ImmutableList<string>.Empty;
-            var attributes = GetAttributes(methodDeclarationSyntax).ToImmutableList();
+            var attributes = GetAttributes(methodDeclarationSyntax, filePath).ToImmutableList();
             var modifiers = methodDeclarationSyntax.ToModifier().ToImmutableList();
             var lineStatementsRaw = methodBody.Split(Environment.NewLine).ToImmutableList();
             var lineStatements = lineStatementsRaw.Take(new Range(1, lineStatementsRaw.Count - 1)).FilterNullOrWhitespace().ToImmutableList();
             var fullqualifiedName = BuildFullQualifiedName(methodDeclarationSyntax);
 
-            return new Method(methodName, parameters, returnType, methodValue, methodBody, statements, attributes, modifiers, lineStatements, methodDeclarationSyntax.SyntaxTree.ToString(), fullqualifiedName);
+            return new Method(methodName,
+                              parameters,
+                              returnType,
+                              methodValue,
+                              methodBody,
+                              statements,
+                              attributes,
+                              modifiers,
+                              lineStatements,
+                              methodDeclarationSyntax.SyntaxTree.ToString(),
+                              fullqualifiedName,
+                              filePath);
         }
 
         internal static string BuildFullQualifiedName(MethodDeclarationSyntax recordDeclarationSyntax)
@@ -110,19 +121,20 @@ namespace Solution.Parser.CSharp
             }
         }
 
-        internal static IImmutableList<Method> ToMethods(
-            this IImmutableList<MethodDeclarationSyntax> methodDeclarationSyntaxes)
+        internal static IImmutableList<Method> ToMethods(this IImmutableList<MethodDeclarationSyntax> methodDeclarationSyntaxes,
+                                                         string filePath)
         {
             Throw.IfNull(methodDeclarationSyntaxes);
 
-            return methodDeclarationSyntaxes.Select(m => m.ToMethod()).ToImmutableList();
+            return methodDeclarationSyntaxes.Select(m => m.ToMethod(filePath)).ToImmutableList();
         }
 
-        private static IImmutableList<Attribute> GetAttributes(MethodDeclarationSyntax methodDeclarationSyntax)
+        private static IImmutableList<Attribute> GetAttributes(MethodDeclarationSyntax methodDeclarationSyntax,
+                                                               string filePath)
         {
             return (from attrList in methodDeclarationSyntax.AttributeLists
                     from attr in attrList.Attributes
-                    select new Attribute(attr.Name.ToString(), attr.ArgumentList?.Arguments.Select(arg => arg.ToString()).ToImmutableList() ?? ImmutableList<string>.Empty, attr.Parent?.ToString() ?? string.Empty)).ToImmutableList();
+                    select new Attribute(attr.Name.ToString(), attr.ArgumentList?.Arguments.Select(arg => arg.ToString()).ToImmutableList() ?? ImmutableList<string>.Empty, attr.Parent?.ToString() ?? string.Empty, filePath)).ToImmutableList();
         }
     }
 }

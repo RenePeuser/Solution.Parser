@@ -2,6 +2,7 @@
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Extensions.Pack;
 using Microsoft.Extensions.DependencyInjection;
 using Solution.Parser.CSharp;
@@ -22,7 +23,7 @@ namespace Solution.Parser.AspNet
         }
     }
 
-    internal sealed class MethodParser
+    internal sealed partial class MethodParser
     {
         private readonly DataTypeFinder _dataTypeFinder;
         private readonly UrlBuilder _urlBuilder;
@@ -107,7 +108,8 @@ namespace Solution.Parser.AspNet
                                             .Select(produce =>
                                             {
                                                 var type = produce.Arguments.FirstOrDefault() ?? string.Empty;
-                                                var code = produce.Arguments.LastOrDefault()?.ToIntOrDefault() ?? 0;
+                                                var regexMatch = GetHttpCode().Match(produce.Arguments.LastOrDefault() ?? string.Empty);
+                                                var code = regexMatch.Groups[1].Value?.ToInt() ?? 0;
                                                 return new ProduceResponseTypes(type, code);
                                             }).ToImmutableList();
             return produceResponseType;
@@ -125,5 +127,8 @@ namespace Solution.Parser.AspNet
 
             return filteredMethods;
         }
+
+        [GeneratedRegex("^[^\\d]*(\\d+)")]
+        private static partial Regex GetHttpCode();
     }
 }

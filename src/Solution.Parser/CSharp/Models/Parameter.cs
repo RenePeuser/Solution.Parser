@@ -9,5 +9,6 @@ namespace Solution.Parser.CSharp
                             IImmutableList<Attribute> Attributes,
                             string SyntaxTree,
                             bool IsOptional,
-                            string? DefaultValue) : DeclarationBase(Name, Name, SyntaxTree);
+                            string? DefaultValue,
+                            string FilePath) : DeclarationBase(Name, Name, SyntaxTree, FilePath);
 }

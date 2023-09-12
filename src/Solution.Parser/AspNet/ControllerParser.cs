@@ -58,12 +58,12 @@ namespace Solution.Parser.AspNet
                 var controllerType = reflectionTypes.First(type => type.FullName == controller.FullQualifiedName);
 
                 // 1. Extract meta infos version, base url and son on.
-                var version = controller.Attributes.FirstOrDefault(a => a.Name == "ApiVersion")?.Arguments?.FirstOrDefault()?.Trim('"') ?? "1.0";
+                var version = controller.Attributes.FirstOrDefault(a => a.Name == "ApiVersion")?.Arguments.FirstOrDefault()?.Trim('"') ?? "1.0";
                 var normalizedVersion = $"V{version.Replace(".0", string.Empty) // V1.0 => V1
                                                    .Replace(".", "_")}"; // V1.1 => V1_1}"
 
                 // 2. Get all declared base routes
-                var baseUrls = controller.Attributes.Where(a => a.Name == "Route").Select(a => a.Arguments?.FirstOrDefault()?.Replace("{version:apiVersion}", version.ToLowerInvariant()).Trim('"') ?? string.Empty).ToImmutableList();
+                var baseUrls = controller.Attributes.Where(a => a.Name == "Route").Select(a => a.Arguments.FirstOrDefault()?.Replace("{version:apiVersion}", version.ToLowerInvariant()).Trim('"') ?? string.Empty).ToImmutableList();
 
                 // 3. Now parse all methods
                 var methodReflection = controllerType.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance).ToImmutableList();
@@ -73,6 +73,7 @@ namespace Solution.Parser.AspNet
                 yield return new ControllerInfo
                 {
                     Name = controller.Name,
+                    FilePath = controller.FilePath,
                     DomainName = controller.Name.Replace("Controller", string.Empty),
                     Version = new VersionInfo(version, normalizedVersion),
                     BaseUrls = baseUrls,

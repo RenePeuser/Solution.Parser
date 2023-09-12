@@ -40,11 +40,12 @@ namespace Solution.Parser.CSharp
             }
         }
 
-        internal static Constructor ToConstructor(this ConstructorDeclarationSyntax constructorDeclarationSyntax)
+        internal static Constructor ToConstructor(this ConstructorDeclarationSyntax constructorDeclarationSyntax,
+                                                  string filePath)
         {
             Throw.IfNull(constructorDeclarationSyntax);
 
-            var parameters = constructorDeclarationSyntax.ParameterList.ToParameters().ToImmutableList();
+            var parameters = constructorDeclarationSyntax.ParameterList.ToParameters(filePath).ToImmutableList();
             var arguments = constructorDeclarationSyntax.Initializer?.ArgumentList.Arguments.Select(a => a.ToString())
                 .ToImmutableList();
             var modifiers = constructorDeclarationSyntax.ToModifiers().ToImmutableList();
@@ -52,11 +53,11 @@ namespace Solution.Parser.CSharp
             return new Constructor(parameters, arguments ?? ImmutableList<string>.Empty, modifiers);
         }
 
-        internal static IImmutableList<Constructor> ToConstructors(this IImmutableList<ConstructorDeclarationSyntax> constructorDeclarationSyntaxes)
+        internal static IImmutableList<Constructor> ToConstructors(this IImmutableList<ConstructorDeclarationSyntax> constructorDeclarationSyntaxes, string filePath)
         {
             Throw.IfNull(constructorDeclarationSyntaxes);
 
-            return constructorDeclarationSyntaxes.Select(c => c.ToConstructor()).ToImmutableList();
+            return constructorDeclarationSyntaxes.Select(c => c.ToConstructor(filePath)).ToImmutableList();
         }
     }
 }

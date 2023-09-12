@@ -39,23 +39,24 @@ namespace Solution.Parser.CSharp
             }
         }
 
-        internal static IImmutableList<Enum> ToEnums(this IImmutableList<EnumDeclarationSyntax> enumDeclarationSyntaxes)
+        internal static IImmutableList<Enum> ToEnums(this IImmutableList<EnumDeclarationSyntax> enumDeclarationSyntaxes,
+                                                     string filePath)
         {
-            return enumDeclarationSyntaxes.Select(ToEnum).ToImmutableList();
+            return enumDeclarationSyntaxes.Select(item => item.ToEnum(filePath)).ToImmutableList();
         }
 
-        internal static Enum ToEnum(this EnumDeclarationSyntax enumDeclarationSyntax)
+        internal static Enum ToEnum(this EnumDeclarationSyntax enumDeclarationSyntax, string filePath)
         {
             Throw.IfNull(enumDeclarationSyntax);
 
             var nameSpace = enumDeclarationSyntax.SyntaxTree.GetNamespace();
-            var enumFields = enumDeclarationSyntax.Members.Select(m => new EnumField(m.Identifier.ValueText, m.SyntaxTree.ToString())).ToImmutableList();
+            var enumFields = enumDeclarationSyntax.Members.Select(m => new EnumField(m.Identifier.ValueText, m.SyntaxTree.ToString(), filePath)).ToImmutableList();
             var modifiers = enumDeclarationSyntax.ToModifiers().ToImmutableList();
             var name = enumDeclarationSyntax.Identifier.ValueText;
             var fullQualifiedName = $"{nameSpace.Name}.{name}";
             var syntaxTree = enumDeclarationSyntax.ToString();
 
-            return new Enum(nameSpace, name, modifiers, enumFields, fullQualifiedName, syntaxTree);
+            return new Enum(nameSpace, name, modifiers, enumFields, fullQualifiedName, syntaxTree, filePath);
         }
     }
 }

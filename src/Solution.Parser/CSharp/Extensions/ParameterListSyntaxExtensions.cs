@@ -7,11 +7,12 @@ namespace Solution.Parser.CSharp
 {
     internal static class ParameterListSyntaxExtensions
     {
-        internal static IImmutableList<Parameter> ToParameters(this ParameterListSyntax parameterListSyntax)
+        internal static IImmutableList<Parameter> ToParameters(this ParameterListSyntax parameterListSyntax,
+                                                               string filePath)
         {
             Throw.IfNull(parameterListSyntax);
 
-            return parameterListSyntax.Parameters.Select(p => p.ToParameter()).ToImmutableList();
+            return parameterListSyntax.Parameters.Select(p => p.ToParameter(filePath)).ToImmutableList();
         }
     }
 }

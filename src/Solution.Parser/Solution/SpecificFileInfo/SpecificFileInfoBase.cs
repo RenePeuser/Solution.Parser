@@ -34,7 +34,7 @@ namespace Solution.Parser.Solution
                 throw new ArgumentException($"The given path '{path}'does not exists: ");
             }
 
-            FileNameWithoutExtenion = FileSystemInfoExtensions.FileNameWithoutExtension((FileSystemInfo)Value);
+            FileNameWithoutExtenion = FileSystemInfoExtensions.FileNameWithoutExtension(Value);
         }
 
         public string FileNameWithoutExtenion { get; }

@@ -3,5 +3,5 @@
 namespace Solution.Parser.CSharp
 {
     [DebuggerDisplay("{Name}")]
-    public record EventField(string Type, string Name, string SyntaxTree) : Event(Type, Name, SyntaxTree);
+    public record EventField(string Type, string Name, string SyntaxTree, string FilePath) : Event(Type, Name, SyntaxTree, FilePath);
 }

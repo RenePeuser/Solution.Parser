@@ -5,7 +5,7 @@ namespace Solution.Parser.CSharp
 {
     [DebuggerDisplay("{Name}")]
     public record Struct(NameSpace NameSpace,
-                         string name,
+                         string Name,
                          IImmutableList<Modifier> Modifiers,
                          IImmutableList<Constructor> Constructors,
                          IImmutableList<Property> Properties,
@@ -22,7 +22,8 @@ namespace Solution.Parser.CSharp
                          IImmutableList<Interface> NestedInterfaces,
                          IImmutableList<Parameter> Parameters,
                          string SyntaxTreee,
-                         string FullQualifiedName)
-        : Class(NameSpace, name, Modifiers, Constructors, Properties, Methods, Attributes, Fields, Interfaces,
-            BaseTypes, Events, EventFields, NestedClasses, NestedStructs, NestedEnums, NestedInterfaces, Parameters, SyntaxTreee, FullQualifiedName);
+                         string FullQualifiedName,
+                         string FilePath)
+        : Class(NameSpace, Name, Modifiers, Constructors, Properties, Methods, Attributes, Fields, Interfaces,
+            BaseTypes, Events, EventFields, NestedClasses, NestedStructs, NestedEnums, NestedInterfaces, Parameters, SyntaxTreee, FullQualifiedName, FilePath);
 }

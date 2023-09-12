@@ -14,5 +14,6 @@ namespace Solution.Parser.CSharp
                          IImmutableList<Modifier> Modifiers,
                          IImmutableList<string> LineStatements,
                          string SyntaxTree,
-                         string FullQualifiedName) : DeclarationWithModifiers(Name, FullQualifiedName, Modifiers, SyntaxTree);
+                         string FullQualifiedName,
+                         string FilePath) : DeclarationWithModifiers(Name, FullQualifiedName, Modifiers, SyntaxTree, FilePath);
 }

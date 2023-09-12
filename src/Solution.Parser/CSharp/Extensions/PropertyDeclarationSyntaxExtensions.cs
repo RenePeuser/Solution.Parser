@@ -40,7 +40,7 @@ namespace Solution.Parser.CSharp
             }
         }
 
-        internal static Property ToProperty(this PropertyDeclarationSyntax propertyDeclarationSyntax)
+        internal static Property ToProperty(this PropertyDeclarationSyntax propertyDeclarationSyntax, string filePath)
         {
             Throw.IfNull(propertyDeclarationSyntax);
 
@@ -51,7 +51,7 @@ namespace Solution.Parser.CSharp
             var syntaxTree = propertyDeclarationSyntax.ToString();
             var fullqualifiedName = BuildFullQualifiedName(propertyDeclarationSyntax);
 
-            return new Property(propertyType, propertyName, isReadOnly, modifiers, syntaxTree, fullqualifiedName);
+            return new Property(propertyType, propertyName, isReadOnly, modifiers, syntaxTree, fullqualifiedName, filePath);
         }
 
         internal static string BuildFullQualifiedName(PropertyDeclarationSyntax recordDeclarationSyntax)
@@ -96,11 +96,12 @@ namespace Solution.Parser.CSharp
             }
         }
 
-        internal static IImmutableList<Property> ToProperties(this IImmutableList<PropertyDeclarationSyntax> propertyDeclarationSyntaxes)
+        internal static IImmutableList<Property> ToProperties(this IImmutableList<PropertyDeclarationSyntax> propertyDeclarationSyntaxes,
+                                                              string filePath)
         {
             Throw.IfNull(propertyDeclarationSyntaxes);
 
-            return propertyDeclarationSyntaxes.Select(p => p.ToProperty()).ToImmutableList();
+            return propertyDeclarationSyntaxes.Select(p => p.ToProperty(filePath)).ToImmutableList();
         }
     }
 }

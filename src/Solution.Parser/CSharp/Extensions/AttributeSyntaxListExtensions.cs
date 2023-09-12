@@ -7,7 +7,7 @@ namespace Solution.Parser.CSharp
 {
     internal static class AttributeSyntaxListExtensions
     {
-        internal static IImmutableList<Attribute> ToAttributes(this SyntaxList<AttributeListSyntax> argSyntaxList)
+        internal static IImmutableList<Attribute> ToAttributes(this SyntaxList<AttributeListSyntax> argSyntaxList, string filePath)
         {
             return argSyntaxList.SelectMany(list =>
             {
@@ -15,7 +15,7 @@ namespace Solution.Parser.CSharp
                 {
                     var name = a.Name.ToString();
                     var immutableList = a.ArgumentList?.Arguments.Select(p => p.ToString()).ToImmutableList() ?? ImmutableList<string>.Empty;
-                    return new Attribute(name, immutableList, a.Parent?.ToString() ?? string.Empty);
+                    return new Attribute(name, immutableList, a.Parent?.ToString() ?? string.Empty, filePath);
                 }).ToImmutableList();
             }).ToImmutableList();
         }

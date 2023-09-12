@@ -8,7 +8,7 @@ namespace Solution.Parser.CSharp
 {
     internal static class FieldDeclarationSyntaxExtensions
     {
-        internal static Field ToField(this FieldDeclarationSyntax fieldDeclarationSyntax)
+        internal static Field ToField(this FieldDeclarationSyntax fieldDeclarationSyntax, string filePath)
         {
             Throw.IfNull(fieldDeclarationSyntax);
 
@@ -17,12 +17,12 @@ namespace Solution.Parser.CSharp
             var bindingFlags = fieldDeclarationSyntax.ToBindingFlags().ToImmutableList();
             var initializer = fieldDeclarationSyntax.Declaration.Variables[0].Initializer?.ToInitializer();
 
-            return new Field(name, type, bindingFlags, initializer, fieldDeclarationSyntax.SyntaxTree.ToString());
+            return new Field(name, type, bindingFlags, initializer, fieldDeclarationSyntax.SyntaxTree.ToString(), filePath);
         }
 
-        public static IImmutableList<Field> ToFields(this IImmutableList<FieldDeclarationSyntax> fieldDeclarationSyntaxes)
+        public static IImmutableList<Field> ToFields(this IImmutableList<FieldDeclarationSyntax> fieldDeclarationSyntaxes, string filePath)
         {
-            return fieldDeclarationSyntaxes.Select(f => f.ToField()).ToImmutableList();
+            return fieldDeclarationSyntaxes.Select(f => f.ToField(filePath)).ToImmutableList();
         }
 
         private static IEnumerable<Modifier> ToBindingFlags(this FieldDeclarationSyntax fieldDeclarationSyntax)

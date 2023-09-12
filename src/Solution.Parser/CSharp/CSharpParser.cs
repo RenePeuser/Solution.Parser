@@ -10,7 +10,7 @@ namespace Solution.Parser.CSharp;
 
 public static class CSharpParser
 {
-    public static CSharpSyntaxTree Parse(this SyntaxTree syntaxTree)
+    public static CSharpSyntaxTree Parse(this SyntaxTree syntaxTree, string filePath)
     {
         Throw.IfNull(syntaxTree);
 
@@ -23,14 +23,14 @@ public static class CSharpParser
 
         var usings = syntaxTree.AllOfType<UsingDirectiveSyntax>().Select(u =>
         {
-            var value = u.Name?.As<NameSyntax>()?.GetText()?.ToString() ?? string.Empty;
+            var value = u.Name?.As<NameSyntax>()?.GetText().ToString() ?? string.Empty;
             return new Using(value);
         }).ToImmutableList();
-        var classes = syntaxTree.AllOfType<ClassDeclarationSyntax>().ToClasses().ToImmutableList();
-        var records = syntaxTree.AllOfType<RecordDeclarationSyntax>().ToRecords().ToImmutableList();
-        var interfaces = syntaxTree.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces().ToImmutableList();
-        var enums = syntaxTree.AllOfType<EnumDeclarationSyntax>().ToEnums().ToImmutableList();
-        var structs = syntaxTree.AllOfType<StructDeclarationSyntax>().ToStructs().ToImmutableList();
+        var classes = syntaxTree.AllOfType<ClassDeclarationSyntax>().ToClasses(filePath).ToImmutableList();
+        var records = syntaxTree.AllOfType<RecordDeclarationSyntax>().ToRecords(filePath).ToImmutableList();
+        var interfaces = syntaxTree.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces(filePath).ToImmutableList();
+        var enums = syntaxTree.AllOfType<EnumDeclarationSyntax>().ToEnums(filePath).ToImmutableList();
+        var structs = syntaxTree.AllOfType<StructDeclarationSyntax>().ToStructs(filePath).ToImmutableList();
 
         return new CSharpSyntaxTree(nameSpace, usings, classes, records, interfaces, enums, structs);
     }
@@ -46,6 +46,6 @@ public static class CSharpParser
 
         var code = File.ReadAllText(csharpFileInfo.Value.FullName);
         var syntaxTree = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(code);
-        return Parse(syntaxTree);
+        return Parse(syntaxTree, csharpFileInfo.Value.FullName);
     }
 }

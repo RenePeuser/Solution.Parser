@@ -40,38 +40,52 @@ namespace Solution.Parser.CSharp
             }
         }
 
-        internal static IImmutableList<Interface> ToInterfaces(
-            this IImmutableList<InterfaceDeclarationSyntax> interfaceDeclarationSyntaxes)
+        internal static IImmutableList<Interface> ToInterfaces(this IImmutableList<InterfaceDeclarationSyntax> interfaceDeclarationSyntaxes,
+                                                               string filePath)
         {
-            return interfaceDeclarationSyntaxes.Select(ToInterface).ToImmutableList();
+            return interfaceDeclarationSyntaxes.Select(item => item.ToInterface(filePath)).ToImmutableList();
         }
 
-        internal static Interface ToInterface(this InterfaceDeclarationSyntax interfaceDeclarationSyntax)
+        internal static Interface ToInterface(this InterfaceDeclarationSyntax interfaceDeclarationSyntax, string filePath)
         {
             Throw.IfNull(interfaceDeclarationSyntax);
 
             var name = interfaceDeclarationSyntax.Identifier.ValueText;
             var modifiers = interfaceDeclarationSyntax.ToModifiers().ToImmutableList();
-            var properties = interfaceDeclarationSyntax.AllOfType<PropertyDeclarationSyntax>().ToProperties().ToImmutableList();
-            var methods = interfaceDeclarationSyntax.AllOfType<MethodDeclarationSyntax>().ToMethods().ToImmutableList();
+            var properties = interfaceDeclarationSyntax.AllOfType<PropertyDeclarationSyntax>().ToProperties(filePath).ToImmutableList();
+            var methods = interfaceDeclarationSyntax.AllOfType<MethodDeclarationSyntax>().ToMethods(filePath).ToImmutableList();
             var nameSpace = interfaceDeclarationSyntax.SyntaxTree.GetNamespace();
-            var attributesOfClass = interfaceDeclarationSyntax.AttributeLists.ToAttributes().ToImmutableList();
+            var attributesOfClass = interfaceDeclarationSyntax.AttributeLists.ToAttributes(filePath).ToImmutableList();
             var baseTypes = interfaceDeclarationSyntax.BaseList != null
                 ? interfaceDeclarationSyntax.BaseList.ToBaseTypes().ToImmutableList()
                 : ImmutableList<BaseType>.Empty;
-            var events = interfaceDeclarationSyntax.AllOfType<EventDeclarationSyntax>().ToEvents().ToImmutableList();
-            var eventFields = interfaceDeclarationSyntax.AllOfType<EventFieldDeclarationSyntax>().ToEventFields()
+            var events = interfaceDeclarationSyntax.AllOfType<EventDeclarationSyntax>().ToEvents(filePath).ToImmutableList();
+            var eventFields = interfaceDeclarationSyntax.AllOfType<EventFieldDeclarationSyntax>().ToEventFields(filePath)
                 .ToImmutableList();
-            var nestedClasses = interfaceDeclarationSyntax.AllOfType<ClassDeclarationSyntax>().ToClasses().ToImmutableList();
-            var nestedStructs = interfaceDeclarationSyntax.AllOfType<StructDeclarationSyntax>().ToStructs().ToImmutableList();
-            var nestedEnums = interfaceDeclarationSyntax.AllOfType<EnumDeclarationSyntax>().ToEnums().ToImmutableList();
-            var nestedInterfaces = interfaceDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces()
+            var nestedClasses = interfaceDeclarationSyntax.AllOfType<ClassDeclarationSyntax>().ToClasses(filePath).ToImmutableList();
+            var nestedStructs = interfaceDeclarationSyntax.AllOfType<StructDeclarationSyntax>().ToStructs(filePath).ToImmutableList();
+            var nestedEnums = interfaceDeclarationSyntax.AllOfType<EnumDeclarationSyntax>().ToEnums(filePath).ToImmutableList();
+            var nestedInterfaces = interfaceDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces(filePath)
                 .ToImmutableList();
             var fullQualifiedName = BuildFullQualifiedName(interfaceDeclarationSyntax);
             var syntaxTree = interfaceDeclarationSyntax.ToString();
 
-            return new Interface(nameSpace, name, modifiers, properties, methods, attributesOfClass, baseTypes,
-                events, eventFields, nestedClasses, nestedStructs, nestedEnums, nestedInterfaces, fullQualifiedName, syntaxTree);
+            return new Interface(nameSpace,
+                                 name,
+                                 modifiers,
+                                 properties,
+                                 methods,
+                                 attributesOfClass,
+                                 baseTypes,
+                                 events,
+                                 eventFields,
+                                 nestedClasses,
+                                 nestedStructs,
+                                 nestedEnums,
+                                 nestedInterfaces,
+                                 fullQualifiedName,
+                                 syntaxTree,
+                                 filePath);
         }
 
         internal static string BuildFullQualifiedName(InterfaceDeclarationSyntax recordDeclarationSyntax)
