@@ -11,24 +11,23 @@ namespace Solution.Parser.Project
     [DebuggerDisplay("{AssemblyName}")]
     public class ProjectFile
     {
-        internal ProjectFile(
-            Guid guid,
-            XDocument document,
-            ProjectFileInfo projectFileInfo,
-            string assemblyName,
-            IImmutableList<AssemblyReference> assemblyReferences,
-            IImmutableList<ProjectReference> projectReferences,
-            IImmutableList<ProjectType> projectTypes,
-            IImmutableList<Import> imports,
-            IImmutableList<CSharpFileInfo> csharpFileInfos,
-            IImmutableList<XAMLFileInfo> xamlFileInfos,
-            IImmutableList<ProjectContentItem> projectContentItems,
-            IImmutableList<Package> packages,
-            IImmutableList<PackageReference> packageReferences,
-            IImmutableList<string> targetFrameworkVersion,
-            IImmutableList<ProjectFile> buildDependencies,
-            string buildRoot,
-            string documentationFile)
+        internal ProjectFile(Guid guid,
+                             XDocument document,
+                             ProjectFileInfo projectFileInfo,
+                             string assemblyName,
+                             IImmutableList<AssemblyReference> assemblyReferences,
+                             IImmutableList<ProjectReference> projectReferences,
+                             IImmutableList<ProjectType> projectTypes,
+                             IImmutableList<Import> imports,
+                             IImmutableList<CSharpFileInfo> csharpFileInfos,
+                             IImmutableList<XAMLFileInfo> xamlFileInfos,
+                             IImmutableList<ProjectContentItem> projectContentItems,
+                             IImmutableList<Package> packages,
+                             IImmutableList<PackageReference> packageReferences,
+                             IImmutableList<string> targetFrameworkVersion,
+                             IImmutableList<ProjectFile> buildDependencies,
+                             string buildRoot,
+                             string documentationFile)
         {
             Throw.IfNull(document);
             Throw.IfNull(projectFileInfo);

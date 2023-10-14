@@ -85,7 +85,12 @@ namespace Solution.Parser.Project
         {
             var allFiles = projectFileInfo.Value.Directory!.EnumerateFiles("*.*", SearchOption.AllDirectories)
                                                            .Where(filterFunc)
-                                                           .Where(file => file.FullName.DoesNotContain(@"\bin\") && file.FullName.DoesNotContain(@"\obj\"))
+                                                           .Where(file =>
+                                                           {
+                                                               // This is new and important, imagine you create code in debug\bin\Project\.. then we have to check only relative path
+                                                               var relativePath = file.FullName.Replace(projectFileInfo.Value.Directory.FullName, string.Empty);
+                                                               return relativePath.DoesNotContain(@"\bin\") && relativePath.DoesNotContain(@"\obj\");
+                                                           })
                                                            .Select(creatorFunc)
                                                            .ToImmutableList();
             return allFiles;
