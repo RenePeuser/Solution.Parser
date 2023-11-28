@@ -6,7 +6,9 @@
     <members>
         <member name="M:Solution.Parser.AspNet.MethodParser.GetHttpCode">
             <remarks>
-            Pattern explanation:<br/>
+            Pattern:<br/>
+            <code>^[^\\d]*(\\d+)</code><br/>
+            Explanation:<br/>
             <code>
             ○ Match if at the beginning of the string.<br/>
             ○ Match a character in the set [^\d] atomically any number of times.<br/>
@@ -17,7 +19,9 @@
         </member>
         <member name="M:Solution.Parser.AspNet.UrlBuilder.ParamaterRegEx">
             <remarks>
-            Pattern explanation:<br/>
+            Pattern:<br/>
+            <code>(?&lt;=\\{).+?(?=\\})</code><br/>
+            Explanation:<br/>
             <code>
             ○ Zero-width positive lookbehind.<br/>
                 ○ Match '{' right-to-left.<br/>

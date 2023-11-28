@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Xml.Linq;
 using Argument.Check;
+using Extensions.Pack;
 
 namespace Solution.Parser.Project
 {
@@ -14,7 +15,7 @@ namespace Solution.Parser.Project
             Throw.IfNull(documentRoot);
 
             // new project format, temp check
-            if (documentRoot!.Attributes().Any(a => a.Name.LocalName.ToUpperInvariant() == "SDK"))
+            if (documentRoot!.Attributes().Any(a => a.Name.LocalName.ToUpperInvariant().EqualsTo("SDK")))
             {
                 return ProjectParserNewFormat.Parse(projectFileInfo, document);
             }

@@ -6,7 +6,7 @@ namespace Solution.Parser.Project
 {
     internal static class ProjectTypeParser
     {
-        private static readonly Dictionary<Guid, ProjectType> sProjectTypeMapping = new Dictionary<Guid, ProjectType>()
+        private static readonly Dictionary<Guid, ProjectType> ProjectTypeMapping = new()
         {
             { new Guid("FAE04EC0-301F-11D3-BF4B-00C04F79EFBC"), ProjectType.C_Sharp },
             { new Guid("F184B08F-C81C-45F6-A57F-5ABD9991F28F"), ProjectType.VB_NET },
@@ -68,13 +68,13 @@ namespace Solution.Parser.Project
 
         internal static ProjectType GetProjectType(Guid guid)
         {
-            if (!sProjectTypeMapping.ContainsKey(guid))
+            if (ProjectTypeMapping.TryGetValue(guid, out var value))
             {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
-                    "Unknown guid:'{0}' can not resolve project type", guid));
+                return value;
             }
 
-            return sProjectTypeMapping[guid];
+            throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
+                                        "Unknown guid:'{0}' can not resolve project type", guid));
         }
     }
 }
