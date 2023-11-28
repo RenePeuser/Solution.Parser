@@ -6,7 +6,7 @@
         <Copyright>Copyright 2022 (c) Rene Peuser. All rights reserved.</Copyright>
         <PackageProjectUrl>https://renepeuser.visualstudio.com/Solution.Parser</PackageProjectUrl>
         <RepositoryUrl>https://renepeuser.visualstudio.com/Solution.Parser</RepositoryUrl>
-        <PackageReleaseNotes>Introduce API parsing</PackageReleaseNotes>
+        <PackageReleaseNotes>Upgrade .Net 8</PackageReleaseNotes>
         <PackageTags>C#;Solution;Project;XAML;SyntaxTree;Syntax</PackageTags>
         <PackageId>Solution.Parser</PackageId>
         <OutputType>Library</OutputType>
