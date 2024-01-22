@@ -6,7 +6,7 @@
         <Copyright>Copyright 2022 (c) Rene Peuser. All rights reserved.</Copyright>
         <PackageProjectUrl>https://renepeuser.visualstudio.com/Solution.Parser</PackageProjectUrl>
         <RepositoryUrl>https://renepeuser.visualstudio.com/Solution.Parser</RepositoryUrl>
-        <PackageReleaseNotes>Fix modifier detection on class and records. Partial keyword was missing.</PackageReleaseNotes>
+        <PackageReleaseNotes>Fix parmaeters since .Net introducing primary constructors</PackageReleaseNotes>
         <PackageTags>C#;Solution;Project;XAML;SyntaxTree;Syntax</PackageTags>
         <PackageId>Solution.Parser</PackageId>
         <OutputType>Library</OutputType>
