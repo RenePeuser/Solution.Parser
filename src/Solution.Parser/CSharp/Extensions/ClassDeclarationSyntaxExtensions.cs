@@ -63,10 +63,13 @@ namespace Solution.Parser.CSharp
             var syntaxTree = classDeclarationSyntax.ToString();
             var fullQualifiedName = BuildFullQualifiedName(classDeclarationSyntax);
             var parameters = constructors.MaxBy(c => c.Parameters.Count)?.Parameters ?? ImmutableList<Parameter>.Empty;
+            var parametersPrimaryCtor = classDeclarationSyntax.ParameterList?.ToParameters(filePath) ?? ImmutableList<Parameter>.Empty;
+
+            var classParametes = parametersPrimaryCtor.Any() ? parametersPrimaryCtor : parameters;
 
             return new Class(nameSpace, name, modifiers, constructors, properties, methods, attributesOfClass, fields,
                 interfaces, baseTypes, events, eventFields, nestedClasses, nestedStructs, nestedEnums,
-                nestedInterfaces, parameters, fullQualifiedName, syntaxTree, filePath);
+                nestedInterfaces, classParametes, fullQualifiedName, syntaxTree, filePath);
         }
 
         internal static string BuildFullQualifiedName(ClassDeclarationSyntax recordDeclarationSyntax)

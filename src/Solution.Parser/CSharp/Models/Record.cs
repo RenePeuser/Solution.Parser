@@ -3,8 +3,6 @@ using System.Diagnostics;
 
 namespace Solution.Parser.CSharp
 {
-
-
     [DebuggerDisplay("{Name}")]
     public record Record(NameSpace NameSpace,
                          string Name,

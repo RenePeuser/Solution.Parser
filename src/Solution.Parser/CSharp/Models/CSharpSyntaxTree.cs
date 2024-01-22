@@ -7,15 +7,15 @@ namespace Solution.Parser.CSharp
     [DebuggerDisplay("{FileName}")]
     public class CSharpSyntaxTree
     {
-        private static readonly CSharpSyntaxTree sEmptyNameSpace = new(new NameSpace(string.Empty),
-                                                                        ImmutableList<Using>.Empty,
-                                                                        ImmutableList<Class>.Empty,
-                                                                        ImmutableList<Record>.Empty,
-                                                                        ImmutableList<Interface>.Empty,
-                                                                        ImmutableList<Enum>.Empty,
-                                                                        ImmutableList<Struct>.Empty);
+        private static readonly CSharpSyntaxTree EmptyNameSpace = new(new NameSpace(string.Empty),
+            ImmutableList<Using>.Empty,
+            ImmutableList<Class>.Empty,
+            ImmutableList<Record>.Empty,
+            ImmutableList<Interface>.Empty,
+            ImmutableList<Enum>.Empty,
+            ImmutableList<Struct>.Empty);
 
-        internal CSharpSyntaxTree(NameSpace nameSpace,
+        public CSharpSyntaxTree(NameSpace nameSpace,
                                 IImmutableList<Using> usings,
                                 IImmutableList<Class> classes,
                                 IImmutableList<Record> records,
@@ -59,7 +59,7 @@ namespace Solution.Parser.CSharp
 
         public static CSharpSyntaxTree Empty()
         {
-            return sEmptyNameSpace;
+            return EmptyNameSpace;
         }
     }
 }

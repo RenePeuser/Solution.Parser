@@ -1,9 +1,7 @@
 ﻿using System.Collections.Immutable;
-using System.Diagnostics;
 
 namespace Solution.Parser.CSharp
 {
-    [DebuggerDisplay("{Name}")]
     public record Interface(NameSpace NameSpace,
                             string Name,
                             IImmutableList<Modifier> Modifiers,

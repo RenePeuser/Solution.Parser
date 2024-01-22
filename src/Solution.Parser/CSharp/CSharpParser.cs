@@ -39,11 +39,6 @@ public static class CSharpParser
     {
         Throw.IfNull(csharpFileInfo);
 
-        if (csharpFileInfo.FileNameWithoutExtension.Contains("CSharpParser"))
-        {
-
-        }
-
         var code = File.ReadAllText(csharpFileInfo.Value.FullName);
         var syntaxTree = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(code);
         return Parse(syntaxTree, csharpFileInfo.Value.FullName);
