@@ -2,7 +2,6 @@
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using Argument.Check;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Solution.Parser.CSharp;
 using Solution.Parser.Solution;
@@ -12,13 +11,13 @@ namespace Solution.Parser.Test.Solution
     [TestClass]
     public class SolutionParseTest
     {
-        private static SolutionFileInfo _sSolutionFileInfo = null!;
+        private static readonly SolutionFileInfo SolutionFileInfo = null!;
 
         [ClassInitialize]
         public static void ClassInit(TestContext _)
         {
             var solutionFile = new SolutionFileName("Solution.Parser.sln").FindSolutionFileReverseFrom(new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory));
-            _sSolutionFileInfo = Throw.IfNull(solutionFile);
+            Assert.IsNotNull(solutionFile, "Solution file could not be found");
         }
 
 
@@ -34,15 +33,15 @@ namespace Solution.Parser.Test.Solution
         [TestMethod]
         public void Assert_That_Solution_Could_Be_Parsed()
         {
-            var tcSolutionFile = _sSolutionFileInfo.Parse();
+            var parsedSolutionFile = SolutionFileInfo.Parse();
 
-            Assert.IsNotNull(tcSolutionFile);
+            Assert.IsNotNull(parsedSolutionFile);
         }
 
         [TestMethod]
         public void Assert_That_A_CSharp_File_Can_Be_Parsed()
         {
-            var tcSolutionFile = _sSolutionFileInfo.Parse();
+            var tcSolutionFile = SolutionFileInfo.Parse();
 
             var csharpSyntaxTrees = tcSolutionFile.Projects.SelectMany(p => p.CSharpFileInfos).Select(c => c.Parse()).ToList();
 
@@ -52,7 +51,7 @@ namespace Solution.Parser.Test.Solution
         [TestMethod]
         public void File_Scoped_Namespaces_Should_Be_Parseable_Too()
         {
-            var tcSolutionFile = _sSolutionFileInfo.Parse();
+            var tcSolutionFile = SolutionFileInfo.Parse();
 
             var csharpSyntaxTrees = tcSolutionFile.Projects.SelectMany(p => p.CSharpFileInfos).Select(c => c.Parse()).ToList();
 
