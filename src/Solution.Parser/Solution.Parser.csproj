@@ -2,7 +2,7 @@
     <PropertyGroup>
         <Authors>Rene Peuser</Authors>
         <Company>Rene Peuser Softwaresolutions</Company>
-        <Description>WIP - This simple SDK to parse solution, projects and c# files</Description>
+        <Description>This is a lightweight abstraction around the Roslyn C# syntax tress. Main goal for easy code rule tests.</Description>
         <Copyright>Copyright 2022 (c) Rene Peuser. All rights reserved.</Copyright>
         <PackageProjectUrl>https://renepeuser.visualstudio.com/Solution.Parser</PackageProjectUrl>
         <RepositoryUrl>https://renepeuser.visualstudio.com/Solution.Parser</RepositoryUrl>
