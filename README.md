@@ -2,58 +2,38 @@
 
 ## Sample
 ```csharp
-[TestClass]
-public class SolutionParseTest
-{
-    private static readonly SolutionFileInfo SolutionFileInfo = null!;
+ [TestClass]
+ public abstract class MsTestBase
+ {
+     protected static IImmutableList<CSharpSyntaxTree> TestCode { get; private set; } = ImmutableList<CSharpSyntaxTree>.Empty;
 
-    [ClassInitialize]
-    public static void ClassInit(TestContext _)
-    {
-        var solutionFile = new SolutionFileName("Solution.Parser.sln").FindSolutionFileReverseFrom(new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory));
-        Assert.IsNotNull(solutionFile, "Solution file could not be found");
-    }
+     protected static IImmutableList<CSharpSyntaxTree> AllSyntaxTrees { get; private set; } = ImmutableList<CSharpSyntaxTree>.Empty;
 
+     protected static IImmutableList<CSharpSyntaxTree> ProductiveCode { get; private set; } = ImmutableList<CSharpSyntaxTree>.Empty;
 
-    [TestMethod]
-    public void Assert_That_User_Nuget_Folder_Was_Found()
-    {
-        var userPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        var nugetDirectory = new DirectoryInfo(Path.Combine(userPath, ".nuget"));
+     protected static IImmutableList<CSharpSyntaxTree> ProductiveCodeToAnaylze { get; private set; } = ImmutableList<CSharpSyntaxTree>.Empty;
 
-        Assert.IsTrue(nugetDirectory.Exists);
-    }
+     protected static SolutionFile Solution { get; private set; } = null!;
+      
+     [AssemblyInitialize]
+     public static void Init(TestContext _)
+     {
+         var sSolutionFileInfo = new SolutionFileName("MySolution.sln").FindSolutionFileReverseFrom(new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory));
+         Throw.IfNull(sSolutionFileInfo);
 
-    [TestMethod]
-    public void Assert_That_Solution_Could_Be_Parsed()
-    {
-        var parsedSolutionFile = SolutionFileInfo.Parse();
+         Solution = sSolutionFileInfo.Parse();
 
-        Assert.IsNotNull(parsedSolutionFile);
-    }
+         ProductiveCode = Solution.ProductiveProjects.SelectMany(p => p.CSharpFileInfos)                                 
+												     .Select(c => c.Parse())
+												     .ToImmutableList();
 
-    [TestMethod]
-    public void Assert_That_A_CSharp_File_Can_Be_Parsed()
-    {
-        var tcSolutionFile = SolutionFileInfo.Parse();
+         TestCode = Solution.UnitTestProjects.SelectMany(p => p.CSharpFileInfos)
+											 .Select(c => c.Parse())
+											 .ToImmutableList();
 
-        var csharpSyntaxTrees = tcSolutionFile.Projects.SelectMany(p => p.CSharpFileInfos).Select(c => c.Parse()).ToList();
-
-        Assert.IsTrue(csharpSyntaxTrees.Any());
-    }
-
-    [TestMethod]
-    public void File_Scoped_Namespaces_Should_Be_Parseable_Too()
-    {
-        var tcSolutionFile = SolutionFileInfo.Parse();
-
-        var csharpSyntaxTrees = tcSolutionFile.Projects.SelectMany(p => p.CSharpFileInfos).Select(c => c.Parse()).ToList();
-
-        var csharpParser = csharpSyntaxTrees.SelectMany(csharp => csharp.Classes).Where(c => c.Name == "CSharpParser").ToImmutableList();
-
-        Assert.AreEqual("Solution.Parser.CSharp.CSharpParser", csharpParser[0].FullQualifiedName);
-    }
-}
+         AllSyntaxTrees = ProductiveCode.Concat(TestCode).ToImmutableList();        
+     }
+ }
 ```
 
 ## CodeRule sample
