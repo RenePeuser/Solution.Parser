@@ -25,5 +25,5 @@ namespace Solution.Parser.CSharp
                          string FullQualifiedName,
                          string FilePath)
         : Class(NameSpace, Name, Modifiers, Constructors, Properties, Methods, Attributes, Fields, Interfaces,
-            BaseTypes, Events, EventFields, NestedClasses, NestedStructs, NestedEnums, NestedInterfaces, Parameters, SyntaxTreee, FullQualifiedName, FilePath);
+            BaseTypes, Events, EventFields, NestedClasses, NestedStructs, NestedEnums, NestedInterfaces, Parameters, FullQualifiedName, SyntaxTreee, FilePath);
 }

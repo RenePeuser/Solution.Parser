@@ -62,5 +62,27 @@ namespace Solution.Parser.Test.Solution
 
             Assert.AreEqual("Solution.Parser.CSharp.CSharpParser", csharpParser[0].FullQualifiedName);
         }
+
+        [TestMethod]
+        public void Should_Be_Able_To_Parse_Structs()
+        {
+            const string AsyncMethods_Should_Detect_In_Struct = @"""
+namespace RunJIT.CodeRules.Internal.ExampleCode.WebApi.Performance
+{
+    public struct AsyncMethods_Should_Detect
+    {
+        public Task Should_Detect_Method_With_Only_Task()
+        {
+            return Task.CompletedTask;
+        }
+    }
+}
+""";
+
+            var csharpSyntaxTree = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(AsyncMethods_Should_Detect_In_Struct);
+            var syntaxTree = CSharpParser.Parse(csharpSyntaxTree, string.Empty);
+
+            Assert.IsTrue(syntaxTree.Structs.Any());
+        }
     }
 }
