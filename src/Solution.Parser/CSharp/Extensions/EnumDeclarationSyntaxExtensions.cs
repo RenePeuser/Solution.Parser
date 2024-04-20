@@ -35,6 +35,9 @@ namespace Solution.Parser.CSharp
                     case "abstract":
                         yield return Modifier.Abstract;
                         break;
+                    case "partial":
+                        yield return Modifier.Partial;
+                        break;
                 }
             }
         }
