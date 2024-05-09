@@ -1,4 +1,4 @@
-﻿using Argument.Check;
+using Argument.Check;
 
 namespace Solution.Parser.Project
 {

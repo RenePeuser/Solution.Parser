@@ -1,4 +1,4 @@
-﻿namespace Solution.Parser.Solution
+namespace Solution.Parser.Solution
 {
     public abstract class ImmutableNullableSemanticType<T>
     {

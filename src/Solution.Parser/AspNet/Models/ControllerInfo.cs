@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using Solution.Parser.CSharp;
 
@@ -19,7 +19,7 @@ namespace Solution.Parser.AspNet
 
         public required IImmutableList<MethodInfos> Methods { get; init; } = ImmutableList<MethodInfos>.Empty;
 
-        public IImmutableList<Attribute> Attributes { get; set; } = ImmutableList<Attribute>.Empty;
+        public IImmutableList<Attribute> Attributes { get; init; } = ImmutableList<Attribute>.Empty;
 
 
     }

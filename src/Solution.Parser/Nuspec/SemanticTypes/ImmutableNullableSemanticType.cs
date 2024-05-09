@@ -1,4 +1,4 @@
-﻿namespace Solution.Parser.Nuspec
+namespace Solution.Parser.Nuspec
 {
     public abstract class ImmutableNullableSemanticType<T>
     {

@@ -1,4 +1,4 @@
-﻿namespace Solution.Parser.CSharp
+namespace Solution.Parser.CSharp
 {
     public abstract record ImmutableNullableSemanticType<T>(T Value);
 }

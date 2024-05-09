@@ -1,4 +1,4 @@
-﻿namespace Solution.Parser.Common
+namespace Solution.Parser.Common
 {
     internal abstract class ImmutableNullableSemanticType<T>
     {

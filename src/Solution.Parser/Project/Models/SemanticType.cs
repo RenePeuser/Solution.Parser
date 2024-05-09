@@ -1,4 +1,4 @@
-﻿using Argument.Check;
+using Argument.Check;
 
 namespace Solution.Parser.Project
 {
@@ -11,6 +11,6 @@ namespace Solution.Parser.Project
             Value = value;
         }
 
-        public T Value { get; set; }
+        public T Value { get; init; }
     }
 }
