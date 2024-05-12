@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Text;
 using Extensions.Pack;
 
 namespace Solution.Parser.CSharp
 {
-    public static partial class RecordExtensions
+    public static class RecordExtensions
     {
         private static readonly CodeFormatter CodeFormatter = new();
 

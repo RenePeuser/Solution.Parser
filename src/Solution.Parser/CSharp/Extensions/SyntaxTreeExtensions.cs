@@ -27,14 +27,14 @@ namespace Solution.Parser.CSharp
             return @namespace;
         }
 
-        internal static NameSpace? GetNamespaceOrDefault(this SyntaxTree syntaxTree)
+        internal static NameSpace GetNamespaceOrDefault(this SyntaxTree syntaxTree)
         {
             var namespaceDeclarationSyntax = syntaxTree.AllOfType<NamespaceDeclarationSyntax>();
             var fileScopedNamespaceDeclarationSyntaxes = syntaxTree.AllOfType<FileScopedNamespaceDeclarationSyntax>();
 
             if (namespaceDeclarationSyntax.IsEmpty() && fileScopedNamespaceDeclarationSyntaxes.IsEmpty())
             {
-                return null;
+                return new NameSpace(string.Empty);
             }
 
             var nameSpace = namespaceDeclarationSyntax.Any() ? namespaceDeclarationSyntax[0].ToNamespace() : fileScopedNamespaceDeclarationSyntaxes[0].ToNamespace();

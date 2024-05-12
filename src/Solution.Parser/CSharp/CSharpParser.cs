@@ -16,11 +16,6 @@ public static class CSharpParser
 
         var nameSpace = syntaxTree.GetNamespaceOrDefault();
 
-        if (nameSpace.IsNull())
-        {
-            return CSharpSyntaxTree.Empty();
-        }
-
         var usings = syntaxTree.AllOfType<UsingDirectiveSyntax>().Select(u =>
         {
             var value = u.Name?.As<NameSyntax>()?.GetText().ToString() ?? string.Empty;
@@ -32,7 +27,9 @@ public static class CSharpParser
         var enums = syntaxTree.AllOfType<EnumDeclarationSyntax>().ToEnums(filePath).ToImmutableList();
         var structs = syntaxTree.AllOfType<StructDeclarationSyntax>().ToStructs(filePath).ToImmutableList();
 
-        return new CSharpSyntaxTree(nameSpace, usings, classes, records, interfaces, enums, structs);
+        var fixedFilePath = filePath.IsNullOrWhiteSpace() ? nameSpace.Name : filePath;
+
+        return new CSharpSyntaxTree(nameSpace, fixedFilePath, usings, classes, records, interfaces, enums, structs, syntaxTree.ToString());
     }
 
     public static CSharpSyntaxTree Parse(this CSharpFileInfo csharpFileInfo)
