@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics;
+using Solution.Parser.CSharp.Models;
 
 namespace Solution.Parser.CSharp
 {
@@ -12,6 +13,7 @@ namespace Solution.Parser.CSharp
                                    IImmutableList<Interface> Interfaces,
                                    IImmutableList<Enum> Enums,
                                    IImmutableList<Struct> Structs,
+                                   IImmutableList<Statement> Statements,
                                    string SyntaxTree)
     {
     }

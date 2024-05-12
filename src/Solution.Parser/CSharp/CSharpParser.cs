@@ -21,15 +21,17 @@ public static class CSharpParser
             var value = u.Name?.As<NameSyntax>()?.GetText().ToString() ?? string.Empty;
             return new Using(value);
         }).ToImmutableList();
-        var classes = syntaxTree.AllOfType<ClassDeclarationSyntax>().ToClasses(filePath).ToImmutableList();
-        var records = syntaxTree.AllOfType<RecordDeclarationSyntax>().ToRecords(filePath).ToImmutableList();
-        var interfaces = syntaxTree.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces(filePath).ToImmutableList();
-        var enums = syntaxTree.AllOfType<EnumDeclarationSyntax>().ToEnums(filePath).ToImmutableList();
-        var structs = syntaxTree.AllOfType<StructDeclarationSyntax>().ToStructs(filePath).ToImmutableList();
 
         var fixedFilePath = filePath.IsNullOrWhiteSpace() ? nameSpace.Name : filePath;
 
-        return new CSharpSyntaxTree(nameSpace, fixedFilePath, usings, classes, records, interfaces, enums, structs, syntaxTree.ToString());
+        var classes = syntaxTree.AllOfType<ClassDeclarationSyntax>().ToClasses(fixedFilePath).ToImmutableList();
+        var records = syntaxTree.AllOfType<RecordDeclarationSyntax>().ToRecords(fixedFilePath).ToImmutableList();
+        var interfaces = syntaxTree.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces(fixedFilePath).ToImmutableList();
+        var enums = syntaxTree.AllOfType<EnumDeclarationSyntax>().ToEnums(fixedFilePath).ToImmutableList();
+        var structs = syntaxTree.AllOfType<StructDeclarationSyntax>().ToStructs(fixedFilePath).ToImmutableList();
+        var statements = syntaxTree.AllOfType<StatementSyntax>().ToStatements(fixedFilePath).ToImmutableList();
+
+        return new CSharpSyntaxTree(nameSpace, fixedFilePath, usings, classes, records, interfaces, enums, structs, statements, syntaxTree.ToString());
     }
 
     public static CSharpSyntaxTree Parse(this CSharpFileInfo csharpFileInfo)
