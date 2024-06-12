@@ -1,15 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Extensions.Pack;
 
 namespace Solution.Parser.CSharp.Helpers
 {
     public static class ClassDeclarationExtensions
     {
-        public static string BuildServiceRegistration(this Class @class)
+        public static string BuildServiceRegistration(this Class @class, IImmutableList<Class> classes)
         {
             var stringBuilder = new StringBuilder();
             stringBuilder.AppendLine($"internal static class Add{@class.Name}Extension");
@@ -19,9 +18,22 @@ namespace Solution.Parser.CSharp.Helpers
 
             foreach (var parameter in @class.Parameters)
             {
-                var type = parameter.Type.Take(2).All(c => char.IsUpper(c)) && parameter.Type[0] == 'I' ? parameter.Type.Substring(1) : parameter.Type;
+                // Injection of multiple services
+                if (parameter.Type.StartsWith("IEnumerable<", StringComparison.OrdinalIgnoreCase))
+                {
+                    var genericType = GlobalRegex.GetGenericTypeRegex().Match(parameter.Type).Groups[1].Value;
+                    var allTypes = classes.Where(c => c.BaseTypes.Any(b => b.TypeName == genericType)).ToImmutableList();
+                    foreach (var type in allTypes)
+                    {
+                        stringBuilder.AppendLine($"services.Add{type}();");
+                    }
+                }
+                else
+                {
+                    var type = parameter.Type.Take(2).All(c => char.IsUpper(c)) && parameter.Type[0] == 'I' ? parameter.Type[1..] : parameter.Type;
 
-                stringBuilder.AppendLine($"services.Add{type}();");
+                    stringBuilder.AppendLine($"services.Add{type}();");
+                }
             }
 
             stringBuilder.AppendLine();
