@@ -25,6 +25,9 @@ steps:
 - script: dotnet build --configuration $(buildConfiguration) /p:AssemblyVerison='$(GitVersion.SemVer)'
   displayName: 'dotnet build $(buildConfiguration)'
 
+- script: dotnet list package --include-transitive --vulnerable
+  displayName: 'Nuget vulnerability check'
+
 - script: dotnet test
   displayName: 'dotnet test'
 
