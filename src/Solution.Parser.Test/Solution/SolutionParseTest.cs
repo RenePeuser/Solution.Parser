@@ -18,7 +18,6 @@ namespace Solution.Parser.Test.Solution
         public static void ClassInit(TestContext _)
         {
             var solutionFile = new SolutionFileName("Solution.Parser.sln").FindSolutionFileReverseFrom(new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory));
-            Throw.IfNull(solutionFile);
 
             _solutionFileInfo = solutionFile;
         }
@@ -39,6 +38,24 @@ namespace Solution.Parser.Test.Solution
             var parsedSolutionFile = _solutionFileInfo.Parse();
 
             Assert.IsNotNull(parsedSolutionFile);
+        }
+
+        [TestMethod]
+        public void Assert_That_Correct_Test_Project_Will_Be_Detected()
+        {
+            var parsedSolutionFile = _solutionFileInfo.Parse();
+
+            Assert.AreEqual(1, parsedSolutionFile.UnitTestProjects.Count);
+            Assert.AreEqual("Solution.Parser.Test", parsedSolutionFile.UnitTestProjects[0].ProjectFileInfo.FileNameWithoutExtenion);
+        }
+
+        [TestMethod]
+        public void Assert_That_Correct_Productive_Project_Will_Be_Detected()
+        {
+            var parsedSolutionFile = _solutionFileInfo.Parse();
+
+            Assert.AreEqual(1, parsedSolutionFile.ProductiveProjects.Count);
+            Assert.AreEqual("Solution.Parser", parsedSolutionFile.ProductiveProjects[0].ProjectFileInfo.FileNameWithoutExtenion);
         }
 
         [TestMethod]
