@@ -13,7 +13,7 @@ namespace Solution.Parser.Project
     {
         private static readonly string[] sTestPackages =
         {
-            "MSTest.TestAdapter", "MsTest.TestFramework", "Microsoft.NET.Test.Sdk", "NUnit"
+            "MSTest.", "Microsoft.NET.Test.Sdk", "NUnit", "XUnit"
         };
 
         internal static ProjectFile Parse(ProjectFileInfo projectFileInfo, XDocument document)
@@ -66,7 +66,7 @@ namespace Solution.Parser.Project
             {
                 yield return ProjectType.Test;
             } 
-            else if (packageReferences.Any(package => sTestPackages.Any(testPackage => testPackage == package.Include)))
+            else if (packageReferences.Any(package => sTestPackages.Any(testPackage => package.Include.Contains(testPackage))))
             {
                 yield return ProjectType.Test;
 
