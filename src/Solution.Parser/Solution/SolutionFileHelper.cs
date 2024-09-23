@@ -9,7 +9,7 @@ namespace Solution.Parser.Solution
 {
     public static class SolutionFileHelper
     {
-        public static SolutionFileInfo? FindSolutionFileReverseFrom(this SolutionFileName solutionFileName, DirectoryInfo startUpDirectory)
+        public static SolutionFileInfo FindSolutionFileReverseFrom(this SolutionFileName solutionFileName, DirectoryInfo startUpDirectory)
         {
             Throw.IfNull(solutionFileName);
             Throw.IfNull(startUpDirectory);
@@ -20,6 +20,11 @@ namespace Solution.Parser.Solution
             }
 
             var result = FindSolutionFileFrom(solutionFileName, startUpDirectory);
+            if (result.IsNull())
+            {
+                throw new FileNotFoundException($"The solution file: {solutionFileName} could not be found from your given directory: {startUpDirectory.FullName} backwards until root. Please check your file location or solution name");
+            }
+            
             return result;
         }
 

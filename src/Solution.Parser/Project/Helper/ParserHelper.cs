@@ -15,6 +15,8 @@
         internal static string Name { get; } = "Name";
 
         internal static string AssemblyName { get; } = "AssemblyName";
+        
+        internal static string IsTestProject { get; } = "IsTestProject";
 
         internal static string ProjectGuid { get; } = "ProjectGuid";
 

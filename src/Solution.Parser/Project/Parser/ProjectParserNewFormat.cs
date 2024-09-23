@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using Extensions.Pack;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Solution.Parser.Project
 {
@@ -26,12 +27,12 @@ namespace Solution.Parser.Project
 
             var csharpFiles = GetSpecificFiles(projectFileInfo, FileFilterFunc.CSharpFileInfoFilterFunc, ClassCreator.CreateCSharpFile).ToImmutableList();
             var xamlFiles = GetSpecificFiles(projectFileInfo, FileFilterFunc.XamlFileInfoFilterFunc, ClassCreator.CreateXAMLFile).ToImmutableList();
-            var projectTypes = AnalyzeProjectTypes(packageReferences).ToImmutableList();
+            var projectTypes = AnalyzeProjectTypes(document, packageReferences).ToImmutableList();
 
             var contentItems = ImmutableList<ProjectContentItem>.Empty;
             var assemblyReferences = ImmutableList<AssemblyReference>.Empty;
 
-            var assemblyName = document.ElementBy(ParserHelper.AssemblyName)?.ValueOrDefault() ?? string.Empty;
+            var assemblyName = document.ElementBy(ParserHelper.AssemblyName)?.ValueOrDefault() ?? projectFileInfo.FileNameWithoutExtenion;
 
             var imports = GetAllImports(document).ToImmutableList();
             var targetFrameworkVersion = document.ElementBy(ParserHelper.TargetFrameworkNewFormat)?.ValueOrDefault();
@@ -56,11 +57,19 @@ namespace Solution.Parser.Project
             return new Package(id, version, targetFramework);
         }
 
-        private static IEnumerable<ProjectType> AnalyzeProjectTypes(IImmutableList<PackageReference> packageReferences)
+        private static IEnumerable<ProjectType> AnalyzeProjectTypes(XDocument document,
+                                                                    IImmutableList<PackageReference> packageReferences)
         {
-            if (packageReferences.Any(package => sTestPackages.Any(testPackage => testPackage == package.Include)))
+            var isTestProject = document.ElementBy(ParserHelper.IsTestProject)?.ValueOrDefault() ?? string.Empty;
+
+            if (isTestProject.Contains("true", StringComparison.OrdinalIgnoreCase))
             {
                 yield return ProjectType.Test;
+            } 
+            else if (packageReferences.Any(package => sTestPackages.Any(testPackage => testPackage == package.Include)))
+            {
+                yield return ProjectType.Test;
+
             }
 
             yield return ProjectType.C_Sharp;
