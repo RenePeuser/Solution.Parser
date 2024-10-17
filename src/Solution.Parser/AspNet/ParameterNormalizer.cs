@@ -21,7 +21,9 @@ namespace Solution.Parser.AspNet
         {
             return method.Parameters.Select(p =>
             {
-                var reflectionParamer = reflectionParameters.First(rp => rp.Name == p.Name);
+                // NEW: we have to trim @ if exists cause alias or conflicting reserved names which
+                //      escaped with @ have to be handled
+                var reflectionParamer = reflectionParameters.First(rp => rp.Name == p.Name.TrimStart('@'));
 
                 // If type is system type like string, int nothing to do
                 if (reflectionParamer.ParameterType.IsSystemType())
