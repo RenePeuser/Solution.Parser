@@ -27,9 +27,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="NuGet.Configuration" Version="6.11.1" />
-        <PackageReference Include="NuGet.Versioning" Version="6.11.1" />
-        <PackageReference Include="Extensions.Pack" Version="5.0.4" />
+        <PackageReference Include="NuGet.Configuration" Version="6.12.1" />
+        <PackageReference Include="NuGet.Versioning" Version="6.12.1" />
+        <PackageReference Include="Extensions.Pack" Version="5.0.5" />
         <PackageReference Include="FileSystem.Abstraction" Version="0.1.2" />
         <PackageReference Include="GitVersion.MsBuild" Version="5.12.0">
             <PrivateAssets>all</PrivateAssets>
