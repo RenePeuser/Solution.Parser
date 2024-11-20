@@ -526,5 +526,23 @@
         <member name="M:System.Text.RegularExpressions.Generated.Utilities.IsWordChar(System.Char)">
             <summary>Determines whether the character is part of the [\w] set.</summary>
         </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_indexOfString_03C547DBF0000685AE6D93F8978A2279669FD37C8752C3B9CCB9268FFF970A79">
+            <summary>Supports searching for the string ".WithName(\"".</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_indexOfString_24C2212DBF84531B8BBF3A3F336CE2D8F9EC77AA32E85685F4819F0D285B55BF">
+            <summary>Supports searching for the string "MapGroup(\"".</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_indexOfString_314FDC242E5CDD296C310BC1535EB0D250A4F72B3E88AAA3A4BC86C0E3FBFBC6">
+            <summary>Supports searching for the string ".Map".</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_indexOfString_54430D339E19A41DE43AA91E30FB52DFF1BD5835762FA40A545C935C8AF790E8">
+            <summary>Supports searching for the string ".Produces(".</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_indexOfString_B171FC72D100A4BF15A1BF805E3CA6C3DB9EC1D1EB493FB5D17F2CCDC2913B4C">
+            <summary>Supports searching for the string ".WithTags(\"".</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_indexOfString_E4925E3AFD235B3ADE81F1AF25F1102A2B1ECD0D50C2A0E5B3E7E1BE961B8CE4">
+            <summary>Supports searching for the string ".MapToApiVersion(".</summary>
+        </member>
     </members>
 </doc>
