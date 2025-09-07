@@ -27,15 +27,8 @@ namespace Solution.Parser.AspNet
                                                    IImmutableList<Type> reflectionTypes);
     }
 
-    internal sealed class ControllerParser : IControllerParser
+    internal sealed class ControllerParser(MethodParser methodParser) : IControllerParser
     {
-        private readonly MethodParser _methodParser;
-
-        public ControllerParser(MethodParser methodParser)
-        {
-            _methodParser = methodParser;
-        }
-
         public IImmutableList<ControllerInfo> ExtractFrom(IImmutableList<CSharpSyntaxTree> syntaxTrees,
                                                           IImmutableList<Type> reflectionTypes)
         {
@@ -72,7 +65,7 @@ namespace Solution.Parser.AspNet
 
                 // 3. Now parse all methods
                 var methodReflection = controllerType.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance).ToImmutableList();
-                var methods = _methodParser.Parse(controller.Methods, baseUrls, methodReflection, syntaxTrees);
+                var methods = methodParser.Parse(controller.Methods, baseUrls, methodReflection, syntaxTrees);
 
                 // 4. Return controller infos
                 yield return new ControllerInfo

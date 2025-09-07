@@ -1,4 +1,4 @@
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Diagnostics;
 using Solution.Parser.CSharp;
 
@@ -13,7 +13,7 @@ namespace Solution.Parser.AspNet
 
         public required string DomainName { get; init; } = string.Empty;
 
-        public required VersionInfo Version { get; init; } = new VersionInfo("1.0", "V1");
+        public required VersionInfo Version { get; init; } = new("1.0", "V1");
 
         public required IImmutableList<string> BaseUrls { get; init; } = ImmutableList<string>.Empty;
 

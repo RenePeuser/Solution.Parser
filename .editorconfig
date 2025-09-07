@@ -171,6 +171,7 @@ dotnet_diagnostic.IDE0302.severity = suggestion
 dotnet_diagnostic.IDE0303.severity = suggestion
 dotnet_diagnostic.IDE0304.severity = suggestion
 dotnet_diagnostic.IDE0305.severity = suggestion
+csharp_prefer_system_threading_lock = true:suggestion
 ###############################
 # VB Coding Conventions       #
 ###############################

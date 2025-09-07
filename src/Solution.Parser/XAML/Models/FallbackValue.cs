@@ -1,15 +1,10 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Solution.Parser.XAML
 {
     [DebuggerDisplay("{Value}")]
-    public class FallbackValue
+    public class FallbackValue(object value)
     {
-        public FallbackValue(object value)
-        {
-            Value = value;
-        }
-
-        public object Value { get; }
+        public object Value { get; } = value;
     }
 }

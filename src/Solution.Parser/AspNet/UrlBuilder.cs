@@ -26,15 +26,9 @@ namespace Solution.Parser.AspNet
     // 
     // v1.0/project/{projectId}/rowlevelsecurity/{rowLevelSecurityId}/user/{userId}?useCache={useCache}
     // v2.0/project/{projectId}/resource/{resourceId}/parent/{resourceParentId}?useCache={useCache}
-    internal sealed partial class UrlBuilder
+    internal sealed partial class UrlBuilder(QueryBuilder queryBuilder)
     {
-        private readonly QueryBuilder _queryBuilder;
         private readonly Regex _parameterRegEx = ParamaterRegEx();
-
-        public UrlBuilder(QueryBuilder queryBuilder)
-        {
-            _queryBuilder = queryBuilder;
-        }
 
         internal IImmutableList<string> BuildFrom(IImmutableList<string> baseUrls, Method method)
         {
@@ -88,7 +82,7 @@ namespace Solution.Parser.AspNet
             // Specific file parameter notation have to be replaced too.
             relativeUrl = relativeUrl.Replace("**", string.Empty);
 
-            var parameters = _queryBuilder.BuildFrom(method);
+            var parameters = queryBuilder.BuildFrom(method);
 
             var urlWithParams = $"{relativeUrl.TrimEnd('/')}{parameters}";
 

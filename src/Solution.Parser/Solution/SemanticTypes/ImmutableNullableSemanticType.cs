@@ -1,12 +1,7 @@
-namespace Solution.Parser.Solution
+﻿namespace Solution.Parser.Solution
 {
-    public abstract class ImmutableNullableSemanticType<T>
+    public abstract class ImmutableNullableSemanticType<T>(T value)
     {
-        protected ImmutableNullableSemanticType(T value)
-        {
-            Value = value;
-        }
-
-        public T Value { get; }
+        public T Value { get; } = value;
     }
 }

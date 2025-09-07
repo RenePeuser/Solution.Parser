@@ -25,15 +25,8 @@ namespace Solution.Parser.AspNet
         IImmutableList<Type> GetAllTypesFrom(SolutionFile parsedSolution, DirectoryInfo assemblyDirectory);
     }
 
-    internal sealed class ApiTypeLoader : IApiTypeLoader
+    internal sealed class ApiTypeLoader(AssemblyTypeLoader assemblyTypeLoader) : IApiTypeLoader
     {
-        private readonly AssemblyTypeLoader _assemblyTypeLoader;
-
-        public ApiTypeLoader(AssemblyTypeLoader assemblyTypeLoader)
-        {
-            _assemblyTypeLoader = assemblyTypeLoader;
-        }
-
         public IImmutableList<Type> GetAllTypesFrom(SolutionFile parsedSolution, DirectoryInfo assemblyDirectory)
         {
             var webAppProject = parsedSolution.ProductiveProjects.FirstOrDefault(p => p.Document.ToString().Contains("Sdk=\"Microsoft.NET.Sdk.Web\""));
@@ -50,7 +43,7 @@ namespace Solution.Parser.AspNet
             }
 
             // Get all types which are declared in the API assembly - Need to unique ident the types for client generation.
-            var types = _assemblyTypeLoader.GetAllTypesFrom(assembly);
+            var types = assemblyTypeLoader.GetAllTypesFrom(assembly);
 
             return types;
         }
@@ -71,7 +64,7 @@ namespace Solution.Parser.AspNet
             }
 
             // Get all types which are declared in the API assembly - Need to unique ident the types for client generation.
-            var types = _assemblyTypeLoader.GetAllTypesFrom(assembly);
+            var types = assemblyTypeLoader.GetAllTypesFrom(assembly);
 
             return types;
         }

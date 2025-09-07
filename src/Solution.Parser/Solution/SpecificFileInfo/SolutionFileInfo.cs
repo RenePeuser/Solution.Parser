@@ -3,11 +3,5 @@
 namespace Solution.Parser.Solution
 {
     [DebuggerDisplay("{Value.FullName}")]
-    public class SolutionFileInfo : SpecificFileInfoBase
-    {
-        public SolutionFileInfo(string path)
-            : base(path, ".sln")
-        {
-        }
-    }
+    public class SolutionFileInfo(string path) : SpecificFileInfoBase(path, ".sln");
 }

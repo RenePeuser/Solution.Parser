@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using Extensions.Pack;
@@ -34,7 +34,7 @@ namespace Solution.Parser.Nuspec
                 throw new ArgumentException($"The given path '{path}'does not exists: ");
             }
 
-            FileNameWithoutExtenion = FileSystemInfoExtensions.FileNameWithoutExtension((FileSystemInfo)Value);
+            FileNameWithoutExtenion = FileSystemInfoExtensions.FileNameWithoutExtension(Value);
         }
 
         public string FileNameWithoutExtenion { get; }

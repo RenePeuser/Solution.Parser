@@ -1,9 +1,4 @@
-namespace Solution.Parser.XAML
+﻿namespace Solution.Parser.XAML
 {
-    public abstract class ImmutableSemanticType<T> : ImmutableNullableSemanticType<T>
-    {
-        protected ImmutableSemanticType(T value) : base(value)
-        {
-        }
-    }
+    public abstract class ImmutableSemanticType<T>(T value) : ImmutableNullableSemanticType<T>(value);
 }

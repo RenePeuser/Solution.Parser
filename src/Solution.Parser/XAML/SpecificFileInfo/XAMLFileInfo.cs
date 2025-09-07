@@ -1,10 +1,4 @@
 ﻿namespace Solution.Parser.XAML
 {
-    public class XAMLFileInfo : SpecificFileInfoBase, IXamlFileInfo
-    {
-        public XAMLFileInfo(string path)
-            : base(path, ".xaml")
-        {
-        }
-    }
+    public class XAMLFileInfo(string path) : SpecificFileInfoBase(path, ".xaml"), IXamlFileInfo;
 }

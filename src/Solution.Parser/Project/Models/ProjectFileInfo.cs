@@ -3,11 +3,5 @@
 namespace Solution.Parser.Project
 {
     [DebuggerDisplay("{Value.FullName}")]
-    public class ProjectFileInfo : SpecificFileInfoBase
-    {
-        public ProjectFileInfo(string path)
-            : base(path, ".csproj")
-        {
-        }
-    }
+    public class ProjectFileInfo(string path) : SpecificFileInfoBase(path, ".csproj");
 }

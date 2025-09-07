@@ -23,27 +23,12 @@ namespace Solution.Parser.AspNet
         }
     }
 
-    internal sealed partial class MethodParser
+    internal sealed partial class MethodParser(DataTypeFinder dataTypeFinder,
+                                               UrlBuilder urlBuilder,
+                                               ModelNormalizer modelNormalizer,
+                                               ParameterNormalizer parameterNormalizer,
+                                               ResponseTypeNormalizer responseTypeNormalizer)
     {
-        private readonly DataTypeFinder _dataTypeFinder;
-        private readonly UrlBuilder _urlBuilder;
-        private readonly ModelNormalizer _modelNormalizer;
-        private readonly ParameterNormalizer _parameterNormalizer;
-        private readonly ResponseTypeNormalizer _responseTypeNormalizer;
-
-        public MethodParser(DataTypeFinder dataTypeFinder,
-                            UrlBuilder urlBuilder,
-                            ModelNormalizer modelNormalizer,
-                            ParameterNormalizer parameterNormalizer,
-                            ResponseTypeNormalizer responseTypeNormalizer)
-        {
-            _dataTypeFinder = dataTypeFinder;
-            _urlBuilder = urlBuilder;
-            _modelNormalizer = modelNormalizer;
-            _parameterNormalizer = parameterNormalizer;
-            _responseTypeNormalizer = responseTypeNormalizer;
-        }
-
         internal IImmutableList<MethodInfos> Parse(IImmutableList<Method> methods,
                                                    IImmutableList<string> baseUrls,
                                                    IImmutableList<MethodInfo> reflectionTypes,
@@ -80,12 +65,12 @@ namespace Solution.Parser.AspNet
             var swaggerOperation = method.Attributes.FirstOrDefault(a => a.Name == "SwaggerOperation");
             var swaggerOperationId = swaggerOperation?.Arguments.FirstOrDefault(a => a.Contains("OperationId"))?.Split("=").Last().Replace(@"""", string.Empty)?.Trim() ?? string.Empty;
             var produceResponseType = GetProduceResponseType(method);
-            var relativeUrl = _urlBuilder.BuildFrom(baseUrls, method);
+            var relativeUrl = urlBuilder.BuildFrom(baseUrls, method);
             var reflectionParameters = methodReflection.GetParameters().ToImmutableList();
-            var allModels = _dataTypeFinder.FindDataType(methodReflection, syntaxTrees).ToImmutableList();
-            var parameters = _parameterNormalizer.Normalize(method, reflectionParameters, allModels);
-            var normalizeDataTypes = _modelNormalizer.Normalize(allModels).ToImmutableList();
-            var responseType = _responseTypeNormalizer.GetResponseType(methodReflection, method, normalizeDataTypes);
+            var allModels = dataTypeFinder.FindDataType(methodReflection, syntaxTrees).ToImmutableList();
+            var parameters = parameterNormalizer.Normalize(method, reflectionParameters, allModels);
+            var normalizeDataTypes = modelNormalizer.Normalize(allModels).ToImmutableList();
+            var responseType = responseTypeNormalizer.GetResponseType(methodReflection, method, normalizeDataTypes);
 
             return new MethodInfos()
             {

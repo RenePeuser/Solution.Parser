@@ -51,7 +51,7 @@ namespace Solution.Parser.CSharp
             var nameSpace = recordDeclarationSyntax.SyntaxTree.GetNamespace();
             var attributesOfClass = recordDeclarationSyntax.AttributeLists.ToAttributes(filePath).ToImmutableList();
             var fields = recordDeclarationSyntax.AllOfType<FieldDeclarationSyntax>().ToFields(filePath).ToImmutableList();
-            var baseTypes = recordDeclarationSyntax.BaseList != null ? recordDeclarationSyntax.BaseList.ToBaseTypes().ToImmutableList() : ImmutableList<BaseType>.Empty;
+            var baseTypes = recordDeclarationSyntax.BaseList?.ToBaseTypes().ToImmutableList() ?? ImmutableList<BaseType>.Empty;
             var interfaces = recordDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces(filePath).ToImmutableList();
             var events = recordDeclarationSyntax.AllOfType<EventDeclarationSyntax>().ToEvents(filePath).ToImmutableList();
             var eventFields = recordDeclarationSyntax.AllOfType<EventFieldDeclarationSyntax>().ToEventFields(filePath).ToImmutableList();

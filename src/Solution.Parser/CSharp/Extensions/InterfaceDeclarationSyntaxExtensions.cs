@@ -59,9 +59,7 @@ namespace Solution.Parser.CSharp
             var methods = interfaceDeclarationSyntax.AllOfType<MethodDeclarationSyntax>().ToMethods(filePath).ToImmutableList();
             var nameSpace = interfaceDeclarationSyntax.SyntaxTree.GetNamespace();
             var attributesOfClass = interfaceDeclarationSyntax.AttributeLists.ToAttributes(filePath).ToImmutableList();
-            var baseTypes = interfaceDeclarationSyntax.BaseList != null
-                ? interfaceDeclarationSyntax.BaseList.ToBaseTypes().ToImmutableList()
-                : ImmutableList<BaseType>.Empty;
+            var baseTypes = interfaceDeclarationSyntax.BaseList?.ToBaseTypes().ToImmutableList() ?? ImmutableList<BaseType>.Empty;
             var events = interfaceDeclarationSyntax.AllOfType<EventDeclarationSyntax>().ToEvents(filePath).ToImmutableList();
             var eventFields = interfaceDeclarationSyntax.AllOfType<EventFieldDeclarationSyntax>().ToEventFields(filePath)
                 .ToImmutableList();

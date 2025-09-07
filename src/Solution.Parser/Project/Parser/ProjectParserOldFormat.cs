@@ -143,7 +143,7 @@ namespace Solution.Parser.Project
             {
                 var include = p.AttributeBy("Include")?.Value ?? string.Empty;
                 var versionAttribute = p.AttributeBy("Version");
-                var version = versionAttribute == null ? p.ElementBy("Version")?.Value ?? string.Empty : versionAttribute.Value;
+                var version = versionAttribute?.Value ?? (p.ElementBy("Version")?.Value ?? string.Empty);
                 return new PackageReference(include, new PackageVersion(version));
             }).ToImmutableList();
         }

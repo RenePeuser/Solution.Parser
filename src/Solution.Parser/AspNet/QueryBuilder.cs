@@ -25,15 +25,9 @@ namespace Solution.Parser.AspNet
     // ?useCache={useCache}
     // ?useCache={useCache}&withSqlAnalytics={withSqlAnalytics}&parentId={parentId}
     // ?{resourceTypeIds.ToQueryParams("resourceTypeId")}&useCache={useCache}&offset={offset}&limit={limit}&search={search}
-    internal sealed class QueryBuilder
+    internal sealed class QueryBuilder(IEnumerationTypes enumerationTypes)
     {
-        private readonly IEnumerationTypes _enumerationTypes;
         private const string FromQuery = "FromQuery";
-
-        public QueryBuilder(IEnumerationTypes enumerationTypes)
-        {
-            _enumerationTypes = enumerationTypes;
-        }
 
         internal string BuildFrom(Method method)
         {
@@ -60,7 +54,7 @@ namespace Solution.Parser.AspNet
                 var argument = parameter.Attributes.FirstOrDefault(attribute => attribute.Name.EqualsTo(FromQuery))?.Arguments.FirstOrDefault(a => a.Contains("Name ="))?.Split('=')?.Last()?.Trim().Trim('"');
                 var parameterName = argument ?? parameter.Name;
 
-                if (_enumerationTypes.IsListType(parameter.Type))
+                if (enumerationTypes.IsListType(parameter.Type))
                 {
                     // {resourceTypeIds.ToQueryParams("resourceTypeId")}
                     yield return @$"{{{parameter.Name}.ToQueryParams(""{parameterName}"")}}";

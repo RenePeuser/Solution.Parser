@@ -50,7 +50,7 @@ namespace Solution.Parser.CSharp
             var nameSpace = structDeclarationSyntax.SyntaxTree.GetNamespace();
             var attributesOfClass = structDeclarationSyntax.AttributeLists.ToAttributes(filePath).ToImmutableList();
             var fields = structDeclarationSyntax.AllOfType<FieldDeclarationSyntax>().ToFields(filePath).ToImmutableList();
-            var baseTypes = structDeclarationSyntax.BaseList != null ? structDeclarationSyntax.BaseList.ToBaseTypes().ToImmutableList() : ImmutableList<BaseType>.Empty;
+            var baseTypes = structDeclarationSyntax.BaseList?.ToBaseTypes().ToImmutableList() ?? ImmutableList<BaseType>.Empty;
             var interfaces = structDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces(filePath).ToImmutableList();
             var events = structDeclarationSyntax.AllOfType<EventDeclarationSyntax>().ToEvents(filePath).ToImmutableList();
             var eventFields = structDeclarationSyntax.AllOfType<EventFieldDeclarationSyntax>().ToEventFields(filePath).ToImmutableList();

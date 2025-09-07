@@ -2,10 +2,5 @@
 
 namespace Solution.Parser.XAML
 {
-    public class CanNotParseXamlException : Exception
-    {
-        public CanNotParseXamlException(string message) : base(message)
-        {
-        }
-    }
+    public class CanNotParseXamlException(string message) : Exception(message);
 }

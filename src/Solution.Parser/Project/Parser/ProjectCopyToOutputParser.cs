@@ -5,7 +5,7 @@ namespace Solution.Parser.Project
 {
     internal static class ProjectCopyToOutputParser
     {
-        private static readonly Dictionary<string, CopyToOutputDirectory> sProjectCopyToOutputMapping = new Dictionary<string, CopyToOutputDirectory>()
+        private static readonly Dictionary<string, CopyToOutputDirectory> SProjectCopyToOutputMapping = new()
         {
             { "Always", CopyToOutputDirectory.CopyAlways },
             { "PreserveNewest", CopyToOutputDirectory.CopyIfNewer }
@@ -15,7 +15,7 @@ namespace Solution.Parser.Project
         {
             return guid.IsNullOrWhiteSpace()
                 ? CopyToOutputDirectory.DoNotCopy
-                : DictionaryExtensions.GetValueOrDefault(sProjectCopyToOutputMapping, guid);
+                : DictionaryExtensions.GetValueOrDefault(SProjectCopyToOutputMapping, guid);
         }
     }
 }
