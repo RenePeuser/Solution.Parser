@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading.Tasks;
 using Argument.Check;
 using Extensions.Pack;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -53,11 +54,6 @@ namespace Solution.Parser.CSharp
             var parameters = methodDeclarationSyntax.ParameterList.ToParameters(filePath).ToImmutableList();
             var returnType = methodDeclarationSyntax.ReturnType.ToString();
             var methodName = methodDeclarationSyntax.Identifier.ValueText;
-
-            if (methodName.Contains("AddAuthorizeWithUserSecretsMiddleware"))
-            {
-
-            }
 
             var methodValue = methodDeclarationSyntax.ToString();
             var methodBody = methodDeclarationSyntax.Body?.ToString() == null ? string.Empty : methodDeclarationSyntax.Body.ToString();

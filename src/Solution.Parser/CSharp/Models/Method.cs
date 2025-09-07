@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Immutable;
 using System.Diagnostics;
 
 namespace Solution.Parser.CSharp
@@ -16,4 +17,18 @@ namespace Solution.Parser.CSharp
                          string SyntaxTree,
                          string FullQualifiedName,
                          string FilePath) : DeclarationWithModifiers(Name, FullQualifiedName, Modifiers, SyntaxTree, FilePath);
+
+    public static class MethodExtensions
+    {
+        public static bool IsAsync(this Method method)
+        {
+            return method.ReturnParameter.Contains("Task", StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static bool UseCorrectAsyncNaming(this Method method)
+        {
+            return method.Name.EndsWith("Async", StringComparison.Ordinal);
+        }
+    }
+
 }
