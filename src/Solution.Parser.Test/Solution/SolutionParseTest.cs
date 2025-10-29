@@ -24,11 +24,9 @@ namespace Solution.Parser.Test.Solution
         }
 
 
+        [Ignore]
         [TestMethod]
-        [DataRow(@"D:\Siemens\pulse-backend-core\PulseCore.sln")]
-        [DataRow(@"D:\Siemens\siemens-data-cloud-backend-console\Sdc.Console.sln")]
-        [DataRow(@"D:\Siemens\pulse-backend-survey\PulseSurvey.sln")]
-        [DataRow(@"D:\Siemens\siemensgpt-backend\SiemensGPT.sln")]
+        [DataRow("")]
         public void Count_CSharp_Files(string solution)
         {
             var solutionFile = new SolutionFileInfo(solution);
@@ -47,8 +45,6 @@ namespace Solution.Parser.Test.Solution
             var totalLines = parsedCSharpFiles.Sum(c => c.SyntaxTree.Split(Environment.NewLine).Length);
             var testClasses = classes.Count(c => c.Attributes.Any(a => a.Name == "TestClass"));
             var testMethods = classes.SelectMany(c => c.Methods).Count(m => m.Attributes.Any(a => a.Name == "TestMethod"));
-
-            var propsWithAttributes = classes.SelectMany(p => p.Properties).Where(p => p.Attributes.Any()).ToList();
 
             var record = new
             {
