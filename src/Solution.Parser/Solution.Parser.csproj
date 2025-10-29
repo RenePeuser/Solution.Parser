@@ -29,13 +29,13 @@
     <ItemGroup>
         <PackageReference Include="NuGet.Configuration" Version="6.14.0" />
         <PackageReference Include="NuGet.Versioning" Version="6.14.0" />
-        <PackageReference Include="Extensions.Pack" Version="6.0.7" />
+        <PackageReference Include="Extensions.Pack" Version="6.0.11" />
         <PackageReference Include="FileSystem.Abstraction" Version="0.1.2" />
         <PackageReference Include="GitVersion.MsBuild" Version="5.12.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Build" Version="17.14.8" />
+        <PackageReference Include="Microsoft.Build" Version="17.14.28" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
         <PackageReference Include="Microsoft.SourceLink.AzureRepos.Git" Version="8.0.0" PrivateAssets="All" />
     </ItemGroup>

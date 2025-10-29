@@ -2,10 +2,11 @@
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using Argument.Check;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Solution.Parser.CSharp;
 using Solution.Parser.Solution;
+
+[assembly: Parallelize(Scope = ExecutionScope.ClassLevel)]
 
 namespace Solution.Parser.Test.Solution
 {
@@ -22,6 +23,56 @@ namespace Solution.Parser.Test.Solution
             _solutionFileInfo = solutionFile;
         }
 
+
+        [TestMethod]
+        [DataRow(@"D:\Siemens\pulse-backend-core\PulseCore.sln")]
+        [DataRow(@"D:\Siemens\siemens-data-cloud-backend-console\Sdc.Console.sln")]
+        [DataRow(@"D:\Siemens\pulse-backend-survey\PulseSurvey.sln")]
+        [DataRow(@"D:\Siemens\siemensgpt-backend\SiemensGPT.sln")]
+        public void Count_CSharp_Files(string solution)
+        {
+            var solutionFile = new SolutionFileInfo(solution);
+            var parsedSolutionFile = solutionFile.Parse();
+
+            var csharpFiles = parsedSolutionFile.Projects.SelectMany(p => p.CSharpFileInfos).ToList();
+            var projects = parsedSolutionFile.Projects.Count;
+            var parsedCSharpFiles = csharpFiles.Select(c => c.Parse());
+            var classes = parsedCSharpFiles.SelectMany(c => c.Classes);
+            var maxLineOfSyntaxTree = classes.Max(c => c.SyntaxTree.Split(Environment.NewLine).Length);
+            var maxMethodLineCount = classes.SelectMany(c => c.Methods).Max(m => m.MethodBody.Split(Environment.NewLine).Length);
+            var enums = parsedCSharpFiles.SelectMany(c => c.Enums).Count();
+            var interfaces = parsedCSharpFiles.SelectMany(c => c.Interfaces).Count();
+            var records = parsedCSharpFiles.SelectMany(c => c.Records).Count();
+            var structs = parsedCSharpFiles.SelectMany(c => c.Structs).Count();
+            var totalLines = parsedCSharpFiles.Sum(c => c.SyntaxTree.Split(Environment.NewLine).Length);
+            var testClasses = classes.Count(c => c.Attributes.Any(a => a.Name == "TestClass"));
+            var testMethods = classes.SelectMany(c => c.Methods).Count(m => m.Attributes.Any(a => a.Name == "TestMethod"));
+
+            var propsWithAttributes = classes.SelectMany(p => p.Properties).Where(p => p.Attributes.Any()).ToList();
+
+            var record = new
+            {
+                Projects = projects,
+                CSharpFiles = csharpFiles.Count,
+                Classes = classes.Count(),
+                Records = records,
+                Enums = enums,
+                Interfaces = interfaces,
+                Structs = structs,
+                MaxLinesOfOneSyntaxTree = maxLineOfSyntaxTree,
+                MaxLinesOfOneMethodBody = maxMethodLineCount,
+                TotalLinesOfAllCSharpFiles = totalLines,
+            };
+
+            var tests = new
+            {
+                TestClassAttributes = testClasses,
+                TestMethodAttributes = testMethods
+            };
+
+            Assert.Fail($"{Environment.NewLine}{Environment.NewLine}{solutionFile.FileNameWithoutExtenion}:{Environment.NewLine}{ConsoleTables.ConsoleTable.From([record])}{Environment.NewLine}{Environment.NewLine}{ConsoleTables.ConsoleTable.From([tests])}");
+
+        }
 
         [TestMethod]
         public void Assert_That_User_Nuget_Folder_Was_Found()
@@ -45,7 +96,7 @@ namespace Solution.Parser.Test.Solution
         {
             var parsedSolutionFile = _solutionFileInfo.Parse();
 
-            Assert.AreEqual(1, parsedSolutionFile.UnitTestProjects.Count);
+            Assert.HasCount(1, parsedSolutionFile.UnitTestProjects);
             Assert.AreEqual("Solution.Parser.Test", parsedSolutionFile.UnitTestProjects[0].ProjectFileInfo.FileNameWithoutExtenion);
         }
 
@@ -54,7 +105,7 @@ namespace Solution.Parser.Test.Solution
         {
             var parsedSolutionFile = _solutionFileInfo.Parse();
 
-            Assert.AreEqual(1, parsedSolutionFile.ProductiveProjects.Count);
+            Assert.HasCount(1, parsedSolutionFile.ProductiveProjects);
             Assert.AreEqual("Solution.Parser", parsedSolutionFile.ProductiveProjects[0].ProjectFileInfo.FileNameWithoutExtenion);
         }
 

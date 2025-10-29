@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
+using Argument.Check;
 using Extensions.Pack;
 using FileSystem.Abstraction;
 using Solution.Parser.Common;
@@ -11,23 +12,16 @@ namespace Solution.Parser.XAML
     [DebuggerDisplay("{Value.FullName}")]
     public abstract class SpecificFileInfoBase : ImmutableSemanticType<IFileInfo>
     {
-        protected SpecificFileInfoBase(string path, string expectedFileExtension) : base(
-            new FileSystem.Abstraction.FileInfo(new FileInfo(path)))
+        protected SpecificFileInfoBase(string path,
+                                       string expectedFileExtension) : base(new FileSystem.Abstraction.FileInfo(new FileInfo(path)))
         {
-            if (path.IsNullOrEmpty())
-            {
-                throw new ArgumentException("The path of a file info must not be null or empty", nameof(path));
-            }
+            Throw.IfNullOrEmpty(path);
 
-            if (expectedFileExtension.IsNullOrEmpty())
-            {
-                throw new ArgumentException("The expected file extension must not be null", nameof(expectedFileExtension));
-            }
+            Throw.IfNullOrEmpty(expectedFileExtension);
 
             if (!path.EndWith(expectedFileExtension))
             {
-                throw new ArgumentException(
-                    $"The given path '{path}' has not the expected file extension '{expectedFileExtension}'");
+                throw new ArgumentException($"The given path '{path}' has not the expected file extension '{expectedFileExtension}'");
             }
 
             if (!File.Exists(path))

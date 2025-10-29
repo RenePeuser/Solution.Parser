@@ -7,7 +7,7 @@ namespace Solution.Parser.XAML
 {
     internal sealed class RootSelector : IRootSelector
     {
-        private readonly IImmutableList<IConcreteRootBuilder> _rootBuilders;
+        private readonly IImmutableList<IConcreteRootBuilder> _rootBuilders = ImmutableList<IConcreteRootBuilder>.Empty;
 
         internal RootSelector() : this(ImmutableList.Create<IConcreteRootBuilder>(new WindowRootBuilder(),
                                                                                   new ResourceDictionaryRootBuilder(),

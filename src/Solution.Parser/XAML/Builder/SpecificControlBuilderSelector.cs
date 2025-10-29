@@ -8,7 +8,7 @@ namespace Solution.Parser.XAML
 {
     internal sealed class SpecificControlBuilderSelector : ISpecificControlBuilderSelector
     {
-        private readonly IImmutableList<ISpecificControlBuilder> _specificControlBuilders;
+        private readonly IImmutableList<ISpecificControlBuilder> _specificControlBuilders = ImmutableList<ISpecificControlBuilder>.Empty;
 
         internal SpecificControlBuilderSelector()
             : this(new ISpecificControlBuilder[]

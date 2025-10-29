@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
+using Argument.Check;
 using Extensions.Pack;
 using FileSystemInfoExtensions = Solution.Parser.Common.FileSystemInfoExtensions;
 
@@ -12,16 +13,9 @@ namespace Solution.Parser.Solution
         protected SpecificFileInfoBase(string path, string expectedFileExtension)
             : base(new FileInfo(path))
         {
-            if (path.IsNullOrEmpty())
-            {
-                throw new ArgumentException("The path of a file info must not be null or empty", nameof(path));
-            }
+            Throw.IfNullOrEmpty(path);
 
-            if (expectedFileExtension.IsNullOrEmpty())
-            {
-                throw new ArgumentException("The expected file extension must not be null",
-                    nameof(expectedFileExtension));
-            }
+            Throw.IfNullOrEmpty(expectedFileExtension);
 
             if (!path.EndWith(expectedFileExtension))
             {

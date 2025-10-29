@@ -53,8 +53,9 @@ namespace Solution.Parser.CSharp
             var modifiers = propertyDeclarationSyntax.ToModifiers().ToImmutableList();
             var syntaxTree = propertyDeclarationSyntax.ToString();
             var fullqualifiedName = BuildFullQualifiedName(propertyDeclarationSyntax);
+            var attributes = propertyDeclarationSyntax.AttributeLists.ToAttributes(filePath).ToImmutableList();
 
-            return new Property(propertyType, propertyName, isReadOnly, modifiers, syntaxTree, fullqualifiedName, filePath);
+            return new Property(propertyType, propertyName, isReadOnly, modifiers, attributes, syntaxTree, fullqualifiedName, filePath);
         }
 
         internal static string BuildFullQualifiedName(PropertyDeclarationSyntax recordDeclarationSyntax)

@@ -7,7 +7,7 @@ namespace Solution.Parser.XAML
 {
     internal sealed class ParserSelector : IParserSelector
     {
-        private readonly IImmutableList<IPropertyValueParserBase> _propertyValueParser;
+        private readonly IImmutableList<IPropertyValueParserBase> _propertyValueParser = ImmutableList<IPropertyValueParserBase>.Empty;
 
         internal ParserSelector(IEnumerable<IPropertyValueParserBase> propertyValueParser)
         {

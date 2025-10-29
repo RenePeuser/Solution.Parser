@@ -4,5 +4,9 @@ using System.Diagnostics;
 namespace Solution.Parser.CSharp
 {
     [DebuggerDisplay("{Name}")]
-    public record Attribute(string Name, IImmutableList<string> Arguments, string SyntaxTree, string FilePath) : DeclarationBase(Name, Name, SyntaxTree, FilePath);
+    public record Attribute(string Name,
+                            IImmutableList<string> Arguments,
+                            string SyntaxTree,
+                            string FilePath) : DeclarationBase(Name, Name, SyntaxTree,
+                                                               FilePath);
 }
