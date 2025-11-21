@@ -18,6 +18,8 @@
 
         Abstract,
 
-        Partial
+        Partial,
+
+        Required
     }
 }

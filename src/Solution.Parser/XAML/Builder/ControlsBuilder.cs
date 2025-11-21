@@ -18,7 +18,7 @@ namespace Solution.Parser.XAML
             _specificControlBuilderSelector = specificControlBuilderSelector;
         }
 
-        public IEnumerable<ElementBase> BuildFrom(IImmutableList<XElement> elements, ElementBase? parent)
+        public IEnumerable<ElementBase> BuildFrom(ImmutableList<XElement> elements, ElementBase? parent)
         {
             foreach (var element in elements)
             {

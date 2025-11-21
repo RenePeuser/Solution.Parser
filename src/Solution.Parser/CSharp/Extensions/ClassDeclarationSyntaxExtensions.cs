@@ -38,6 +38,9 @@ namespace Solution.Parser.CSharp
                     case "partial":
                         yield return Modifier.Partial;
                         break;
+                    case "required":
+                        yield return Modifier.Required;
+                        break;
                 }
             }
         }
@@ -45,20 +48,20 @@ namespace Solution.Parser.CSharp
         internal static Class ToClass(this ClassDeclarationSyntax classDeclarationSyntax, string filePath)
         {
             var modifiers = classDeclarationSyntax.ToModifiers().ToImmutableList();
-            var constructors = classDeclarationSyntax.AllOfType<ConstructorDeclarationSyntax>().ToConstructors(filePath).ToImmutableList();
-            var properties = classDeclarationSyntax.AllOfType<PropertyDeclarationSyntax>().ToProperties(filePath).ToImmutableList();
-            var methods = classDeclarationSyntax.AllOfType<MethodDeclarationSyntax>().ToMethods(filePath).ToImmutableList();
+            var constructors = classDeclarationSyntax.AllOfType<ConstructorDeclarationSyntax>().ToConstructors(filePath);
+            var properties = classDeclarationSyntax.AllOfType<PropertyDeclarationSyntax>().ToProperties(filePath);
+            var methods = classDeclarationSyntax.AllOfType<MethodDeclarationSyntax>().ToMethods(filePath);
             var nameSpace = classDeclarationSyntax.SyntaxTree.GetNamespace();
-            var attributesOfClass = classDeclarationSyntax.AttributeLists.ToAttributes(filePath).ToImmutableList();
-            var fields = classDeclarationSyntax.AllOfType<FieldDeclarationSyntax>().ToFields(filePath).ToImmutableList();
-            var baseTypes = classDeclarationSyntax.BaseList?.ToBaseTypes().ToImmutableList() ?? ImmutableList<BaseType>.Empty;
-            var interfaces = classDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces(filePath).ToImmutableList();
-            var events = classDeclarationSyntax.AllOfType<EventDeclarationSyntax>().ToEvents(filePath).ToImmutableList();
-            var eventFields = classDeclarationSyntax.AllOfType<EventFieldDeclarationSyntax>().ToEventFields(filePath).ToImmutableList();
-            var nestedClasses = classDeclarationSyntax.AllOfType<ClassDeclarationSyntax>().ToClasses(filePath).ToImmutableList();
-            var nestedStructs = classDeclarationSyntax.AllOfType<StructDeclarationSyntax>().ToStructs(filePath).ToImmutableList();
-            var nestedEnums = classDeclarationSyntax.AllOfType<EnumDeclarationSyntax>().ToEnums(filePath).ToImmutableList();
-            var nestedInterfaces = classDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces(filePath).ToImmutableList();
+            var attributesOfClass = classDeclarationSyntax.AttributeLists.ToAttributes(filePath);
+            var fields = classDeclarationSyntax.AllOfType<FieldDeclarationSyntax>().ToFields(filePath);
+            var baseTypes = classDeclarationSyntax.BaseList?.ToBaseTypes() ?? ImmutableList<BaseType>.Empty;
+            var interfaces = classDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces(filePath);
+            var events = classDeclarationSyntax.AllOfType<EventDeclarationSyntax>().ToEvents(filePath);
+            var eventFields = classDeclarationSyntax.AllOfType<EventFieldDeclarationSyntax>().ToEventFields(filePath);
+            var nestedClasses = classDeclarationSyntax.AllOfType<ClassDeclarationSyntax>().ToClasses(filePath);
+            var nestedStructs = classDeclarationSyntax.AllOfType<StructDeclarationSyntax>().ToStructs(filePath);
+            var nestedEnums = classDeclarationSyntax.AllOfType<EnumDeclarationSyntax>().ToEnums(filePath);
+            var nestedInterfaces = classDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces(filePath);
             var name = classDeclarationSyntax.Identifier.ValueText;
             var syntaxTree = classDeclarationSyntax.ToString();
             var fullQualifiedName = BuildFullQualifiedName(classDeclarationSyntax);
@@ -118,7 +121,7 @@ namespace Solution.Parser.CSharp
             }
         }
 
-        internal static IImmutableList<Class> ToClasses(this IImmutableList<ClassDeclarationSyntax> classDeclarationSyntaxes, string filePath)
+        internal static ImmutableList<Class> ToClasses(this ImmutableList<ClassDeclarationSyntax> classDeclarationSyntaxes, string filePath)
         {
             return classDeclarationSyntaxes.Select(item => item.ToClass(filePath)).ToImmutableList();
         }

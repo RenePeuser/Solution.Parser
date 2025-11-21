@@ -34,7 +34,7 @@ namespace Solution.Parser.XAML
             var attributeName = attribute.Name.LocalName.Split('.');
             var propertyValue = _xalXamlPropertyValueParser.Parse(attribute.Value, lineNumber);
 
-            if (attributeName.Length == 1)
+            if (attributeName.Length.EqualsTo(1))
             {
                 return new Property(lineNumber, attributeName.First(), propertyValue);
             }

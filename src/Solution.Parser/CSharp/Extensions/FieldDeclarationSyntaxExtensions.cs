@@ -20,7 +20,7 @@ namespace Solution.Parser.CSharp
             return new Field(name, type, bindingFlags, initializer, fieldDeclarationSyntax.SyntaxTree.ToString(), filePath);
         }
 
-        public static IImmutableList<Field> ToFields(this IImmutableList<FieldDeclarationSyntax> fieldDeclarationSyntaxes, string filePath)
+        public static ImmutableList<Field> ToFields(this ImmutableList<FieldDeclarationSyntax> fieldDeclarationSyntaxes, string filePath)
         {
             return fieldDeclarationSyntaxes.Select(f => f.ToField(filePath)).ToImmutableList();
         }
@@ -51,6 +51,9 @@ namespace Solution.Parser.CSharp
                         break;
                     case "const":
                         yield return Modifier.Const;
+                        break;
+                    case "required":
+                        yield return Modifier.Required;
                         break;
                 }
             }

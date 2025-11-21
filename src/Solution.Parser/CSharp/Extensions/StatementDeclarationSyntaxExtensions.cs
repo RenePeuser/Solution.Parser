@@ -13,12 +13,12 @@ namespace Solution.Parser.CSharp
 
         }
 
-        internal static IImmutableList<Statement> ToStatements(this IImmutableList<StatementSyntax> statementSyntaxes, string filePath)
+        internal static ImmutableList<Statement> ToStatements(this ImmutableList<StatementSyntax> statementSyntaxes, string filePath)
         {
             var statements = ToStatementInternal(statementSyntaxes, filePath).ToImmutableList();
             return statements;
 
-            static IEnumerable<Statement> ToStatementInternal(IImmutableList<StatementSyntax> statementSyntaxes, string filePath)
+            static IEnumerable<Statement> ToStatementInternal(ImmutableList<StatementSyntax> statementSyntaxes, string filePath)
             {
                 foreach (var statementSyntax in statementSyntaxes)
                 {

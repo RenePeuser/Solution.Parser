@@ -7,7 +7,7 @@ namespace Solution.Parser.CSharp
 {
     internal static class EventDeclarationSyntaxExtensions
     {
-        internal static IImmutableList<Event> ToEvents(this IImmutableList<EventDeclarationSyntax> eventDeclarationSyntaxes, string filePath)
+        internal static ImmutableList<Event> ToEvents(this ImmutableList<EventDeclarationSyntax> eventDeclarationSyntaxes, string filePath)
         {
             return eventDeclarationSyntaxes.Select(item => item.ToEvent(filePath)).ToImmutableList();
         }

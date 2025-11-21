@@ -9,7 +9,7 @@ namespace Solution.Parser.CSharp
 {
     internal static class SyntaxTreeExtensions
     {
-        internal static IImmutableList<T> AllOfType<T>(this SyntaxTree syntaxTree)
+        internal static ImmutableList<T> AllOfType<T>(this SyntaxTree syntaxTree)
             where T : SyntaxNode
         {
             Throw.IfNull(syntaxTree);

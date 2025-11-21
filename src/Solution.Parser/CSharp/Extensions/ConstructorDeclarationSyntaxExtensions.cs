@@ -39,6 +39,9 @@ namespace Solution.Parser.CSharp
                     case "partial":
                         yield return Modifier.Partial;
                         break;
+                    case "required":
+                        yield return Modifier.Required;
+                        break;
                 }
             }
         }
@@ -48,7 +51,7 @@ namespace Solution.Parser.CSharp
         {
             Throw.IfNull(constructorDeclarationSyntax);
 
-            var parameters = constructorDeclarationSyntax.ParameterList.ToParameters(filePath).ToImmutableList();
+            var parameters = constructorDeclarationSyntax.ParameterList.ToParameters(filePath);
             var arguments = constructorDeclarationSyntax.Initializer?.ArgumentList.Arguments.Select(a => a.ToString())
                 .ToImmutableList();
             var modifiers = constructorDeclarationSyntax.ToModifiers().ToImmutableList();
@@ -56,7 +59,7 @@ namespace Solution.Parser.CSharp
             return new Constructor(parameters, arguments ?? ImmutableList<string>.Empty, modifiers);
         }
 
-        internal static IImmutableList<Constructor> ToConstructors(this IImmutableList<ConstructorDeclarationSyntax> constructorDeclarationSyntaxes, string filePath)
+        internal static ImmutableList<Constructor> ToConstructors(this ImmutableList<ConstructorDeclarationSyntax> constructorDeclarationSyntaxes, string filePath)
         {
             Throw.IfNull(constructorDeclarationSyntaxes);
 

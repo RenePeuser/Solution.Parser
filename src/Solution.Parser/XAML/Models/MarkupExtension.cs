@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
+using Extensions.Pack;
 
 namespace Solution.Parser.XAML
 {
@@ -11,7 +12,7 @@ namespace Solution.Parser.XAML
         {
         }
 
-        internal MarkupExtension(string value, string name, IImmutableList<Property> properties) : base(value)
+        internal MarkupExtension(string value, string name, ImmutableList<Property> properties) : base(value)
         {
             Name = name;
             Properties = properties;
@@ -19,8 +20,8 @@ namespace Solution.Parser.XAML
 
         public string Name { get; }
 
-        public IImmutableList<Property> Properties { get; }
+        public ImmutableList<Property> Properties { get; }
 
-        public Property? this[string name] => Properties.FirstOrDefault(p => p.Name == name);
+        public Property? this[string name] => Properties.FirstOrDefault(p => p.Name.EqualsTo(name));
     }
 }

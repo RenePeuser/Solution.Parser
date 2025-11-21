@@ -44,13 +44,15 @@ namespace Solution.Parser.CSharp
                         break;
                     case "partial":
                         yield return Modifier.Partial;
-
+                        break;
+                    case "required":
+                        yield return Modifier.Required;
                         break;
                 }
             }
         }
 
-        internal static IImmutableList<Enum> ToEnums(this IImmutableList<EnumDeclarationSyntax> enumDeclarationSyntaxes,
+        internal static ImmutableList<Enum> ToEnums(this ImmutableList<EnumDeclarationSyntax> enumDeclarationSyntaxes,
                                                      string filePath)
         {
             return enumDeclarationSyntaxes.Select(item => item.ToEnum(filePath)).ToImmutableList();
@@ -67,7 +69,7 @@ namespace Solution.Parser.CSharp
             var name = enumDeclarationSyntax.Identifier.ValueText;
             var fullQualifiedName = $"{nameSpace.Name}.{name}";
             var syntaxTree = enumDeclarationSyntax.ToString();
-            var attributes = enumDeclarationSyntax.AttributeLists.ToAttributes(filePath).ToImmutableList();
+            var attributes = enumDeclarationSyntax.AttributeLists.ToAttributes(filePath);
 
             return new Enum(nameSpace, name, modifiers,
                             enumFields, attributes, fullQualifiedName,

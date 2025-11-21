@@ -38,6 +38,9 @@ namespace Solution.Parser.CSharp
                     case "partial":
                         yield return Modifier.Partial;
                         break;
+                    case "required":
+                        yield return Modifier.Required;
+                        break;
                 }
             }
         }
@@ -45,29 +48,36 @@ namespace Solution.Parser.CSharp
         internal static Record ToRecord(this RecordDeclarationSyntax recordDeclarationSyntax, string filePath)
         {
             var modifiers = recordDeclarationSyntax.ToModifiers().ToImmutableList();
-            var constructors = recordDeclarationSyntax.AllOfType<ConstructorDeclarationSyntax>().ToConstructors(filePath).ToImmutableList();
-            var properties = recordDeclarationSyntax.AllOfType<PropertyDeclarationSyntax>().ToProperties(filePath).ToImmutableList();
-            var methods = recordDeclarationSyntax.AllOfType<MethodDeclarationSyntax>().ToMethods(filePath).ToImmutableList();
+            var constructors = recordDeclarationSyntax.AllOfType<ConstructorDeclarationSyntax>().ToConstructors(filePath);
+            var properties = recordDeclarationSyntax.AllOfType<PropertyDeclarationSyntax>().ToProperties(filePath);
+            var methods = recordDeclarationSyntax.AllOfType<MethodDeclarationSyntax>().ToMethods(filePath);
             var nameSpace = recordDeclarationSyntax.SyntaxTree.GetNamespace();
-            var attributesOfClass = recordDeclarationSyntax.AttributeLists.ToAttributes(filePath).ToImmutableList();
-            var fields = recordDeclarationSyntax.AllOfType<FieldDeclarationSyntax>().ToFields(filePath).ToImmutableList();
-            var baseTypes = recordDeclarationSyntax.BaseList?.ToBaseTypes().ToImmutableList() ?? ImmutableList<BaseType>.Empty;
-            var interfaces = recordDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces(filePath).ToImmutableList();
-            var events = recordDeclarationSyntax.AllOfType<EventDeclarationSyntax>().ToEvents(filePath).ToImmutableList();
-            var eventFields = recordDeclarationSyntax.AllOfType<EventFieldDeclarationSyntax>().ToEventFields(filePath).ToImmutableList();
-            var nestedClasses = recordDeclarationSyntax.AllOfType<ClassDeclarationSyntax>().ToClasses(filePath).ToImmutableList();
-            var nestedStructs = recordDeclarationSyntax.AllOfType<StructDeclarationSyntax>().ToStructs(filePath).ToImmutableList();
-            var nestedEnums = recordDeclarationSyntax.AllOfType<EnumDeclarationSyntax>().ToEnums(filePath).ToImmutableList();
-            var nestedInterfaces = recordDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces(filePath).ToImmutableList();
+            var attributesOfClass = recordDeclarationSyntax.AttributeLists.ToAttributes(filePath);
+            var fields = recordDeclarationSyntax.AllOfType<FieldDeclarationSyntax>().ToFields(filePath);
+            var baseTypes = recordDeclarationSyntax.BaseList?.ToBaseTypes() ?? ImmutableList<BaseType>.Empty;
+            var interfaces = recordDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces(filePath);
+            var events = recordDeclarationSyntax.AllOfType<EventDeclarationSyntax>().ToEvents(filePath);
+            var eventFields = recordDeclarationSyntax.AllOfType<EventFieldDeclarationSyntax>().ToEventFields(filePath);
+            var nestedClasses = recordDeclarationSyntax.AllOfType<ClassDeclarationSyntax>().ToClasses(filePath);
+            var nestedStructs = recordDeclarationSyntax.AllOfType<StructDeclarationSyntax>().ToStructs(filePath);
+            var nestedEnums = recordDeclarationSyntax.AllOfType<EnumDeclarationSyntax>().ToEnums(filePath);
+            var nestedInterfaces = recordDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces(filePath);
             var name = recordDeclarationSyntax.Identifier.ValueText;
             var syntaxTree = recordDeclarationSyntax.ToString();
 
             var fullQualifiedName = BuildFullQualifiedName(recordDeclarationSyntax);
             var parameters = recordDeclarationSyntax.ParameterList?.ToParameters(filePath) ?? ImmutableList<Parameter>.Empty;
 
-            return new Record(nameSpace, name, modifiers, constructors, properties, methods, attributesOfClass, fields,
+            if (name.Contains("UpdateCapabilityRequest"))
+            {
+
+            }
+
+            var result = new Record(nameSpace, name, modifiers, constructors, properties, methods, attributesOfClass, fields,
                 interfaces, baseTypes, events, eventFields, nestedClasses, nestedStructs, nestedEnums,
                 nestedInterfaces, parameters, syntaxTree, fullQualifiedName, filePath);
+
+            return result;
         }
 
         internal static string BuildFullQualifiedName(RecordDeclarationSyntax recordDeclarationSyntax)
@@ -113,7 +123,7 @@ namespace Solution.Parser.CSharp
         }
 
 
-        internal static IImmutableList<Record> ToRecords(this IImmutableList<RecordDeclarationSyntax> recordDeclarationSyntaxes, string filePath)
+        internal static ImmutableList<Record> ToRecords(this ImmutableList<RecordDeclarationSyntax> recordDeclarationSyntaxes, string filePath)
         {
             return recordDeclarationSyntaxes.Select(item => item.ToRecord(filePath)).ToImmutableList();
         }

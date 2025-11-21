@@ -16,14 +16,14 @@ namespace Solution.Parser.AspNet
 
     public class ApiVersionFinder
     {
-        public IImmutableList<ApiVersion> FindAllApiVersions(IImmutableList<CSharpSyntaxTree> syntaxTrees)
+        public ImmutableList<ApiVersion> FindAllApiVersions(ImmutableList<CSharpSyntaxTree> syntaxTrees)
         {
             var controllers = (from syntaxTree in syntaxTrees
                                from @class in syntaxTree.Classes
                                where @class.BaseTypes.Any(baseType => baseType.TypeName.Contains("Controller")) // ODataController, Controller, ControllerBase
                                select @class).ToImmutableList();
 
-            var allVersions = controllers.SelectMany(controller => controller.Attributes.Where(a => a.Name == "ApiVersion"))
+            var allVersions = controllers.SelectMany(controller => controller.Attributes.Where(a => a.Name.EqualsTo("ApiVersion")))
                                          .Where(a => a.Arguments.Any())
                                          .Select(a => a.Arguments[0].Replace("\"", string.Empty))
                                          .Distinct()

@@ -4,8 +4,8 @@ namespace Solution.Parser.CSharp
 {
     public record DeclarationWithModifiers(string Name,
                                            string FullQualifiedName,
-                                           IImmutableList<Modifier> Modifiers,
-                                           IImmutableList<Attribute> Attributes,
+                                           ImmutableList<Modifier> Modifiers,
+                                           ImmutableList<Attribute> Attributes,
                                            string SyntaxTree,
                                            string FilePath) : DeclarationBase(Name, FullQualifiedName, SyntaxTree,
                                                                               FilePath);

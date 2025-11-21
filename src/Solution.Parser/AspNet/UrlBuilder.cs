@@ -19,18 +19,18 @@ namespace Solution.Parser.AspNet
 
     // What we create here:
     // - We create an url with all needed parameters
-    // 
+    //
     // Samples:
     //
     // core/alive
-    // 
+    //
     // v1.0/project/{projectId}/rowlevelsecurity/{rowLevelSecurityId}/user/{userId}?useCache={useCache}
     // v2.0/project/{projectId}/resource/{resourceId}/parent/{resourceParentId}?useCache={useCache}
     internal sealed partial class UrlBuilder(QueryBuilder queryBuilder)
     {
         private readonly Regex _parameterRegEx = ParamaterRegEx();
 
-        internal IImmutableList<string> BuildFrom(IImmutableList<string> baseUrls, Method method)
+        internal ImmutableList<string> BuildFrom(ImmutableList<string> baseUrls, Method method)
         {
             var immutableListBuilder = ImmutableList.CreateBuilder<string>();
 
@@ -44,7 +44,7 @@ namespace Solution.Parser.AspNet
                     var httpMethodRoute = httpMethod.Arguments.FirstOrDefault()?.Trim('"') ?? string.Empty;
 
                     // 3. Iterate over all routes
-                    var routes = method.Attributes.Where(a => a.Name == "Route").Select(a => a.Arguments.FirstOrDefault()?.Trim('"')).FilterNullObjects().ToImmutableList();
+                    var routes = method.Attributes.Where(a => a.Name.EqualsTo("Route")).Select(a => a.Arguments.FirstOrDefault()?.Trim('"')).FilterNullObjects().ToImmutableList();
 
                     if (routes.IsEmpty())
                     {

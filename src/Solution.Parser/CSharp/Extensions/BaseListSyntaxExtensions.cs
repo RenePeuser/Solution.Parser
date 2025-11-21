@@ -7,7 +7,7 @@ namespace Solution.Parser.CSharp
 {
     internal static class BaseListSyntaxExtensions
     {
-        internal static IImmutableList<BaseType> ToBaseTypes(this BaseListSyntax baseListSyntax)
+        internal static ImmutableList<BaseType> ToBaseTypes(this BaseListSyntax baseListSyntax)
         {
             Throw.IfNull(baseListSyntax);
 

@@ -6,7 +6,7 @@ namespace Solution.Parser.CSharp
     [DebuggerDisplay("{Name}")]
     public record Parameter(string Type,
                             string Name,
-                            IImmutableList<Attribute> Attributes,
+                            ImmutableList<Attribute> Attributes,
                             string SyntaxTree,
                             bool IsOptional,
                             string? DefaultValue,

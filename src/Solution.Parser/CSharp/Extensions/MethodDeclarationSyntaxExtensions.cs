@@ -43,6 +43,9 @@ namespace Solution.Parser.CSharp
                     case "partial":
                         yield return Modifier.Partial;
                         break;
+                    case "required":
+                        yield return Modifier.Required;
+                        break;
                 }
             }
         }
@@ -51,14 +54,14 @@ namespace Solution.Parser.CSharp
         {
             Throw.IfNull(methodDeclarationSyntax);
 
-            var parameters = methodDeclarationSyntax.ParameterList.ToParameters(filePath).ToImmutableList();
+            var parameters = methodDeclarationSyntax.ParameterList.ToParameters(filePath);
             var returnType = methodDeclarationSyntax.ReturnType.ToString();
             var methodName = methodDeclarationSyntax.Identifier.ValueText;
 
             var methodValue = methodDeclarationSyntax.ToString();
-            var methodBody = methodDeclarationSyntax.Body?.ToString() == null ? string.Empty : methodDeclarationSyntax.Body.ToString();
+            var methodBody = (methodDeclarationSyntax.Body?.ToString()).IsNull() ? string.Empty : methodDeclarationSyntax.Body.ToString();
             var statements = methodBody.IsEmpty() ? ImmutableList<string>.Empty : methodDeclarationSyntax.Body?.Statements.Select(s => s.ToString()).ToImmutableList() ?? ImmutableList<string>.Empty;
-            var attributes = GetAttributes(methodDeclarationSyntax, filePath).ToImmutableList();
+            var attributes = GetAttributes(methodDeclarationSyntax, filePath);
             var modifiers = methodDeclarationSyntax.ToModifier().ToImmutableList();
             var lineStatementsRaw = methodBody.Split(Environment.NewLine).ToImmutableList();
             var lineStatements = lineStatementsRaw.Take(new Range(1, lineStatementsRaw.Count - 1)).FilterNullOrWhitespace().ToImmutableList();
@@ -120,7 +123,7 @@ namespace Solution.Parser.CSharp
             }
         }
 
-        internal static IImmutableList<Method> ToMethods(this IImmutableList<MethodDeclarationSyntax> methodDeclarationSyntaxes,
+        internal static ImmutableList<Method> ToMethods(this ImmutableList<MethodDeclarationSyntax> methodDeclarationSyntaxes,
                                                          string filePath)
         {
             Throw.IfNull(methodDeclarationSyntaxes);
@@ -128,7 +131,7 @@ namespace Solution.Parser.CSharp
             return methodDeclarationSyntaxes.Select(m => m.ToMethod(filePath)).ToImmutableList();
         }
 
-        private static IImmutableList<Attribute> GetAttributes(MethodDeclarationSyntax methodDeclarationSyntax,
+        private static ImmutableList<Attribute> GetAttributes(MethodDeclarationSyntax methodDeclarationSyntax,
                                                                string filePath)
         {
             return (from attrList in methodDeclarationSyntax.AttributeLists

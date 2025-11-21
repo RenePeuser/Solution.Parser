@@ -7,7 +7,7 @@ namespace Solution.Parser.Nuspec
     [DebuggerDisplay("{Id}")]
     public class Dependency
     {
-        internal Dependency(string id, string version, IImmutableList<string> excludes)
+        internal Dependency(string id, string version, ImmutableList<string> excludes)
         {
             Throw.IfNullOrWhiteSpace(id);
             Throw.IfNullOrWhiteSpace(version);
@@ -20,6 +20,6 @@ namespace Solution.Parser.Nuspec
 
         public string Id { get; }
         public string Version { get; }
-        public IImmutableList<string> Excludes { get; }
+        public ImmutableList<string> Excludes { get; }
     }
 }

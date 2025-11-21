@@ -10,10 +10,10 @@ namespace Solution.Parser.XAML
                                string xName,
                                string typeName,
                                string xKey,
-                               IImmutableList<Property> properties,
-                               IImmutableList<ElementBase> controls,
-                               IImmutableList<Style> styles,
-                               IImmutableList<DataTemplate> dataTemplates)
+                               ImmutableList<Property> properties,
+                               ImmutableList<ElementBase> controls,
+                               ImmutableList<Style> styles,
+                               ImmutableList<DataTemplate> dataTemplates)
         : Control(1, dataContext, parent,
                   xName, typeName, xKey,
                   properties, controls, styles,

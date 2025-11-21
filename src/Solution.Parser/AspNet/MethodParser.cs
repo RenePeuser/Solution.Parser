@@ -29,24 +29,24 @@ namespace Solution.Parser.AspNet
                                                ParameterNormalizer parameterNormalizer,
                                                ResponseTypeNormalizer responseTypeNormalizer)
     {
-        internal IImmutableList<MethodInfos> Parse(IImmutableList<Method> methods,
-                                                   IImmutableList<string> baseUrls,
-                                                   IImmutableList<MethodInfo> reflectionTypes,
-                                                   IImmutableList<CSharpSyntaxTree> syntaxTrees)
+        internal ImmutableList<MethodInfos> Parse(ImmutableList<Method> methods,
+                                                  ImmutableList<string> baseUrls,
+                                                  ImmutableList<MethodInfo> reflectionTypes,
+                                                  ImmutableList<CSharpSyntaxTree> syntaxTrees)
         {
             // Only methods which represents a http endpoint
             var publicMethods = methods.Where(m => m.Attributes.Any(attribute => attribute.Name.StartWith("Http"))).ToImmutableList();
-            return publicMethods.Select(method => Parse(method, baseUrls, reflectionTypes, syntaxTrees)).ToImmutableList();
+
+            return publicMethods.Select(method => Parse(method, baseUrls, reflectionTypes,
+                                                        syntaxTrees)).ToImmutableList();
         }
 
         private MethodInfos Parse(Method method,
-                                  IImmutableList<string> baseUrls,
-                                  IImmutableList<MethodInfo> reflectionTypes,
-                                  IImmutableList<CSharpSyntaxTree> syntaxTrees)
+                                  ImmutableList<string> baseUrls,
+                                  ImmutableList<MethodInfo> reflectionTypes,
+                                  ImmutableList<CSharpSyntaxTree> syntaxTrees)
         {
-
-            IImmutableList<MethodInfo> methods = reflectionTypes.Where(m => m.Name == method.Name &&
-                                                     m.GetParameters().Length == method.Parameters.Count).ToImmutableList();
+            var methods = reflectionTypes.Where(m => m.Name.EqualsTo(method.Name) && m.GetParameters().Length.EqualsTo(method.Parameters.Count)).ToImmutableList();
 
             // Simple workaround fallback -> this is a bug in the code method name and parameter same !
             if (methods.Count > 1)
@@ -62,12 +62,12 @@ namespace Solution.Parser.AspNet
             var methodReflection = methods[0];
             var httpAttribute = method.Attributes.FirstOrDefault(a => a.Name.StartWith("Http"));
             var httpAction = httpAttribute?.Name.Replace("Http", string.Empty) ?? string.Empty;
-            var swaggerOperation = method.Attributes.FirstOrDefault(a => a.Name == "SwaggerOperation");
+            var swaggerOperation = method.Attributes.FirstOrDefault(a => a.Name.EqualsTo("SwaggerOperation"));
             var swaggerOperationId = swaggerOperation?.Arguments.FirstOrDefault(a => a.Contains("OperationId"))?.Split("=").Last().Replace(@"""", string.Empty)?.Trim() ?? string.Empty;
             var produceResponseType = GetProduceResponseType(method);
             var relativeUrl = urlBuilder.BuildFrom(baseUrls, method);
             var reflectionParameters = methodReflection.GetParameters().ToImmutableList();
-            var allModels = dataTypeFinder.FindDataType(methodReflection, syntaxTrees).ToImmutableList();
+            var allModels = dataTypeFinder.FindDataType(methodReflection, syntaxTrees);
             var parameters = parameterNormalizer.Normalize(method, reflectionParameters, allModels);
             var normalizeDataTypes = modelNormalizer.Normalize(allModels).ToImmutableList();
             var responseType = responseTypeNormalizer.GetResponseType(methodReflection, method, normalizeDataTypes);
@@ -87,28 +87,30 @@ namespace Solution.Parser.AspNet
             };
         }
 
-        private static IImmutableList<ProduceResponseTypes> GetProduceResponseType(Method method)
+        private static ImmutableList<ProduceResponseTypes> GetProduceResponseType(Method method)
         {
-            var produceResponseType = method.Attributes.Where(attribute => attribute.Name == "ProducesResponseType")
+            var produceResponseType = method.Attributes.Where(attribute => attribute.Name.EqualsTo("ProducesResponseType"))
                                             .Select(produce =>
-                                            {
-                                                var type = produce.Arguments.FirstOrDefault() ?? string.Empty;
-                                                var regexMatch = GetHttpCode().Match(produce.Arguments.LastOrDefault() ?? string.Empty);
-                                                var code = regexMatch.Groups[1].Value?.ToInt() ?? 0;
-                                                return new ProduceResponseTypes(type, code);
-                                            }).ToImmutableList();
+                                                    {
+                                                        var type = produce.Arguments.FirstOrDefault() ?? string.Empty;
+                                                        var regexMatch = GetHttpCode().Match(produce.Arguments.LastOrDefault() ?? string.Empty);
+                                                        var code = regexMatch.Groups[1].Value?.ToInt() ?? 0;
+
+                                                        return new ProduceResponseTypes(type, code);
+                                                    }).ToImmutableList();
+
             return produceResponseType;
         }
 
-
-        private IImmutableList<MethodInfo> FilterByReturnType(IImmutableList<MethodInfo> methods, Method method)
+        private ImmutableList<MethodInfo> FilterByReturnType(ImmutableList<MethodInfo> methods,
+                                                              Method method)
         {
             var filteredMethods = methods.Where(m =>
-            {
-                var returnTypes = m.ReturnType.GetAllGenericArguments();
-                return returnTypes.Any(t => method.ReturnParameter.Contains(t.Name));
-            }).ToImmutableList();
+                                                {
+                                                    var returnTypes = m.ReturnType.GetAllGenericArguments();
 
+                                                    return returnTypes.Any(t => method.ReturnParameter.Contains(t.Name));
+                                                }).ToImmutableList();
 
             return filteredMethods;
         }

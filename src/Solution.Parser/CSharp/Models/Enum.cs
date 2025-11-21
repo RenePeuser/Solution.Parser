@@ -6,9 +6,9 @@ namespace Solution.Parser.CSharp
     [DebuggerDisplay("{Name}")]
     public record Enum(NameSpace NameSpace,
                        string Name,
-                       IImmutableList<Modifier> Modifiers,
-                       IImmutableList<EnumField> EnumFields,
-                       IImmutableList<Attribute> Attributes,
+                       ImmutableList<Modifier> Modifiers,
+                       ImmutableList<EnumField> EnumFields,
+                       ImmutableList<Attribute> Attributes,
                        string FullQualifiedName,
                        string SyntaxTree,
                        string FilePath) : DeclarationWithModifiers(Name, FullQualifiedName, Modifiers, Attributes, SyntaxTree, FilePath);

@@ -5,7 +5,7 @@ namespace Solution.Parser.CSharp
 {
     [DebuggerDisplay("{Name}")]
     public record Attribute(string Name,
-                            IImmutableList<string> Arguments,
+                            ImmutableList<string> Arguments,
                             string SyntaxTree,
                             string FilePath) : DeclarationBase(Name, Name, SyntaxTree,
                                                                FilePath);

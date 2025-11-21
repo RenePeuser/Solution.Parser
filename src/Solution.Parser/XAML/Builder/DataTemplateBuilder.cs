@@ -20,7 +20,7 @@ namespace Solution.Parser.XAML
             _xamlPropertyParser = xamlPropertyParser;
         }
 
-        public Predicate<XElement> IsThisTheBuilderFor { get; } = item => item.Name.LocalName == "DataTemplate";
+        public Predicate<XElement> IsThisTheBuilderFor { get; } = item => item.Name.LocalName.EqualsTo("DataTemplate");
 
         public ElementBase BuildFrom(XElement element, ElementBase? parent)
         {
@@ -33,14 +33,14 @@ namespace Solution.Parser.XAML
             var controls = controlBuilder.BuildFrom(allSubElements, null).ToImmutableList();
 
             var typeName = element.Name.LocalName;
-            var xKey = properties.FirstOrDefault(item => item.Name == "Key")?.PropertyValue?.Value?.ToString() ?? string.Empty;
-            var xName = properties.FirstOrDefault(item => item.Name == "Name")?.PropertyValue?.Value?.ToString() ?? string.Empty;
+            var xKey = properties.FirstOrDefault(item => item.Name.EqualsTo("Key"))?.PropertyValue?.Value?.ToString() ?? string.Empty;
+            var xName = properties.FirstOrDefault(item => item.Name.EqualsTo("Name"))?.PropertyValue?.Value?.ToString() ?? string.Empty;
 
 
             var styles = controls.OfType<Style>().ToImmutableList();
             var dataTemplates = controls.OfType<DataTemplate>().ToImmutableList();
 
-            var dataContextProperty = properties.FirstOrDefault(item => item.Name == "DataContext")?.PropertyValue?.Value?.ToString() ?? string.Empty;
+            var dataContextProperty = properties.FirstOrDefault(item => item.Name.EqualsTo("DataContext"))?.PropertyValue?.Value?.ToString() ?? string.Empty;
             var dataContext = dataContextProperty is null ? null : new DataContext(dataContextProperty);
 
             var lineNumber = element.Cast<IXmlLineInfo>().LineNumber;

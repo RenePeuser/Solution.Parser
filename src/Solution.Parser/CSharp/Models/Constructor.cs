@@ -2,7 +2,7 @@
 
 namespace Solution.Parser.CSharp
 {
-    public record Constructor(IImmutableList<Parameter> Parameters, IImmutableList<string> Arguments, IImmutableList<Modifier> Modifiers);
+    public record Constructor(ImmutableList<Parameter> Parameters, ImmutableList<string> Arguments, ImmutableList<Modifier> Modifiers);
     
-    public record PrimaryConstructor(IImmutableList<Parameter> Parameters, IImmutableList<string> Arguments, IImmutableList<Modifier> Modifiers);
+    public record PrimaryConstructor(ImmutableList<Parameter> Parameters, ImmutableList<string> Arguments, ImmutableList<Modifier> Modifiers);
 }

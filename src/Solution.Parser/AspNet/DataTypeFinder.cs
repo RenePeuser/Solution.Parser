@@ -21,7 +21,7 @@ namespace Solution.Parser.AspNet
 
     public class DataTypeFinder
     {
-        internal IImmutableList<DeclarationToType> FindDataType(MethodInfo methodInfo, IImmutableList<CSharpSyntaxTree> syntaxTrees)
+        internal ImmutableList<DeclarationToType> FindDataType(MethodInfo methodInfo, ImmutableList<CSharpSyntaxTree> syntaxTrees)
         {
             var parameters = methodInfo.GetParameters().Select(p => p.ParameterType);
             var declaredTypes = parameters.Concat(methodInfo.ReturnType).ToImmutableList();
@@ -40,7 +40,7 @@ namespace Solution.Parser.AspNet
         }
 
 
-        private IEnumerable<Type> GetAllSubTypes(IImmutableList<Type> types, List<string> alreadyFound)
+        private IEnumerable<Type> GetAllSubTypes(ImmutableList<Type> types, List<string> alreadyFound)
         {
             foreach (var type in types)
             {

@@ -21,13 +21,13 @@ namespace Solution.Parser.AspNet
 
     public interface IApiTypeLoader
     {
-        IImmutableList<Type> GetAllTypesFrom(SolutionFile parsedSolution);
-        IImmutableList<Type> GetAllTypesFrom(SolutionFile parsedSolution, DirectoryInfo assemblyDirectory);
+        ImmutableList<Type> GetAllTypesFrom(SolutionFile parsedSolution);
+        ImmutableList<Type> GetAllTypesFrom(SolutionFile parsedSolution, DirectoryInfo assemblyDirectory);
     }
 
     internal sealed class ApiTypeLoader(AssemblyTypeLoader assemblyTypeLoader) : IApiTypeLoader
     {
-        public IImmutableList<Type> GetAllTypesFrom(SolutionFile parsedSolution, DirectoryInfo assemblyDirectory)
+        public ImmutableList<Type> GetAllTypesFrom(SolutionFile parsedSolution, DirectoryInfo assemblyDirectory)
         {
             var webAppProject = parsedSolution.ProductiveProjects.FirstOrDefault(p => p.Document.ToString().Contains("Sdk=\"Microsoft.NET.Sdk.Web\""));
             if (webAppProject.IsNull())
@@ -48,7 +48,7 @@ namespace Solution.Parser.AspNet
             return types;
         }
 
-        public IImmutableList<Type> GetAllTypesFrom(SolutionFile parsedSolution)
+        public ImmutableList<Type> GetAllTypesFrom(SolutionFile parsedSolution)
         {
             var webAppProject = parsedSolution.ProductiveProjects.FirstOrDefault(p => p.Document.ToString().Contains("Sdk=\"Microsoft.NET.Sdk.Web\""));
             if (webAppProject.IsNull())

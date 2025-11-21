@@ -39,6 +39,9 @@ namespace Solution.Parser.CSharp
                     case "partial":
                         yield return Modifier.Partial;
                         break;
+                    case "required":
+                        yield return Modifier.Required;
+                        break;
                 }
             }
         }
@@ -53,9 +56,11 @@ namespace Solution.Parser.CSharp
             var modifiers = propertyDeclarationSyntax.ToModifiers().ToImmutableList();
             var syntaxTree = propertyDeclarationSyntax.ToString();
             var fullqualifiedName = BuildFullQualifiedName(propertyDeclarationSyntax);
-            var attributes = propertyDeclarationSyntax.AttributeLists.ToAttributes(filePath).ToImmutableList();
+            var attributes = propertyDeclarationSyntax.AttributeLists.ToAttributes(filePath);
+            var isRequired = modifiers.Contains(Modifier.Required);
+            var isNullable = propertyType.Contains('?');
 
-            return new Property(propertyType, propertyName, isReadOnly, modifiers, attributes, syntaxTree, fullqualifiedName, filePath);
+            return new Property(propertyType, propertyName, isReadOnly, isRequired, isNullable, modifiers, attributes, syntaxTree, fullqualifiedName, filePath);
         }
 
         internal static string BuildFullQualifiedName(PropertyDeclarationSyntax recordDeclarationSyntax)
@@ -100,7 +105,7 @@ namespace Solution.Parser.CSharp
             }
         }
 
-        internal static IImmutableList<Property> ToProperties(this IImmutableList<PropertyDeclarationSyntax> propertyDeclarationSyntaxes,
+        internal static ImmutableList<Property> ToProperties(this ImmutableList<PropertyDeclarationSyntax> propertyDeclarationSyntaxes,
                                                               string filePath)
         {
             Throw.IfNull(propertyDeclarationSyntaxes);

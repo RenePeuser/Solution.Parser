@@ -8,7 +8,7 @@ namespace Solution.Parser.CSharp.Helpers
 {
     public static class ClassDeclarationExtensions
     {
-        public static string BuildServiceRegistration(this Class @class, IImmutableList<Class> classes)
+        public static string BuildServiceRegistration(this Class @class, ImmutableList<Class> classes)
         {
             var stringBuilder = new StringBuilder();
             stringBuilder.AppendLine($"internal static class Add{@class.Name}Extension");
@@ -19,10 +19,10 @@ namespace Solution.Parser.CSharp.Helpers
             foreach (var parameter in @class.Parameters)
             {
                 // Injection of multiple services
-                if (parameter.Type.StartsWith("IEnumerable<", StringComparison.OrdinalIgnoreCase))
+                if (parameter.Type.StartWith("IEnumerable<"))
                 {
                     var genericType = GlobalRegex.GetGenericTypeRegex().Match(parameter.Type).Groups[1].Value;
-                    var allTypes = classes.Where(c => c.BaseTypes.Any(b => b.TypeName == genericType)).ToImmutableList();
+                    var allTypes = classes.Where(c => c.BaseTypes.Any(b => b.TypeName.EqualsTo(genericType))).ToImmutableList();
                     foreach (var type in allTypes)
                     {
                         stringBuilder.AppendLine($"services.Add{type}();");
@@ -30,7 +30,7 @@ namespace Solution.Parser.CSharp.Helpers
                 }
                 else
                 {
-                    var type = parameter.Type.Take(2).All(c => char.IsUpper(c)) && parameter.Type[0] == 'I' ? parameter.Type[1..] : parameter.Type;
+                    var type = parameter.Type.Take(2).All(c => char.IsUpper(c)) && parameter.Type[0].EqualsTo('I') ? parameter.Type[1..] : parameter.Type;
 
                     stringBuilder.AppendLine($"services.Add{type}();");
                 }
@@ -39,7 +39,7 @@ namespace Solution.Parser.CSharp.Helpers
             stringBuilder.AppendLine();
 
             var selfInterface = @class.BaseTypes.FirstOrDefault(b => b.TypeName.Contains(@class.Name) ||
-                                                                     b.TypeName.Take(2).All(c => char.IsUpper(c) && b.TypeName[0] == 'I'));
+                                                                     b.TypeName.Take(2).All(c => char.IsUpper(c) && b.TypeName[0].EqualsTo('I')));
 
             if (@class.BaseTypes.Any() && selfInterface.IsNotNull())
             {

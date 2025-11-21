@@ -37,6 +37,9 @@ namespace Solution.Parser.CSharp
                     case "partial":
                         yield return Modifier.Partial;
                         break;
+                    case "required":
+                        yield return Modifier.Required;
+                        break;
                 }
             }
         }
@@ -44,20 +47,20 @@ namespace Solution.Parser.CSharp
         internal static Struct ToStruct(this StructDeclarationSyntax structDeclarationSyntax, string filePath)
         {
             var modifiers = structDeclarationSyntax.ToModifiers().ToImmutableList();
-            var constructors = structDeclarationSyntax.AllOfType<ConstructorDeclarationSyntax>().ToConstructors(filePath).ToImmutableList();
-            var properties = structDeclarationSyntax.AllOfType<PropertyDeclarationSyntax>().ToProperties(filePath).ToImmutableList();
-            var methods = structDeclarationSyntax.AllOfType<MethodDeclarationSyntax>().ToMethods(filePath).ToImmutableList();
+            var constructors = structDeclarationSyntax.AllOfType<ConstructorDeclarationSyntax>().ToConstructors(filePath);
+            var properties = structDeclarationSyntax.AllOfType<PropertyDeclarationSyntax>().ToProperties(filePath);
+            var methods = structDeclarationSyntax.AllOfType<MethodDeclarationSyntax>().ToMethods(filePath);
             var nameSpace = structDeclarationSyntax.SyntaxTree.GetNamespace();
-            var attributesOfClass = structDeclarationSyntax.AttributeLists.ToAttributes(filePath).ToImmutableList();
-            var fields = structDeclarationSyntax.AllOfType<FieldDeclarationSyntax>().ToFields(filePath).ToImmutableList();
-            var baseTypes = structDeclarationSyntax.BaseList?.ToBaseTypes().ToImmutableList() ?? ImmutableList<BaseType>.Empty;
-            var interfaces = structDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces(filePath).ToImmutableList();
-            var events = structDeclarationSyntax.AllOfType<EventDeclarationSyntax>().ToEvents(filePath).ToImmutableList();
-            var eventFields = structDeclarationSyntax.AllOfType<EventFieldDeclarationSyntax>().ToEventFields(filePath).ToImmutableList();
-            var nestedClasses = structDeclarationSyntax.AllOfType<ClassDeclarationSyntax>().ToClasses(filePath).ToImmutableList();
-            var nestedStructs = structDeclarationSyntax.AllOfType<StructDeclarationSyntax>().ToStructs(filePath).ToImmutableList();
-            var nestedEnums = structDeclarationSyntax.AllOfType<EnumDeclarationSyntax>().ToEnums(filePath).ToImmutableList();
-            var nestedInterfaces = structDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces(filePath).ToImmutableList();
+            var attributesOfClass = structDeclarationSyntax.AttributeLists.ToAttributes(filePath);
+            var fields = structDeclarationSyntax.AllOfType<FieldDeclarationSyntax>().ToFields(filePath);
+            var baseTypes = structDeclarationSyntax.BaseList?.ToBaseTypes() ?? ImmutableList<BaseType>.Empty;
+            var interfaces = structDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces(filePath);
+            var events = structDeclarationSyntax.AllOfType<EventDeclarationSyntax>().ToEvents(filePath);
+            var eventFields = structDeclarationSyntax.AllOfType<EventFieldDeclarationSyntax>().ToEventFields(filePath);
+            var nestedClasses = structDeclarationSyntax.AllOfType<ClassDeclarationSyntax>().ToClasses(filePath);
+            var nestedStructs = structDeclarationSyntax.AllOfType<StructDeclarationSyntax>().ToStructs(filePath);
+            var nestedEnums = structDeclarationSyntax.AllOfType<EnumDeclarationSyntax>().ToEnums(filePath);
+            var nestedInterfaces = structDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces(filePath);
             var name = structDeclarationSyntax.Identifier.ValueText;
             var syntaxTree = structDeclarationSyntax.ToString();
             var fullQualifiedName = $"{nameSpace.Name}.{name}";
@@ -69,7 +72,7 @@ namespace Solution.Parser.CSharp
                 nestedInterfaces, parameters, syntaxTree, fullQualifiedName, filePath);
         }
 
-        internal static IImmutableList<Struct> ToStructs(this IImmutableList<StructDeclarationSyntax> classDeclarationSyntaxes,
+        internal static ImmutableList<Struct> ToStructs(this ImmutableList<StructDeclarationSyntax> classDeclarationSyntaxes,
                                                          string filePath)
         {
             return classDeclarationSyntaxes.Select(item => item.ToStruct(filePath)).ToImmutableList();

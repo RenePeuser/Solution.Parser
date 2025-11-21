@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using Argument.Check;
+using Extensions.Pack;
 using Microsoft.Build.Construction;
 using Solution.Parser.Project;
 
@@ -20,13 +21,13 @@ namespace Solution.Parser.Solution
             var solutionFile = Microsoft.Build.Construction.SolutionFile.Parse(solutionFileInfo.Value.FullName);
 
             var tempProjects = solutionFile.ProjectsInOrder
-                .Where(item => Path.GetExtension(item.RelativePath) == PROJECT_FILE_EXTENSION)
+                .Where(item => Path.GetExtension(item.RelativePath).EqualsTo(PROJECT_FILE_EXTENSION))
                 .Select(item => new { project = item, projectFileInfo = new ProjectFileInfo(item.AbsolutePath) })
                 .Select(item => new ProjectToProjectSolutionItem(item.project, ProjectFileParser.Parse(item.projectFileInfo))).ToImmutableList();
 
             var projects = tempProjects.Select(item => PrepareWithBuildDependencies(item, tempProjects)).ToImmutableList();
 
-            var unitTestProjects = projects.Where(item => item.ProjectTypes.Any(type => type == ProjectType.Test)).ToImmutableList();
+            var unitTestProjects = projects.Where(item => item.ProjectTypes.Any(type => type.EqualsTo(ProjectType.Test))).ToImmutableList();
             var productiveProjects = projects.Except(unitTestProjects).ToImmutableList();
 
             return new SolutionFile(solutionFileInfo, projects, productiveProjects, unitTestProjects);
@@ -34,7 +35,7 @@ namespace Solution.Parser.Solution
 
         private static ProjectFile PrepareWithBuildDependencies(
             ProjectToProjectSolutionItem projectToProjectSolutionItem,
-            IImmutableList<ProjectToProjectSolutionItem> allProjectFiles)
+            ImmutableList<ProjectToProjectSolutionItem> allProjectFiles)
         {
             var projectToCheck = projectToProjectSolutionItem.ProjectInSolution;
             var projctFile = projectToProjectSolutionItem.ProjectFile;

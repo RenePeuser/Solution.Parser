@@ -21,7 +21,7 @@ namespace Solution.Parser.AspNet
 
     internal sealed class AssemblyTypeLoader
     {
-        internal IImmutableList<Type> GetAllTypesFrom(FileInfo assemblyFile)
+        internal ImmutableList<Type> GetAllTypesFrom(FileInfo assemblyFile)
         {
             var types = GetAllTypes(assemblyFile);
             var additionalTypes = GetDeepTypeInfos(types).DistinctBy(type => type.FullName);
@@ -36,7 +36,7 @@ namespace Solution.Parser.AspNet
 
 
         }
-        private IImmutableList<Type> GetAllTypes(FileInfo assemblyFile)
+        private ImmutableList<Type> GetAllTypes(FileInfo assemblyFile)
         {
             Directory.SetCurrentDirectory(assemblyFile.Directory!.FullName);
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
@@ -46,7 +46,7 @@ namespace Solution.Parser.AspNet
         }
 
 
-        private IEnumerable<Type> GetDeepTypeInfos(IImmutableList<Type> types)
+        private IEnumerable<Type> GetDeepTypeInfos(ImmutableList<Type> types)
         {
             foreach (var type in types)
             {
@@ -89,7 +89,7 @@ namespace Solution.Parser.AspNet
             var searchPattern = $"{strings.First()}.dll";
 
             // 1. Check first if it is already loaded in current app domain
-            var alreadyLoaded = assemblies.FirstOrDefault(a => a.GetName()!.Name == strings.First());
+            var alreadyLoaded = assemblies.FirstOrDefault(a => a.GetName()!.Name.EqualsTo(strings.First()));
             if (alreadyLoaded.IsNotNull())
             {
                 return alreadyLoaded;

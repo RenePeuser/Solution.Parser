@@ -5,7 +5,7 @@ namespace Solution.Parser.Solution
 {
     internal static class ProjectFileExtensions
     {
-        internal static ProjectFile UpdateProjectDependencies(this ProjectFile projectFile, IImmutableList<ProjectFile> buildDependencies)
+        internal static ProjectFile UpdateProjectDependencies(this ProjectFile projectFile, ImmutableList<ProjectFile> buildDependencies)
         {
             return new ProjectFile(projectFile.Guid,
                                    projectFile.Document,

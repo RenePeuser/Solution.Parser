@@ -24,12 +24,12 @@ public static class CSharpParser
 
         var fixedFilePath = filePath.IsNullOrWhiteSpace() ? nameSpace.Name : filePath;
 
-        var classes = syntaxTree.AllOfType<ClassDeclarationSyntax>().ToClasses(fixedFilePath).ToImmutableList();
-        var records = syntaxTree.AllOfType<RecordDeclarationSyntax>().ToRecords(fixedFilePath).ToImmutableList();
-        var interfaces = syntaxTree.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces(fixedFilePath).ToImmutableList();
-        var enums = syntaxTree.AllOfType<EnumDeclarationSyntax>().ToEnums(fixedFilePath).ToImmutableList();
-        var structs = syntaxTree.AllOfType<StructDeclarationSyntax>().ToStructs(fixedFilePath).ToImmutableList();
-        var statements = syntaxTree.AllOfType<StatementSyntax>().ToStatements(fixedFilePath).ToImmutableList();
+        var classes = syntaxTree.AllOfType<ClassDeclarationSyntax>().ToClasses(fixedFilePath);
+        var records = syntaxTree.AllOfType<RecordDeclarationSyntax>().ToRecords(fixedFilePath);
+        var interfaces = syntaxTree.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces(fixedFilePath);
+        var enums = syntaxTree.AllOfType<EnumDeclarationSyntax>().ToEnums(fixedFilePath);
+        var structs = syntaxTree.AllOfType<StructDeclarationSyntax>().ToStructs(fixedFilePath);
+        var statements = syntaxTree.AllOfType<StatementSyntax>().ToStatements(fixedFilePath);
 
         return new CSharpSyntaxTree(nameSpace, fixedFilePath, usings, classes, records, interfaces, enums, structs, statements, syntaxTree.ToString());
     }

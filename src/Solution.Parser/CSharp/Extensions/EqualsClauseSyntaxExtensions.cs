@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Extensions.Pack;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Solution.Parser.CSharp
 {
@@ -6,7 +7,7 @@ namespace Solution.Parser.CSharp
     {
         internal static Initializer? ToInitializer(this EqualsValueClauseSyntax equalsValueClauseSyntax)
         {
-            if (equalsValueClauseSyntax == null)
+            if (equalsValueClauseSyntax.IsNull())
             {
                 return null;
             }

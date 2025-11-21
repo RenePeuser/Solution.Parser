@@ -32,24 +32,24 @@ namespace Solution.Parser.XAML
             var controls = controlBuilder.BuildFrom(allElements, null).ToImmutableList();
 
             var typeName = documentRoot.Name.LocalName;
-            var xKey = properties.FirstOrDefault(item => item.Name == "Key")?.PropertyValue?.Value?.ToString() ?? string.Empty;
-            var xName = properties.FirstOrDefault(item => item.Name == "Name")?.PropertyValue?.Value?.ToString() ?? string.Empty;
+            var xKey = properties.FirstOrDefault(item => item.Name.EqualsTo("Key"))?.PropertyValue?.Value?.ToString() ?? string.Empty;
+            var xName = properties.FirstOrDefault(item => item.Name.EqualsTo("Name"))?.PropertyValue?.Value?.ToString() ?? string.Empty;
 
 
             var styles = controls.OfType<Style>().ToImmutableList();
             var dataTemplates = controls.OfType<DataTemplate>().ToImmutableList();
 
-            var dataContextProperty = properties.FirstOrDefault(item => item.Name == "DataContext");
+            var dataContextProperty = properties.FirstOrDefault(item => item.Name.EqualsTo("DataContext"));
             var dataContextValue = dataContextProperty?.PropertyValue?.As<MarkupExtension>()?["Type"]?.PropertyValue?.ValueText ?? string.Empty;
 
             var dataContext = dataContextProperty.IsNull() ? null : new DataContext(dataContextValue);
 
-            var fullQualifiedName = properties.FirstOrDefault(p => p.Name == "Class")?.PropertyValue?.ValueText ?? string.Empty;
+            var fullQualifiedName = properties.FirstOrDefault(p => p.Name.EqualsTo("Class"))?.PropertyValue?.ValueText ?? string.Empty;
 
             return new UserControl(dataContext, null, fullQualifiedName, xName, typeName, xKey, properties, controls,
                 styles, dataTemplates);
         }
 
-        public Predicate<string> IsThisTheSelectorFor { get; } = item => item == "UserControl";
+        public Predicate<string> IsThisTheSelectorFor { get; } = item => item.EqualsTo("UserControl");
     }
 }

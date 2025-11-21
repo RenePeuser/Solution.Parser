@@ -9,7 +9,7 @@ namespace Solution.Parser.Nuspec
     public class NuspecFile
     {
         internal NuspecFile(NuspecFileInfo nuspecFileInfo, XDocument document,
-            IImmutableList<FrameworkAssembly> frameworkAssemblies, IImmutableList<Dependency> dependencies)
+            ImmutableList<FrameworkAssembly> frameworkAssemblies, ImmutableList<Dependency> dependencies)
         {
             Throw.IfNull(nuspecFileInfo);
             Throw.IfNull(document);
@@ -26,8 +26,8 @@ namespace Solution.Parser.Nuspec
 
         public XDocument Document { get; }
 
-        public IImmutableList<FrameworkAssembly> FrameworkAssemblies { get; }
+        public ImmutableList<FrameworkAssembly> FrameworkAssemblies { get; }
 
-        public IImmutableList<Dependency> Dependencies { get; }
+        public ImmutableList<Dependency> Dependencies { get; }
     }
 }

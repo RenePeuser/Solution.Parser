@@ -15,17 +15,17 @@ namespace Solution.Parser.Project
                              XDocument document,
                              ProjectFileInfo projectFileInfo,
                              string assemblyName,
-                             IImmutableList<AssemblyReference> assemblyReferences,
-                             IImmutableList<ProjectReference> projectReferences,
-                             IImmutableList<ProjectType> projectTypes,
-                             IImmutableList<Import> imports,
-                             IImmutableList<CSharpFileInfo> csharpFileInfos,
-                             IImmutableList<XAMLFileInfo> xamlFileInfos,
-                             IImmutableList<ProjectContentItem> projectContentItems,
-                             IImmutableList<Package> packages,
-                             IImmutableList<PackageReference> packageReferences,
-                             IImmutableList<string> targetFrameworkVersion,
-                             IImmutableList<ProjectFile> buildDependencies,
+                             ImmutableList<AssemblyReference> assemblyReferences,
+                             ImmutableList<ProjectReference> projectReferences,
+                             ImmutableList<ProjectType> projectTypes,
+                             ImmutableList<Import> imports,
+                             ImmutableList<CSharpFileInfo> csharpFileInfos,
+                             ImmutableList<XAMLFileInfo> xamlFileInfos,
+                             ImmutableList<ProjectContentItem> projectContentItems,
+                             ImmutableList<Package> packages,
+                             ImmutableList<PackageReference> packageReferences,
+                             ImmutableList<string> targetFrameworkVersion,
+                             ImmutableList<ProjectFile> buildDependencies,
                              string buildRoot,
                              string documentationFile)
         {
@@ -60,11 +60,11 @@ namespace Solution.Parser.Project
             PackageReferences = packageReferences;
         }
 
-        public IImmutableList<PackageReference> PackageReferences { get; }
+        public ImmutableList<PackageReference> PackageReferences { get; }
 
         public string AssemblyName { get; }
 
-        public IImmutableList<ProjectType> ProjectTypes { get; }
+        public ImmutableList<ProjectType> ProjectTypes { get; }
 
         public ProjectFileInfo ProjectFileInfo { get; }
 
@@ -72,23 +72,23 @@ namespace Solution.Parser.Project
 
         public XDocument Document { get; }
 
-        public IImmutableList<AssemblyReference> AssemblyReferences { get; }
+        public ImmutableList<AssemblyReference> AssemblyReferences { get; }
 
-        public IImmutableList<ProjectReference> ProjectReferences { get; }
+        public ImmutableList<ProjectReference> ProjectReferences { get; }
 
-        public IImmutableList<Import> Imports { get; }
+        public ImmutableList<Import> Imports { get; }
 
-        public IImmutableList<XAMLFileInfo> XAMLFileInfos { get; }
+        public ImmutableList<XAMLFileInfo> XAMLFileInfos { get; }
 
-        public IImmutableList<CSharpFileInfo> CSharpFileInfos { get; }
+        public ImmutableList<CSharpFileInfo> CSharpFileInfos { get; }
 
-        public IImmutableList<ProjectContentItem> ContentItems { get; }
+        public ImmutableList<ProjectContentItem> ContentItems { get; }
 
-        public IImmutableList<Package> Packages { get; }
+        public ImmutableList<Package> Packages { get; }
 
-        public IImmutableList<ProjectFile> BuildDependencies { get; }
+        public ImmutableList<ProjectFile> BuildDependencies { get; }
 
-        public IImmutableList<string> TargetFrameworkVersion { get; }
+        public ImmutableList<string> TargetFrameworkVersion { get; }
 
         public string BuildRoot { get; }
 

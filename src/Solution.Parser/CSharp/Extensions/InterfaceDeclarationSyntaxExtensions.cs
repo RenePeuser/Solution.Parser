@@ -39,11 +39,14 @@ namespace Solution.Parser.CSharp
                     case "partial":
                         yield return Modifier.Partial;
                         break;
+                    case "required":
+                        yield return Modifier.Required;
+                        break;
                 }
             }
         }
 
-        internal static IImmutableList<Interface> ToInterfaces(this IImmutableList<InterfaceDeclarationSyntax> interfaceDeclarationSyntaxes,
+        internal static ImmutableList<Interface> ToInterfaces(this ImmutableList<InterfaceDeclarationSyntax> interfaceDeclarationSyntaxes,
                                                                string filePath)
         {
             return interfaceDeclarationSyntaxes.Select(item => item.ToInterface(filePath)).ToImmutableList();
@@ -55,19 +58,17 @@ namespace Solution.Parser.CSharp
 
             var name = interfaceDeclarationSyntax.Identifier.ValueText;
             var modifiers = interfaceDeclarationSyntax.ToModifiers().ToImmutableList();
-            var properties = interfaceDeclarationSyntax.AllOfType<PropertyDeclarationSyntax>().ToProperties(filePath).ToImmutableList();
-            var methods = interfaceDeclarationSyntax.AllOfType<MethodDeclarationSyntax>().ToMethods(filePath).ToImmutableList();
+            var properties = interfaceDeclarationSyntax.AllOfType<PropertyDeclarationSyntax>().ToProperties(filePath);
+            var methods = interfaceDeclarationSyntax.AllOfType<MethodDeclarationSyntax>().ToMethods(filePath);
             var nameSpace = interfaceDeclarationSyntax.SyntaxTree.GetNamespace();
-            var attributesOfClass = interfaceDeclarationSyntax.AttributeLists.ToAttributes(filePath).ToImmutableList();
-            var baseTypes = interfaceDeclarationSyntax.BaseList?.ToBaseTypes().ToImmutableList() ?? ImmutableList<BaseType>.Empty;
-            var events = interfaceDeclarationSyntax.AllOfType<EventDeclarationSyntax>().ToEvents(filePath).ToImmutableList();
-            var eventFields = interfaceDeclarationSyntax.AllOfType<EventFieldDeclarationSyntax>().ToEventFields(filePath)
-                .ToImmutableList();
-            var nestedClasses = interfaceDeclarationSyntax.AllOfType<ClassDeclarationSyntax>().ToClasses(filePath).ToImmutableList();
-            var nestedStructs = interfaceDeclarationSyntax.AllOfType<StructDeclarationSyntax>().ToStructs(filePath).ToImmutableList();
-            var nestedEnums = interfaceDeclarationSyntax.AllOfType<EnumDeclarationSyntax>().ToEnums(filePath).ToImmutableList();
-            var nestedInterfaces = interfaceDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces(filePath)
-                .ToImmutableList();
+            var attributesOfClass = interfaceDeclarationSyntax.AttributeLists.ToAttributes(filePath);
+            var baseTypes = interfaceDeclarationSyntax.BaseList?.ToBaseTypes() ?? ImmutableList<BaseType>.Empty;
+            var events = interfaceDeclarationSyntax.AllOfType<EventDeclarationSyntax>().ToEvents(filePath);
+            var eventFields = interfaceDeclarationSyntax.AllOfType<EventFieldDeclarationSyntax>().ToEventFields(filePath);
+            var nestedClasses = interfaceDeclarationSyntax.AllOfType<ClassDeclarationSyntax>().ToClasses(filePath);
+            var nestedStructs = interfaceDeclarationSyntax.AllOfType<StructDeclarationSyntax>().ToStructs(filePath);
+            var nestedEnums = interfaceDeclarationSyntax.AllOfType<EnumDeclarationSyntax>().ToEnums(filePath);
+            var nestedInterfaces = interfaceDeclarationSyntax.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces(filePath);
             var fullQualifiedName = BuildFullQualifiedName(interfaceDeclarationSyntax);
             var syntaxTree = interfaceDeclarationSyntax.ToString();
 

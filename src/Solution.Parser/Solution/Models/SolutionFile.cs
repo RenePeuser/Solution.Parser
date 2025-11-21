@@ -8,9 +8,9 @@ namespace Solution.Parser.Solution
     public class SolutionFile
     {
         internal SolutionFile(SolutionFileInfo solutionFileInfo,
-            IImmutableList<ProjectFile> projectFiles,
-            IImmutableList<ProjectFile> productiveProjectFiles,
-            IImmutableList<ProjectFile> unitTestProjectFiles)
+            ImmutableList<ProjectFile> projectFiles,
+            ImmutableList<ProjectFile> productiveProjectFiles,
+            ImmutableList<ProjectFile> unitTestProjectFiles)
         {
             SolutionFileInfo = solutionFileInfo;
             Projects = projectFiles;
@@ -20,10 +20,10 @@ namespace Solution.Parser.Solution
 
         public SolutionFileInfo SolutionFileInfo { get; }
 
-        public IImmutableList<ProjectFile> Projects { get; }
+        public ImmutableList<ProjectFile> Projects { get; }
 
-        public IImmutableList<ProjectFile> ProductiveProjects { get; }
+        public ImmutableList<ProjectFile> ProductiveProjects { get; }
 
-        public IImmutableList<ProjectFile> UnitTestProjects { get; }
+        public ImmutableList<ProjectFile> UnitTestProjects { get; }
     }
 }

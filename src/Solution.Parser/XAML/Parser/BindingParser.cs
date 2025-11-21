@@ -21,7 +21,7 @@ namespace Solution.Parser.XAML
             new StringFormatParser(),
             new AttachedPropertyParser(),
             new SimpleMarkupExtensionParser(),
-            // Workaround till all conditions are done            
+            // Workaround till all conditions are done
             new UnknownPropertyValueParser()
         })))
         {
@@ -75,7 +75,7 @@ namespace Solution.Parser.XAML
 #pragma warning restore CA1854 // Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method
 
 
-            return new Binding(value, path, source, converter, converterParameter, mode, updateSourceTrigger, elementName, relativeSource as RelativeSource, fallbackValue, stringFormat as StringFormat);
+            return new Binding(value, path, source, converter, converterParameter, mode, updateSourceTrigger, elementName, relativeSource.As<RelativeSource?>(), fallbackValue, stringFormat.As<StringFormat?>());
         }
     }
 }

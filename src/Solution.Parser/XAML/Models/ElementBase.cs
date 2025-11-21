@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
+using Extensions.Pack;
 
 namespace Solution.Parser.XAML
 {
@@ -14,10 +15,10 @@ namespace Solution.Parser.XAML
             string xName,
             string typeName,
             string xKey,
-            IImmutableList<Property> properties,
-            IImmutableList<ElementBase> controls,
-            IImmutableList<Style> styles,
-            IImmutableList<DataTemplate> dataTemplates)
+            ImmutableList<Property> properties,
+            ImmutableList<ElementBase> controls,
+            ImmutableList<Style> styles,
+            ImmutableList<DataTemplate> dataTemplates)
         {
             LineNumber = lineNumber;
             DataContext = dataContext;
@@ -43,13 +44,13 @@ namespace Solution.Parser.XAML
 
         public string XKey { get; }
 
-        public IImmutableList<Property> Properties { get; }
+        public ImmutableList<Property> Properties { get; }
 
-        public IImmutableList<ElementBase> Controls { get; }
+        public ImmutableList<ElementBase> Controls { get; }
 
-        public IImmutableList<Style> Styles { get; }
+        public ImmutableList<Style> Styles { get; }
 
-        public IImmutableList<DataTemplate> DataTemplates { get; }
+        public ImmutableList<DataTemplate> DataTemplates { get; }
 
         public Property? this[string name] => FindPropertyByName(name);
 
@@ -57,10 +58,10 @@ namespace Solution.Parser.XAML
         {
             if (name.Contains('.'))
             {
-                return Properties.OfType<AttachedProperty>().FirstOrDefault(a => a.FullQualifiedName == name) ?? null;
+                return Properties.OfType<AttachedProperty>().FirstOrDefault(a => a.FullQualifiedName.EqualsTo(name)) ?? null;
             }
 
-            return Properties.FirstOrDefault(p => p.Name == name);
+            return Properties.FirstOrDefault(p => p.Name.EqualsTo(name));
         }
     }
 }

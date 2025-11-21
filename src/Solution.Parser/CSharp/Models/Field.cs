@@ -6,7 +6,7 @@ namespace Solution.Parser.CSharp
     [DebuggerDisplay("{Name}")]
     public record Field(string Name,
                         string Type,
-                        IImmutableList<Modifier> Modifiers,
+                        ImmutableList<Modifier> Modifiers,
                         Initializer? Initializer,
                         string SyntaxTree,
                         string FilePath) : DeclarationBase(Name, Name, SyntaxTree, FilePath);

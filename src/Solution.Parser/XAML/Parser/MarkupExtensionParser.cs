@@ -35,7 +35,7 @@ namespace Solution.Parser.XAML
             var markupExtension = value[1..^1];
             var bindingInfo = markupExtension.Split(',');
 
-            if (bindingInfo.Length == 1 &&
+            if (bindingInfo.Length.EqualsTo(1) &&
                 !markupExtension.Contains(' '))
             {
                 return new MarkupExtension(value, bindingInfo[0].Split(':').Last());
@@ -58,11 +58,11 @@ namespace Solution.Parser.XAML
             return new MarkupExtension(value, name, properties);
         }
 
-        private IEnumerable<Property> ParseToProperties(IImmutableList<string> evaluatedMarkupExtension, int lineNumber)
+        private IEnumerable<Property> ParseToProperties(ImmutableList<string> evaluatedMarkupExtension, int lineNumber)
         {
             // Damm hell workaround
             var firstItem = evaluatedMarkupExtension[0];
-            if (evaluatedMarkupExtension.Count == 1)
+            if (evaluatedMarkupExtension.Count.EqualsTo(1))
             {
                 if (!firstItem.Contains('='))
                 {
@@ -90,7 +90,7 @@ namespace Solution.Parser.XAML
                 }
 
                 var indexOf = declaration.IndexOf('=');
-                indexOf = indexOf == -1 ? declaration.IndexOf(':') : indexOf;
+                indexOf = indexOf.EqualsTo(-1) ? declaration.IndexOf(':') : indexOf;
                 var propertyName = declaration[..indexOf].Trim().Split(':').Last();
                 var nextStartIndex = indexOf + 1;
                 var propertyValue = declaration[nextStartIndex..];
@@ -105,8 +105,8 @@ namespace Solution.Parser.XAML
             {
                 var expression = markupExtension[i];
 
-                var openBrackets = expression.Count(c => c == '{');
-                var closeBrackets = expression.Count(c => c == '}');
+                var openBrackets = expression.Count(c => c.EqualsTo('{'));
+                var closeBrackets = expression.Count(c => c.EqualsTo('}'));
 
                 if (openBrackets > closeBrackets)
                 {
@@ -114,9 +114,9 @@ namespace Solution.Parser.XAML
                     {
                         var nextExpression = markupExtension[j];
                         expression = $"{expression},{nextExpression}";
-                        var count = expression.Count(c => c == '}');
+                        var count = expression.Count(c => c.EqualsTo('}'));
 
-                        if (count == openBrackets)
+                        if (count.EqualsTo(openBrackets))
                         {
                             i = j;
                             break;

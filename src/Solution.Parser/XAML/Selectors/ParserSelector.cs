@@ -2,12 +2,13 @@
 using System.Collections.Immutable;
 using System.Linq;
 using Argument.Check;
+using Extensions.Pack;
 
 namespace Solution.Parser.XAML
 {
     internal sealed class ParserSelector : IParserSelector
     {
-        private readonly IImmutableList<IPropertyValueParserBase> _propertyValueParser = ImmutableList<IPropertyValueParserBase>.Empty;
+        private readonly ImmutableList<IPropertyValueParserBase> _propertyValueParser = ImmutableList<IPropertyValueParserBase>.Empty;
 
         internal ParserSelector(IEnumerable<IPropertyValueParserBase> propertyValueParser)
         {
@@ -17,7 +18,7 @@ namespace Solution.Parser.XAML
         public IPropertyValueParserBase GetParserFor(string value)
         {
             var parser = _propertyValueParser.FirstOrDefault(item => item.IsThisTheCorrectParserFor(value));
-            Throw.If(parser, item => item == null, $"No parser was found for property value: {value}");
+            Throw.If(parser, item => item.IsNull(), $"No parser was found for property value: {value}");
 
             return parser!;
         }

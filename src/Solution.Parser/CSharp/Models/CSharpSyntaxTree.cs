@@ -7,13 +7,13 @@ namespace Solution.Parser.CSharp
     [DebuggerDisplay("{FileName}")]
     public record CSharpSyntaxTree(NameSpace NameSpace,
                                    string FileName,
-                                   IImmutableList<Using> Usings,
-                                   IImmutableList<Class> Classes,
-                                   IImmutableList<Record> Records,
-                                   IImmutableList<Interface> Interfaces,
-                                   IImmutableList<Enum> Enums,
-                                   IImmutableList<Struct> Structs,
-                                   IImmutableList<Statement> Statements,
+                                   ImmutableList<Using> Usings,
+                                   ImmutableList<Class> Classes,
+                                   ImmutableList<Record> Records,
+                                   ImmutableList<Interface> Interfaces,
+                                   ImmutableList<Enum> Enums,
+                                   ImmutableList<Struct> Structs,
+                                   ImmutableList<Statement> Statements,
                                    string SyntaxTree)
     {
     }

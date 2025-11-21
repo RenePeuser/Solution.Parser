@@ -73,7 +73,7 @@ namespace Solution.Parser.CSharp
                 var genericType = GlobalRegex.GetGenericTypeRegex().Match(recordParameter.Type).Groups[1].Value;
                 genericType = recordParameter.Type.Contains("[]") ? recordParameter.Type.Replace("[]", string.Empty) : genericType;
                 genericType = genericType.Trim('?');
-                var newType = ForbiddenListTypes.Any(type => recordParameter.Type.Contains(type)) ? $"IImmutableList<{genericType}>" : recordParameter.Type;
+                var newType = ForbiddenListTypes.Any(type => recordParameter.Type.Contains(type)) ? $"ImmutableList<{genericType}>" : recordParameter.Type;
                 var listInitializer = newType.Contains("IImmutableList") ? $" = ImmutableList<{genericType}>.Empty;" : string.Empty;
                 stringBuilder.AppendLine($"{modifiers} required {newType} {recordParameter.Name} {{ get; init; }} {listInitializer}");
             }
@@ -83,7 +83,7 @@ namespace Solution.Parser.CSharp
                 var genericType = GlobalRegex.GetGenericTypeRegex().Match(recordParameter.Type).Groups[1].Value;
                 genericType = recordParameter.Type.Contains("[]") ? recordParameter.Type.Replace("[]", string.Empty) : genericType;
                 genericType = genericType.Trim('?');
-                var newType = ForbiddenListTypes.Any(type => recordParameter.Type.Contains(type)) ? $"IImmutableList<{genericType}>" : recordParameter.Type;
+                var newType = ForbiddenListTypes.Any(type => recordParameter.Type.Contains(type)) ? $"ImmutableList<{genericType}>" : recordParameter.Type;
                 var listInitializer = newType.Contains("IImmutableList") ? $" = ImmutableList<{genericType}>.Empty;" : string.Empty;
                 stringBuilder.AppendLine($"{modifiers} {newType} {recordParameter.Name} {{ get; init; }}{listInitializer}");
             }

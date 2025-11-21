@@ -19,7 +19,7 @@ namespace Solution.Parser.AspNet
     {
         internal ResponseType GetResponseType(MethodInfo methodInfo,
                                               Method method,
-                                              IImmutableList<DeclarationBase> declarationBases)
+                                              ImmutableList<DeclarationBase> declarationBases)
         {
 
             // 0. Get correct types
@@ -33,7 +33,7 @@ namespace Solution.Parser.AspNet
             }
 
             // 2. If the type is a model which was declared we use the simplified type name
-            if (declarationBases.Any(type => type.Name == returnType.Name))
+            if (declarationBases.Any(type => type.Name.EqualsTo(returnType.Name)))
             {
                 return new ResponseType(method.ReturnParameter, returnType.Name);
             }

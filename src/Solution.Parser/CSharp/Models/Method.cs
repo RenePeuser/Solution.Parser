@@ -6,14 +6,14 @@ namespace Solution.Parser.CSharp
 {
     [DebuggerDisplay("{Name}")]
     public record Method(string Name,
-                         IImmutableList<Parameter> Parameters,
+                         ImmutableList<Parameter> Parameters,
                          string ReturnParameter,
                          string MethodValue,
                          string MethodBody,
-                         IImmutableList<string> Statements,
-                         IImmutableList<Attribute> Attributes,
-                         IImmutableList<Modifier> Modifiers,
-                         IImmutableList<string> LineStatements,
+                         ImmutableList<string> Statements,
+                         ImmutableList<Attribute> Attributes,
+                         ImmutableList<Modifier> Modifiers,
+                         ImmutableList<string> LineStatements,
                          string SyntaxTree,
                          string FullQualifiedName,
                          string FilePath) : DeclarationWithModifiers(Name, FullQualifiedName, Modifiers, Attributes, SyntaxTree, FilePath);

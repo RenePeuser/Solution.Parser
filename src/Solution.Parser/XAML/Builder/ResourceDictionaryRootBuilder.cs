@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Xml.Linq;
 using Argument.Check;
+using Extensions.Pack;
 
 namespace Solution.Parser.XAML
 {
@@ -37,6 +38,6 @@ namespace Solution.Parser.XAML
                 styles, dataTemplates);
         }
 
-        public Predicate<string> IsThisTheSelectorFor { get; } = item => item == "ResourceDictionary";
+        public Predicate<string> IsThisTheSelectorFor { get; } = item => item.EqualsTo("ResourceDictionary");
     }
 }
