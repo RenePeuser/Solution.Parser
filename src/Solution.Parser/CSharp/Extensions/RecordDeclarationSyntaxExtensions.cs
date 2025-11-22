@@ -68,11 +68,6 @@ namespace Solution.Parser.CSharp
             var fullQualifiedName = BuildFullQualifiedName(recordDeclarationSyntax);
             var parameters = recordDeclarationSyntax.ParameterList?.ToParameters(filePath) ?? ImmutableList<Parameter>.Empty;
 
-            if (name.Contains("UpdateCapabilityRequest"))
-            {
-
-            }
-
             var result = new Record(nameSpace, name, modifiers, constructors, properties, methods, attributesOfClass, fields,
                 interfaces, baseTypes, events, eventFields, nestedClasses, nestedStructs, nestedEnums,
                 nestedInterfaces, parameters, syntaxTree, fullQualifiedName, filePath);

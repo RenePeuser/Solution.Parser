@@ -9,9 +9,9 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Solution.Parser.CSharp
 {
-    internal static class MethodDeclarationSyntaxExtensions
+    internal static class LocalFunctionDeclarationSyntaxExtensions
     {
-        internal static IEnumerable<Modifier> ToModifier(this MethodDeclarationSyntax methodDeclarationSyntax)
+        internal static IEnumerable<Modifier> ToModifier(this LocalFunctionStatementSyntax methodDeclarationSyntax)
         {
             Throw.IfNull(methodDeclarationSyntax);
 
@@ -21,46 +21,36 @@ namespace Solution.Parser.CSharp
                 {
                     case "public":
                         yield return Modifier.Public;
-
                         break;
                     case "internal":
                         yield return Modifier.Internal;
-
                         break;
                     case "protected":
                         yield return Modifier.Protected;
-
                         break;
                     case "private":
                         yield return Modifier.Private;
-
                         break;
                     case "static":
                         yield return Modifier.Static;
-
                         break;
                     case "const":
                         yield return Modifier.Const;
-
                         break;
                     case "abstract":
                         yield return Modifier.Abstract;
-
                         break;
                     case "partial":
                         yield return Modifier.Partial;
-
                         break;
                     case "required":
                         yield return Modifier.Required;
-
                         break;
                 }
             }
         }
 
-        internal static Method ToMethod(this MethodDeclarationSyntax methodDeclarationSyntax,
-                                        string filePath)
+        internal static LocalFunction ToLocalFunction(this LocalFunctionStatementSyntax methodDeclarationSyntax, string filePath)
         {
             Throw.IfNull(methodDeclarationSyntax);
 
@@ -77,13 +67,7 @@ namespace Solution.Parser.CSharp
             var lineStatements = lineStatementsRaw.Take(new Range(1, lineStatementsRaw.Count - 1)).FilterNullOrWhitespace().ToImmutableList();
             var fullqualifiedName = BuildFullQualifiedName(methodDeclarationSyntax);
 
-            var localFunctions = methodDeclarationSyntax.Body?
-                                                        .DescendantNodes() // ensures nested local functions are found
-                                                        .OfType<LocalFunctionStatementSyntax>()
-                                                        .Select(l => l.ToLocalFunction(filePath))
-                                                        .ToImmutableList() ?? ImmutableList<LocalFunction>.Empty;
-
-            return new Method(methodName,
+            return new LocalFunction(methodName,
                               parameters,
                               returnType,
                               methodValue,
@@ -92,25 +76,22 @@ namespace Solution.Parser.CSharp
                               attributes,
                               modifiers,
                               lineStatements,
-                              localFunctions,
                               methodDeclarationSyntax.SyntaxTree.ToString(),
                               fullqualifiedName,
                               filePath);
         }
 
-        internal static string BuildFullQualifiedName(MethodDeclarationSyntax recordDeclarationSyntax)
+        internal static string BuildFullQualifiedName(LocalFunctionStatementSyntax recordDeclarationSyntax)
         {
             var getFullQualifiedName = GetFullQualifiedName().Reverse();
 
             var flattenParentNameSpaceQualifiers = getFullQualifiedName.Flatten(".");
             var fullQualifiedName = $"{flattenParentNameSpaceQualifiers}.{recordDeclarationSyntax.Identifier.ValueText}";
-
             return fullQualifiedName;
 
             IEnumerable<string> GetFullQualifiedName()
             {
                 var parent = recordDeclarationSyntax.Parent;
-
                 while (parent.IsNotNull())
                 {
                     switch (parent)
@@ -119,54 +100,43 @@ namespace Solution.Parser.CSharp
                             break;
                         case ClassDeclarationSyntax classDeclarationSyntax:
                             parent = parent.Parent;
-
                             yield return classDeclarationSyntax.Identifier.ValueText;
-
                             break;
                         case InterfaceDeclarationSyntax interfaceDeclarationSyntax:
                             parent = parent.Parent;
-
                             yield return interfaceDeclarationSyntax.Identifier.ValueText;
-
                             break;
                         case RecordDeclarationSyntax recordDeclarationSyntax:
                             parent = parent.Parent;
-
                             yield return recordDeclarationSyntax.Identifier.ValueText;
-
                             break;
                         case NamespaceDeclarationSyntax namespaceDeclarationSyntax:
                             parent = null;
-
                             yield return namespaceDeclarationSyntax.ToNamespace().Name;
-
                             break;
                         default:
                             parent = null;
-
                             yield return string.Empty;
-
                             break;
                     }
                 }
             }
         }
 
-        internal static ImmutableList<Method> ToMethods(this ImmutableList<MethodDeclarationSyntax> methodDeclarationSyntaxes,
-                                                        string filePath)
+        internal static ImmutableList<LocalFunction> ToLocalFunctions(this ImmutableList<LocalFunctionStatementSyntax> methodDeclarationSyntaxes,
+                                                         string filePath)
         {
             Throw.IfNull(methodDeclarationSyntaxes);
 
-            return methodDeclarationSyntaxes.Select(m => m.ToMethod(filePath)).ToImmutableList();
+            return methodDeclarationSyntaxes.Select(m => m.ToLocalFunction(filePath)).ToImmutableList();
         }
 
-        private static ImmutableList<Attribute> GetAttributes(MethodDeclarationSyntax methodDeclarationSyntax,
+        private static ImmutableList<Attribute> GetAttributes(LocalFunctionStatementSyntax methodDeclarationSyntax,
                                                               string filePath)
         {
             return (from attrList in methodDeclarationSyntax.AttributeLists
                     from attr in attrList.Attributes
-                    select new Attribute(attr.Name.ToString(), attr.ArgumentList?.Arguments.Select(arg => arg.ToString()).ToImmutableList() ?? ImmutableList<string>.Empty, attr.Parent?.ToString() ?? string.Empty,
-                                         filePath)).ToImmutableList();
+                    select new Attribute(attr.Name.ToString(), attr.ArgumentList?.Arguments.Select(arg => arg.ToString()).ToImmutableList() ?? ImmutableList<string>.Empty, attr.Parent?.ToString() ?? string.Empty, filePath)).ToImmutableList();
         }
     }
 }
