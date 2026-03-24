@@ -27,17 +27,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="NuGet.Configuration" Version="7.0.1" />
-        <PackageReference Include="NuGet.Versioning" Version="7.0.1" />
-        <PackageReference Include="Extensions.Pack" Version="6.0.16" />
+        <PackageReference Include="NuGet.Configuration" Version="7.3.0" />
+        <PackageReference Include="NuGet.Versioning" Version="7.3.0" />
+        <PackageReference Include="Extensions.Pack" Version="7.0.0-alpha.28" />
         <PackageReference Include="FileSystem.Abstraction" Version="0.1.2" />
         <PackageReference Include="GitVersion.MsBuild" Version="5.12.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Build" Version="17.14.28" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
-        <PackageReference Include="Microsoft.SourceLink.AzureRepos.Git" Version="8.0.0" PrivateAssets="All" />
+        <PackageReference Include="Microsoft.Build" Version="18.4.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" />
+        <PackageReference Include="Microsoft.SourceLink.AzureRepos.Git" Version="10.0.201" PrivateAssets="All" />
     </ItemGroup>
 
     <ItemGroup>
