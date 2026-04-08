@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Extensions.Pack" Version="7.0.0-alpha.28" />
+        <PackageReference Include="Extensions.Pack" Version="7.0.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
         <PackageReference Include="MSTest.TestAdapter" Version="4.1.0" />
         <PackageReference Include="MSTest.TestFramework" Version="4.1.0" />
