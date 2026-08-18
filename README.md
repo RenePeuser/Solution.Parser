@@ -1,5 +1,22 @@
 # Solution Parser
 
+## Solution formats
+
+Both the classic `.sln` and the new xml based `.slnx` format are supported:
+
+```csharp
+// classic
+var solutionFileInfo = new SolutionFileName("MySolution.sln").FindSolutionFileReverseFrom(startUpDirectory);
+
+// slnx
+var solutionFileInfo = new SolutionFileName("MySolution.slnx").FindSolutionFileReverseFrom(startUpDirectory);
+
+// either of both, '.slnx' wins when both files exist side by side
+var solutionFileInfo = SolutionFileName.WithAnySolutionFormat("MySolution").FindSolutionFileReverseFrom(startUpDirectory);
+```
+
+`SolutionFileInfo.IsSlnx` tells which format was found. Everything behind `Parse()` is format agnostic.
+
 ## Sample
 ```csharp
  [TestClass]

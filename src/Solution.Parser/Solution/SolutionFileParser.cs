@@ -40,10 +40,13 @@ namespace Solution.Parser.Solution
             var projectToCheck = projectToProjectSolutionItem.ProjectInSolution;
             var projctFile = projectToProjectSolutionItem.ProjectFile;
 
-            var projectDependencies = projectToCheck.Dependencies.Select(d => new Guid(d)).ToImmutableList();
-            var allProjects = allProjectFiles.Select(a => a.ProjectFile).ToImmutableList();
+            // The guids have to be compared on solution level. Sdk style projects (and therefore every project inside a slnx)
+            // do not carry a ProjectGuid anymore, so the guid of the parsed project file would always be empty here.
+            var projectDependencies = projectToCheck.Dependencies.Select(dependency => new Guid(dependency)).ToImmutableHashSet();
 
-            var buildDependencies = allProjects.Where(p => projectDependencies.Contains(p.Guid)).ToImmutableList();
+            var buildDependencies = allProjectFiles.Where(item => projectDependencies.Contains(new Guid(item.ProjectInSolution.ProjectGuid)))
+                                                   .Select(item => item.ProjectFile)
+                                                   .ToImmutableList();
 
             var newProject = projctFile.UpdateProjectDependencies(buildDependencies);
             return newProject;

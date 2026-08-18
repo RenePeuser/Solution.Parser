@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="../../../.editorconfig" />
+    <File Path="../../../Directory.Build.props" />
+  </Folder>
+  <Folder Name="/CICD/">
+    <File Path="../../../azure-pipelines.yml" />
+  </Folder>
+  <Project Path="../../Solution.Parser/Solution.Parser.csproj" />
+  <Project Path="../../Solution.Parser.Test/Solution.Parser.Test.csproj">
+    <BuildDependency Project="../../Solution.Parser/Solution.Parser.csproj" />
+  </Project>
+</Solution>

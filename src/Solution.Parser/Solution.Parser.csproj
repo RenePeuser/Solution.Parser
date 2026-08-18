@@ -6,8 +6,8 @@
         <Copyright>Copyright 2022 (c) Rene Peuser. All rights reserved.</Copyright>
         <PackageProjectUrl>https://renepeuser.visualstudio.com/Solution.Parser</PackageProjectUrl>
         <RepositoryUrl>https://renepeuser.visualstudio.com/Solution.Parser</RepositoryUrl>
-        <PackageReleaseNotes>Upgrade to .Net 10</PackageReleaseNotes>
-        <PackageTags>C#;Solution;Project;XAML;SyntaxTree;Syntax</PackageTags>
+        <PackageReleaseNotes>Support for the new xml based slnx solution format</PackageReleaseNotes>
+        <PackageTags>C#;Solution;Project;XAML;SyntaxTree;Syntax;slnx</PackageTags>
         <PackageId>Solution.Parser</PackageId>
         <OutputType>Library</OutputType>
         <AssemblyName>Solution.Parser</AssemblyName>
@@ -36,6 +36,8 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.Build" Version="18.4.0" />
+        <!-- Required at runtime by Microsoft.Build to parse the xml based slnx solution format. Microsoft.Build does not declare it as dependency. -->
+        <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" />
         <PackageReference Include="Microsoft.SourceLink.AzureRepos.Git" Version="10.0.201" PrivateAssets="All" />
     </ItemGroup>
