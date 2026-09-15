@@ -296,7 +296,7 @@ namespace Solution.Parser.Test.CSharp
                                   fix: "Expose PrimaryConstructor as the constructor flagged IsPrimary");
 
             Assert.That.HasCount(2,
-                                 service.PrimaryConstructor!.Parameters,
+                                 service.PrimaryConstructor.Parameters,
                                  because: "the primary constructor declares two parameters",
                                  fix: "Pass the type parameter list into ToPrimaryConstructor");
 

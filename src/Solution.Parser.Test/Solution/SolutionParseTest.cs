@@ -26,11 +26,9 @@ namespace Solution.Parser.Test.Solution
 
         [Ignore]
         [TestMethod]
-        [DataRow("")]
-        public void Count_CSharp_Files(string solution)
+        public void Count_CSharp_Files()
         {
-            var solutionFile = new SolutionFileInfo(solution);
-            var parsedSolutionFile = solutionFile.Parse();
+            var parsedSolutionFile = _solutionFileInfo.Parse();
 
             var csharpFiles = parsedSolutionFile.Projects.SelectMany(p => p.CSharpFileInfos).ToList();
             var projects = parsedSolutionFile.Projects.Count;
@@ -66,7 +64,7 @@ namespace Solution.Parser.Test.Solution
                 TestMethodAttributes = testMethods
             };
 
-            Assert.Fail($"{Environment.NewLine}{Environment.NewLine}{solutionFile.FileNameWithoutExtenion}:{Environment.NewLine}{ConsoleTables.ConsoleTable.From([record])}{Environment.NewLine}{Environment.NewLine}{ConsoleTables.ConsoleTable.From([tests])}");
+            Assert.Fail($"{Environment.NewLine}{Environment.NewLine}{_solutionFileInfo.FileNameWithoutExtenion}:{Environment.NewLine}{ConsoleTables.ConsoleTable.From([record])}{Environment.NewLine}{Environment.NewLine}{ConsoleTables.ConsoleTable.From([tests])}");
 
         }
 

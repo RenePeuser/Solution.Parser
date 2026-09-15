@@ -1,4 +1,5 @@
 using System.Linq;
+using AspNetCore.Simple.MsTest.Sdk;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Solution.Parser.CSharp;
 using static Solution.Parser.Test.CSharp.ParseHelper;
@@ -12,13 +13,22 @@ namespace Solution.Parser.Test.CSharp
     [TestClass]
     public class ModifierAndAccessibilityTest
     {
+        private const string SharedMapperFix =
+            "Check SyntaxTokenListExtensions.ToModifiers, it is the single mapper every declaration kind shares";
+
         [TestMethod]
         public void Sealed_Is_Reported_On_A_Class()
         {
             var holder = ParseCode("public sealed class Holder { }").Classes.Single();
 
-            CollectionAssert.Contains(holder.Modifiers.ToArray(), Modifier.Sealed);
-            Assert.IsTrue(holder.IsSealed());
+            Assert.That.Contains(holder.Modifiers,
+                                 Modifier.Sealed,
+                                 because: "sealed is central to rules about extensibility and used to be dropped entirely",
+                                 fix: SharedMapperFix);
+
+            Assert.That.IsTrue(holder.IsSealed(),
+                               because: "the predicate must agree with the modifier list it reads",
+                               fix: "Check QueryExtensions.IsSealed");
         }
 
         [TestMethod]
@@ -41,21 +51,46 @@ namespace Solution.Parser.Test.CSharp
                 }
                 """).Classes.Single();
 
-            CollectionAssert.Contains(holder.Methods.Single(m => m.Name == "Virtual").Modifiers.ToArray(), Modifier.Virtual);
-            CollectionAssert.Contains(holder.Methods.Single(m => m.Name == "ToString").Modifiers.ToArray(), Modifier.Override);
-            CollectionAssert.Contains(holder.Methods.Single(m => m.Name == "Both").Modifiers.ToArray(), Modifier.Async);
-            CollectionAssert.Contains(holder.Methods.Single(m => m.Name == "Hidden").Modifiers.ToArray(), Modifier.New);
-            CollectionAssert.Contains(holder.Methods.Single(m => m.Name == "Abstract").Modifiers.ToArray(), Modifier.Abstract);
+            Assert.That.Contains(holder.Methods.Single(m => m.Name == "Virtual").Modifiers,
+                                 Modifier.Virtual,
+                                 because: "virtual decides whether a method can be overridden, which several rules depend on",
+                                 fix: SharedMapperFix);
+
+            Assert.That.Contains(holder.Methods.Single(m => m.Name == "ToString").Modifiers,
+                                 Modifier.Override,
+                                 because: "a rule that skips overridden members has to recognise them",
+                                 fix: SharedMapperFix);
+
+            Assert.That.Contains(holder.Methods.Single(m => m.Name == "Both").Modifiers,
+                                 Modifier.Async,
+                                 because: "async naming rules read the modifier rather than guessing from the return type",
+                                 fix: SharedMapperFix);
+
+            Assert.That.Contains(holder.Methods.Single(m => m.Name == "Hidden").Modifiers,
+                                 Modifier.New,
+                                 because: "member hiding is worth a rule of its own and used to be invisible",
+                                 fix: SharedMapperFix);
+
+            Assert.That.Contains(holder.Methods.Single(m => m.Name == "Abstract").Modifiers,
+                                 Modifier.Abstract,
+                                 because: "an abstract member has no body, so rules about bodies have to skip it",
+                                 fix: SharedMapperFix);
         }
 
         [TestMethod]
         public void Readonly_Is_Reported_On_A_Struct_As_Well_As_On_A_Field()
         {
-            var parsed = ParseCode("public readonly struct Point { private readonly int _x; }");
-            var point = parsed.Structs.Single();
+            var point = ParseCode("public readonly struct Point { private readonly int _x; }").Structs.Single();
 
-            CollectionAssert.Contains(point.Modifiers.ToArray(), Modifier.ReadOnly);
-            CollectionAssert.Contains(point.Fields.Single().Modifiers.ToArray(), Modifier.ReadOnly);
+            Assert.That.Contains(point.Modifiers,
+                                 Modifier.ReadOnly,
+                                 because: "readonly used to be known to the field mapper only, so a readonly struct looked mutable",
+                                 fix: SharedMapperFix);
+
+            Assert.That.Contains(point.Fields.Single().Modifiers,
+                                 Modifier.ReadOnly,
+                                 because: "the field keeps its readonly modifier as well",
+                                 fix: SharedMapperFix);
         }
 
         [TestMethod]
@@ -71,14 +106,29 @@ namespace Solution.Parser.Test.CSharp
                 }
                 """).Classes.Single();
 
-            Assert.AreEqual(Accessibility.ProtectedOrInternal, holder.Properties.Single(p => p.Name == "A").Accessibility);
-            Assert.AreEqual(Accessibility.ProtectedAndInternal, holder.Properties.Single(p => p.Name == "B").Accessibility);
-            Assert.AreEqual(Accessibility.Public, holder.Properties.Single(p => p.Name == "C").Accessibility);
-            Assert.AreEqual(Accessibility.Internal, holder.Properties.Single(p => p.Name == "D").Accessibility);
+            Assert.That.AreEqual(Accessibility.ProtectedOrInternal,
+                                 holder.Properties.Single(p => p.Name == "A").Accessibility,
+                                 because: "protected internal widens access and must not be confused with protected",
+                                 fix: "Resolve the keyword pair before the single keywords in ToAccessibility");
+
+            Assert.That.AreEqual(Accessibility.ProtectedAndInternal,
+                                 holder.Properties.Single(p => p.Name == "B").Accessibility,
+                                 because: "private protected narrows access and is the opposite of protected internal",
+                                 fix: "Resolve the keyword pair before the single keywords in ToAccessibility");
+
+            Assert.That.AreEqual(Accessibility.Public,
+                                 holder.Properties.Single(p => p.Name == "C").Accessibility,
+                                 because: "public is the accessibility most rules filter on",
+                                 fix: "Check ToAccessibility handles the plain keywords");
+
+            Assert.That.AreEqual(Accessibility.Internal,
+                                 holder.Properties.Single(p => p.Name == "D").Accessibility,
+                                 because: "internal members are not part of the public surface a rule guards",
+                                 fix: "Check ToAccessibility handles the plain keywords");
         }
 
         /// <summary>
-        /// Without a default an absent modifier is indistinguishable from private, which is exactly what
+        /// Without a default, an absent modifier is indistinguishable from private, which is exactly what
         /// a rule such as "no public fields" has to tell apart.
         /// </summary>
         [TestMethod]
@@ -100,10 +150,25 @@ namespace Solution.Parser.Test.CSharp
 
             var topLevel = parsed.Classes.Single();
 
-            Assert.AreEqual(Accessibility.Internal, topLevel.Accessibility, "A type declared in a namespace is internal.");
-            Assert.AreEqual(Accessibility.Private, topLevel.Fields.Single().Accessibility);
-            Assert.AreEqual(Accessibility.Private, topLevel.Methods.Single().Accessibility);
-            Assert.AreEqual(Accessibility.Public, parsed.Interfaces.Single().Methods.Single().Accessibility, "An interface member is public.");
+            Assert.That.AreEqual(Accessibility.Internal,
+                                 topLevel.Accessibility,
+                                 because: "a type declared in a namespace without a modifier is internal",
+                                 fix: "Resolve the default from the parent node in ToAccessibility");
+
+            Assert.That.AreEqual(Accessibility.Private,
+                                 topLevel.Fields.Single().Accessibility,
+                                 because: "a class member without a modifier is private",
+                                 fix: "Resolve the default from the parent node in ToAccessibility");
+
+            Assert.That.AreEqual(Accessibility.Private,
+                                 topLevel.Methods.Single().Accessibility,
+                                 because: "a class member without a modifier is private",
+                                 fix: "Resolve the default from the parent node in ToAccessibility");
+
+            Assert.That.AreEqual(Accessibility.Public,
+                                 parsed.Interfaces.Single().Methods.Single().Accessibility,
+                                 because: "an interface member is public even though it carries no modifier, which a public surface rule must see",
+                                 fix: "Resolve the default from the parent node in ToAccessibility");
         }
     }
 }

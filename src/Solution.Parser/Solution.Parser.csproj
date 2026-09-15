@@ -6,7 +6,7 @@
         <Copyright>Copyright 2022 (c) Rene Peuser. All rights reserved.</Copyright>
         <PackageProjectUrl>https://renepeuser.visualstudio.com/Solution.Parser</PackageProjectUrl>
         <RepositoryUrl>https://renepeuser.visualstudio.com/Solution.Parser</RepositoryUrl>
-        <PackageReleaseNotes>Support for the new xml based slnx solution format</PackageReleaseNotes>
+        <PackageReleaseNotes>Breaking: member lists now hold only the members a type declares itself; use AllTypes(), DescendantTypes() and AllMethods() for the recursive walk. Class, Struct, Record, Interface and Enum are now siblings below TypeDeclaration with a TypeKind. Declarations carry Location, Accessibility, XML documentation and type parameters. Delegates, indexers, operators and finalizers are parsed. Fixes: fully qualified names under a file scoped or nested namespace, SyntaxTree returning the whole file, only the first variable of a shared field declaration, missing modifiers such as sealed, virtual, override, new and async, IsNullable on a nullable type argument, IsReadOnly decided by text search, and line splitting on the platform line ending.</PackageReleaseNotes>
         <PackageTags>C#;Solution;Project;XAML;SyntaxTree;Syntax;slnx</PackageTags>
         <PackageId>Solution.Parser</PackageId>
         <OutputType>Library</OutputType>

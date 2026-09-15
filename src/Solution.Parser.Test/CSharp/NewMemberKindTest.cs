@@ -1,4 +1,5 @@
 using System.Linq;
+using AspNetCore.Simple.MsTest.Sdk;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Solution.Parser.CSharp;
 using static Solution.Parser.Test.CSharp.ParseHelper;
@@ -28,10 +29,25 @@ namespace Solution.Parser.Test.CSharp
 
             var transform = parsed.Delegates.Single();
 
-            Assert.AreEqual("My.Sample.Transform", transform.FullQualifiedName);
-            Assert.AreEqual("int", transform.ReturnParameter);
-            Assert.AreEqual("input", transform.Parameters.Single().Name);
-            Assert.AreEqual("Notify", parsed.Classes.Single().Delegates.Single().Name);
+            Assert.That.AreEqual("My.Sample.Transform",
+                                 transform.FullQualifiedName,
+                                 because: "a delegate is a type of its own and used to be skipped by the parser altogether",
+                                 fix: "Include DelegateDeclarationSyntax in the top level walk and convert it");
+
+            Assert.That.AreEqual("int",
+                                 transform.ReturnParameter,
+                                 because: "the signature is the whole content of a delegate declaration",
+                                 fix: "Read the return type of the delegate declaration");
+
+            Assert.That.AreEqual("input",
+                                 transform.Parameters.Single().Name,
+                                 because: "the signature is the whole content of a delegate declaration",
+                                 fix: "Read the parameter list of the delegate declaration");
+
+            Assert.That.AreEqual("Notify",
+                                 parsed.Classes.Single().Delegates.Single().Name,
+                                 because: "a delegate nested in a type belongs to that type",
+                                 fix: "Collect DelegateDeclarationSyntax from the direct members of a type as well");
         }
 
         [TestMethod]
@@ -44,10 +60,23 @@ namespace Solution.Parser.Test.CSharp
                 }
                 """).Classes.Single().Indexers.Single();
 
-            Assert.AreEqual("string", indexer.Type);
-            Assert.AreEqual("index", indexer.Parameters.Single().Name);
-            Assert.IsTrue(indexer.HasGetter);
-            Assert.IsTrue(indexer.HasSetter);
+            Assert.That.AreEqual("string",
+                                 indexer.Type,
+                                 because: "an indexer is part of the public surface a rule guards and used to be invisible",
+                                 fix: "Collect IndexerDeclarationSyntax from the direct members of a type");
+
+            Assert.That.AreEqual("index",
+                                 indexer.Parameters.Single().Name,
+                                 because: "the parameter list is what distinguishes one indexer from another",
+                                 fix: "Read the bracketed parameter list of the indexer");
+
+            Assert.That.IsTrue(indexer.HasGetter,
+                               because: "an indexer has accessors just like a property and rules about them should apply",
+                               fix: "Reuse AccessorExtensions.ToAccessors for the indexer");
+
+            Assert.That.IsTrue(indexer.HasSetter,
+                               because: "an indexer has accessors just like a property and rules about them should apply",
+                               fix: "Reuse AccessorExtensions.ToAccessors for the indexer");
         }
 
         [TestMethod]
@@ -64,14 +93,32 @@ namespace Solution.Parser.Test.CSharp
                 }
                 """).Classes.Single();
 
-            Assert.AreEqual(3, holder.Operators.Count);
+            Assert.That.HasCount(3,
+                                 holder.Operators,
+                                 because: "operators and both conversion forms are members and used to be dropped",
+                                 fix: "Collect OperatorDeclarationSyntax and ConversionOperatorDeclarationSyntax into Operators");
 
             var addition = holder.Operators.Single(o => o.OperatorKind == OperatorKind.Operator);
 
-            Assert.AreEqual("+", addition.Symbol);
-            Assert.AreEqual(2, addition.Parameters.Count);
-            Assert.AreEqual("decimal", holder.Operators.Single(o => o.OperatorKind == OperatorKind.ImplicitConversion).Symbol);
-            Assert.AreEqual("Money", holder.Operators.Single(o => o.OperatorKind == OperatorKind.ExplicitConversion).Symbol);
+            Assert.That.AreEqual("+",
+                                 addition.Symbol,
+                                 because: "the symbol is what identifies an operator",
+                                 fix: "Read the operator token of the declaration");
+
+            Assert.That.HasCount(2,
+                                 addition.Parameters,
+                                 because: "a binary operator takes two operands",
+                                 fix: "Read the parameter list of the operator declaration");
+
+            Assert.That.AreEqual("decimal",
+                                 holder.Operators.Single(o => o.OperatorKind == OperatorKind.ImplicitConversion).Symbol,
+                                 because: "an implicit conversion is the one a rule is most likely to want to ban",
+                                 fix: "Map the implicit keyword to OperatorKind.ImplicitConversion");
+
+            Assert.That.AreEqual("Money",
+                                 holder.Operators.Single(o => o.OperatorKind == OperatorKind.ExplicitConversion).Symbol,
+                                 because: "the target type is what identifies a conversion operator",
+                                 fix: "Map the explicit keyword to OperatorKind.ExplicitConversion");
         }
 
         [TestMethod]
@@ -79,7 +126,10 @@ namespace Solution.Parser.Test.CSharp
         {
             var holder = ParseCode("public class Holder { ~Holder() { } }").Classes.Single();
 
-            Assert.AreEqual("Holder", holder.Finalizers.Single().Name);
+            Assert.That.AreEqual("Holder",
+                                 holder.Finalizers.Single().Name,
+                                 because: "a finalizer has real consequences for a type and a rule should be able to spot one",
+                                 fix: "Collect DestructorDeclarationSyntax from the direct members of a type");
         }
 
         [TestMethod]
@@ -91,9 +141,20 @@ namespace Solution.Parser.Test.CSharp
                 public record class Company(string Name);
                 """);
 
-            Assert.AreEqual(TypeKind.Record, parsed.Records.Single(r => r.Name == "Person").Kind);
-            Assert.AreEqual(TypeKind.RecordStruct, parsed.Records.Single(r => r.Name == "Point").Kind);
-            Assert.AreEqual(TypeKind.Record, parsed.Records.Single(r => r.Name == "Company").Kind);
+            Assert.That.AreEqual(TypeKind.Record,
+                                 parsed.Records.Single(r => r.Name == "Person").Kind,
+                                 because: "a plain record is a reference type",
+                                 fix: "Derive the kind from RecordDeclarationSyntax.ClassOrStructKeyword");
+
+            Assert.That.AreEqual(TypeKind.RecordStruct,
+                                 parsed.Records.Single(r => r.Name == "Point").Kind,
+                                 because: "a record struct is a value type, which changes what an immutability rule should require",
+                                 fix: "Derive the kind from RecordDeclarationSyntax.ClassOrStructKeyword");
+
+            Assert.That.AreEqual(TypeKind.Record,
+                                 parsed.Records.Single(r => r.Name == "Company").Kind,
+                                 because: "record class is the explicit spelling of a plain record",
+                                 fix: "Derive the kind from RecordDeclarationSyntax.ClassOrStructKeyword");
         }
 
         [TestMethod]
@@ -114,10 +175,23 @@ namespace Solution.Parser.Test.CSharp
                 }
                 """).Classes.Single();
 
-            Assert.AreEqual("Changed", holder.EventFields.Single().Name);
-            Assert.AreEqual("Explicit", holder.Events.Single().Name);
-            Assert.IsTrue(holder.Events.Single().HasAdd);
-            Assert.IsTrue(holder.Events.Single().HasRemove);
+            Assert.That.AreEqual("Changed",
+                                 holder.EventFields.Single().Name,
+                                 because: "a field like event is declared without accessors and belongs in EventFields",
+                                 fix: "Collect EventFieldDeclarationSyntax into EventFields");
+
+            Assert.That.AreEqual("Explicit",
+                                 holder.Events.Single().Name,
+                                 because: "an event with accessors belongs in Events",
+                                 fix: "Collect EventDeclarationSyntax into Events");
+
+            Assert.That.IsTrue(holder.Events.Single().HasAdd,
+                               because: "a rule about event subscription needs to see the accessors",
+                               fix: "Read the accessor list of the event declaration");
+
+            Assert.That.IsTrue(holder.Events.Single().HasRemove,
+                               because: "a rule about event subscription needs to see the accessors",
+                               fix: "Read the accessor list of the event declaration");
         }
 
         /// <summary>
@@ -135,17 +209,32 @@ namespace Solution.Parser.Test.CSharp
                 public enum E { X }
                 """);
 
-            Assert.IsInstanceOfType<Class>(parsed.Types.Single(t => t.Name == "A"));
-            Assert.IsNotInstanceOfType<Interface>(parsed.Types.Single(t => t.Name == "A"));
-            Assert.IsNotInstanceOfType<Class>(parsed.Types.Single(t => t.Name == "C"));
-            Assert.IsNotInstanceOfType<Class>(parsed.Types.Single(t => t.Name == "D"));
+            Assert.That.IsOfType<Class>(parsed.Types.Single(t => t.Name == "A"),
+                                        because: "a class must be modelled as a class",
+                                        fix: "Check the seed switch in TypeDeclarationSyntaxExtensions");
 
-            Assert.AreEqual(1, parsed.Classes.Count);
-            Assert.AreEqual(1, parsed.Interfaces.Count);
-            Assert.AreEqual(1, parsed.Records.Count);
-            Assert.AreEqual(1, parsed.Structs.Count);
-            Assert.AreEqual(1, parsed.Enums.Count);
-            Assert.AreEqual(5, parsed.Types.Count);
+            Assert.That.IsNotOfType<Interface>(parsed.Types.Single(t => t.Name == "A"),
+                                               because: "Class used to derive from Interface, which made every is check against Interface true",
+                                               fix: "Keep Class, Struct, Record and Interface as siblings below TypeDeclaration");
+
+            Assert.That.IsNotOfType<Class>(parsed.Types.Single(t => t.Name == "C"),
+                                           because: "Record used to derive from Class, so a rule over classes silently included records",
+                                           fix: "Keep Class, Struct, Record and Interface as siblings below TypeDeclaration");
+
+            Assert.That.IsNotOfType<Class>(parsed.Types.Single(t => t.Name == "D"),
+                                           because: "Struct used to derive from Class, so a rule over classes silently included structs",
+                                           fix: "Keep Class, Struct, Record and Interface as siblings below TypeDeclaration");
+
+            Assert.That.HasCount(1, parsed.Classes, because: "the file declares exactly one class", fix: "Filter Types by the concrete model type");
+            Assert.That.HasCount(1, parsed.Interfaces, because: "the file declares exactly one interface", fix: "Filter Types by the concrete model type");
+            Assert.That.HasCount(1, parsed.Records, because: "the file declares exactly one record", fix: "Filter Types by the concrete model type");
+            Assert.That.HasCount(1, parsed.Structs, because: "the file declares exactly one struct", fix: "Filter Types by the concrete model type");
+            Assert.That.HasCount(1, parsed.Enums, because: "the file declares exactly one enum", fix: "Filter Types by the concrete model type");
+
+            Assert.That.HasCount(5,
+                                 parsed.Types,
+                                 because: "Types is the one list that holds every declared type regardless of kind",
+                                 fix: "Collect every BaseTypeDeclarationSyntax of the file into Types");
         }
     }
 }
