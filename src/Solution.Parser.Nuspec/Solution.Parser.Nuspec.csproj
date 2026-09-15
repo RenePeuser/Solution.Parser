@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>Parses nuspec files and NuGet folder layouts.</Description>
+        <PackageTags>NuGet;nuspec;CodeRules</PackageTags>
+        <!-- Shipped inside the Solution.Parser package, not published on its own. -->
+        <IsPackable>false</IsPackable>
+        <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Solution.Parser.Core\Solution.Parser.Core.csproj" />
+    </ItemGroup>
+
+</Project>

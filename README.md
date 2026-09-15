@@ -1,5 +1,31 @@
 # Solution Parser
 
+## Packages
+
+The library is split so that a consumer only pays for the part it uses. `Solution.Parser` still
+pulls everything, so an existing reference needs no change.
+
+| Package | What it parses | What it drags in |
+|---|---|---|
+| `Solution.Parser.Core` | shared contracts, nothing on its own | — |
+| `Solution.Parser.CSharp` | C# files into syntax trees | Roslyn |
+| `Solution.Parser.Xaml` | XAML markup | nothing but Core |
+| `Solution.Parser.Project` | csproj, old and SDK style | nothing but Core |
+| `Solution.Parser.Sln` | sln and slnx, and their projects | MSBuild |
+| `Solution.Parser.Nuspec` | nuspec files and NuGet folders | nothing but Core |
+| `Solution.Parser.AspNet` | controllers, routes, response types | NuGet client libraries |
+| `Solution.Parser` | meta package, pulls all of the above | all of the above |
+
+`Solution.Parser.Project` deliberately knows no language: `ProjectFile.SourceFiles` is a plain file
+list, and the typed views come from whichever language package you reference.
+
+```csharp
+project.SourceFiles.CSharpFiles()   // needs Solution.Parser.CSharp
+project.SourceFiles.XamlFiles()     // needs Solution.Parser.Xaml
+```
+
+That is what keeps XAML out of a C# only consumer and the other way round.
+
 ## Solution formats
 
 Both the classic `.sln` and the new xml based `.slnx` format are supported:
@@ -139,6 +165,95 @@ Predicates that read the way a rule means: `IsPublic()`, `IsStatic()`, `IsSealed
 `IsPartial()`, `IsOverride()`, `IsVirtual()`, `HasAttribute(name)`, `Implements(name)`,
 `InheritsFrom(name)`.
 
+## XAML
+
+`.xaml` files parse into the same shape of model, so a rule can reach across markup and code behind:
+
+```csharp
+var tree = new XAMLFileInfo(@"D:\repo\src\MainWindow.xaml").Parse();
+
+tree.FullQualifiedName          // "My.Sample.MainWindow", the x:Class
+tree.Root                       // a Window, UserControl, Page, Application,
+                                // ResourceDictionaryRoot or ControlRoot
+tree.Diagnostics                // what could not be read, instead of a lost file
+```
+
+For markup that is not on disk, for example in a test:
+
+```csharp
+var tree = xamlContent.ParseXaml(@"D:\repo\src\MainWindow.xaml");
+```
+
+`Children` holds what an element declares itself, and a property element such as
+`<Grid.RowDefinitions>` is a property of the Grid rather than a child of it, which is what XAML means
+by it:
+
+```csharp
+element.Children                // the elements written directly inside this one
+element.Properties              // attributes, attached properties and property elements
+element.Resources               // what <X.Resources> declares
+element["Grid.Row"]             // an attached property, by the name it is written with
+element.Content                 // the text of <Button>Click me</Button>
+element.Parent                  // the element this one is written in
+element.Location                // path(line,column), clickable in a test runner
+```
+
+To walk everything, ask for it, the same way as on the C# side:
+
+```csharp
+tree.AllElements()              // every element of the file
+tree.AllStyles()                // every Style, however deep in the resource dictionaries
+tree.AllTemplates()             // DataTemplate, ControlTemplate, ItemsPanelTemplate, …
+tree.AllBindings()              // every Binding, nested ones included
+tree.AllMarkupExtensions()      // every {…}, nested ones included
+tree.FindByName("Save")         // by x:Name
+tree.FindByKey("OkButton")      // by x:Key
+tree.OfTypeName("Button")       // every element written as <Button>
+element.Ancestors()             // up the tree, nearest first
+```
+
+Values keep the shape they were written in, so a rule reads the part it cares about rather than the
+raw string:
+
+```csharp
+var binding = textBlock["Text"]?.PropertyValue as Binding;
+
+binding.Path?.ValueText                          // "Total"
+(binding.Converter as StaticResource)?.ResourceKey   // "MoneyConverter"
+binding.RelativeSource?.AncestorType             // "Window"
+binding.StringFormat?.ValueText                  // "{0:#,##0.00} EUR"
+```
+
+`Binding`, `MultiBinding`, `StaticResource`, `DynamicResource`, `TemplateBinding`, `RelativeSource`,
+`XTypeMarkupExtension`, `XStaticMarkupExtension` and `NullExtension` are all `MarkupExtension`, and an
+extension the parser has no model for keeps its name and arguments instead of being reduced to text.
+A value is markup only when it starts with an unescaped `{` followed by a name, so a pack URI, a
+caption with a colon and a `{}{0:N2}` escape are all plain text.
+
+`Style`, `Setter`, `Trigger`, `Template`, `ResourceDictionaryElement` and `Control` are siblings below
+`ElementBase` with an `ElementKind`; `Window`, `UserControl`, `Page`, `Application`,
+`ResourceDictionaryRoot` and `ControlRoot` are siblings below `Root` with a `RootKind`.
+
+## Sample application
+
+`src/SampleApp.Wpf` is a small but real WPF application: a window, a user control, a theme
+dictionary, view models and bindings. It is a fixture rather than a demo. Because it is a real
+`UseWPF` project, markup that WPF would reject cannot get in, so the parser tests always run against
+XAML that actually compiles. Nothing in the library references it.
+
+`src/SampleApp.Wpf.Test` is what a consumer of the packages looks like: it references
+`Solution.Parser.Xaml`, `.CSharp` and `.Sln`, finds the application through the solution, and runs
+code rules over it. Two of them are worth reading as examples:
+
+- **BindingRule** - every `{Binding Path=X}` has to name a property that exists on the view model the
+  view declares through `d:DataContext`. A typo there compiles, renders nothing and is caught by no
+  compiler.
+- **ResourceRule** - every `{StaticResource Key}` used anywhere has to be declared somewhere, across
+  files.
+
+Each rule is also run against a deliberately broken view parsed from memory, because a rule that
+never fails proves nothing.
+
 ## Migrating from 5.x
 
 | Before | Now |
@@ -155,3 +270,34 @@ Predicates that read the way a rule means: `IsPublic()`, `IsStatic()`, `IsSealed
 `NestedClasses`, `NestedStructs`, `NestedInterfaces` and `NestedEnums` still exist on a type; they are
 now filtered views over `Types` and `NestedTypes`. `Method.MethodValue` and `Method.MethodBody` are
 kept as the previous names for `SyntaxTree` and `Body`.
+
+### Packaging and projects
+
+| Before | Now |
+|---|---|
+| one `Solution.Parser` package | seven packages plus the meta package; see the table at the top |
+| `project.CSharpFileInfos` | `project.SourceFiles.CSharpFiles()` |
+| `project.XAMLFileInfos` | `project.SourceFiles.XamlFiles()` |
+| namespace `Solution.Parser.Common` | `Solution.Parser.Core` |
+| namespace `Solution.Parser.Solution` | `Solution.Parser.Sln` |
+| namespace `Solution.Parser.XAML` | `Solution.Parser.Xaml` |
+| `XAMLFileInfo` | `XamlFileInfo` |
+
+### XAML
+
+| Before | Now |
+|---|---|
+| `element.Controls` held every descendant, each duplicated | `element.Children`, or `tree.AllElements()` |
+| `element.Parent` was always null | it points at the element this one is written in |
+| `element.Styles` was always empty | `tree.AllStyles()`, and `<Style>` is now a `Style` |
+| `element.DataTemplates` | `tree.AllTemplates()` / `tree.AllDataTemplates()` |
+| `element.DataContext` was set on every element | null unless the element sets one |
+| `element.LineNumber` | `element.Location`, with line, column and path |
+| `<Grid.RowDefinitions>` was a control named `Grid.RowDefinitions` | a `PropertyElement` in `Properties` |
+| attached property named `RowProperty` | `Name` is `Row`, `FullQualifiedName` is `Grid.Row`, `DependencyPropertyName` is `RowProperty` |
+| `x:Name` and `Name` were both called `Name` | `Property.Prefix` and `Property.IsXamlDirective` tell them apart |
+| `Window : UserControl`, `DynamicResource : StaticResource` | siblings, with `RootKind` and a shared `ResourceReference` |
+| `DataTemplate`, `ResourceDictionary`, `ResourceDictionaryControl` | `Template`, `ResourceDictionaryRoot`, `ResourceDictionaryElement` |
+| `new Control(...)` positional | object initializer, `new Control { TypeName = ..., ... }` |
+| an unreadable value threw and lost the file | `tree.Diagnostics` |
+

@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>A lightweight abstraction around the Roslyn C# syntax trees. Main goal for easy code rule tests.</Description>
+        <PackageTags>C#;CSharp;Roslyn;SyntaxTree;Syntax;CodeRules</PackageTags>
+        <!-- Shipped inside the Solution.Parser package, not published on its own. -->
+        <IsPackable>false</IsPackable>
+        <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Solution.Parser.Core\Solution.Parser.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" />
+    </ItemGroup>
+
+</Project>

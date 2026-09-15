@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AspNetCore.Simple.MsTest.Sdk" Version="9.5.15" />
+        <PackageReference Include="Extensions.Pack" Version="7.0.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.0" />
+        <PackageReference Include="MSTest.TestAdapter" Version="4.4.0" />
+        <PackageReference Include="MSTest.TestFramework" Version="4.4.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Solution.Parser.Xaml\Solution.Parser.Xaml.csproj" />
+    </ItemGroup>
+
+</Project>

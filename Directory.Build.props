@@ -9,4 +9,47 @@
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
+
+    <!--
+      Package metadata shared by every package, so eight project files cannot drift apart.
+      A project only adds its own Description and PackageTags.
+    -->
+    <PropertyGroup>
+        <Authors>Rene Peuser</Authors>
+        <Company>Rene Peuser Softwaresolutions</Company>
+        <Copyright>Copyright 2022 (c) Rene Peuser. All rights reserved.</Copyright>
+        <PackageProjectUrl>https://renepeuser.visualstudio.com/Solution.Parser</PackageProjectUrl>
+        <RepositoryUrl>https://renepeuser.visualstudio.com/Solution.Parser</RepositoryUrl>
+        <PackageLicenseFile>License.txt</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <!--Property group settings for source link !-->
+    <PropertyGroup>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <DebugType>embedded</DebugType>
+    </PropertyGroup>
+
+    <!--
+      Generated into the intermediate output rather than into the project directory. The old
+      DocumentationFile path wrote Solution.Parser.xml next to the sources, where it ended up tracked
+      in git; with eight projects there would be eight of them.
+    -->
+    <PropertyGroup>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="GitVersion.MsBuild" Version="5.12.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.SourceLink.AzureRepos.Git" Version="10.0.401" PrivateAssets="All" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)License.txt" Pack="true" PackagePath="" Visible="false" />
+        <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" Visible="false" />
+    </ItemGroup>
 </Project>

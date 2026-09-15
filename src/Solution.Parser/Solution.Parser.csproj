@@ -1,56 +1,77 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <!--
+      The one package that ships. The split into Solution.Parser.Core, .CSharp, .Xaml, .Nuspec,
+      .Project, .Sln and .AspNet is internal organisation only: their assemblies are packed into this
+      package, and none of them is published on its own. An existing
+      <PackageReference Include="Solution.Parser" /> therefore keeps working unchanged.
+
+      To publish them separately later, set IsPackable back to true on those projects and drop the
+      PrivateAssets on the project references below; the package would then turn into a meta package
+      that depends on them.
+    -->
     <PropertyGroup>
-        <Authors>Rene Peuser</Authors>
-        <Company>Rene Peuser Softwaresolutions</Company>
-        <Description>This is a lightweight abstraction around the Roslyn C# syntax tress. Main goal for easy code rule tests.</Description>
-        <Copyright>Copyright 2022 (c) Rene Peuser. All rights reserved.</Copyright>
-        <PackageProjectUrl>https://renepeuser.visualstudio.com/Solution.Parser</PackageProjectUrl>
-        <RepositoryUrl>https://renepeuser.visualstudio.com/Solution.Parser</RepositoryUrl>
-        <PackageReleaseNotes>Breaking: member lists now hold only the members a type declares itself; use AllTypes(), DescendantTypes() and AllMethods() for the recursive walk. Class, Struct, Record, Interface and Enum are now siblings below TypeDeclaration with a TypeKind. Declarations carry Location, Accessibility, XML documentation and type parameters. Delegates, indexers, operators and finalizers are parsed. Fixes: fully qualified names under a file scoped or nested namespace, SyntaxTree returning the whole file, only the first variable of a shared field declaration, missing modifiers such as sealed, virtual, override, new and async, IsNullable on a nullable type argument, IsReadOnly decided by text search, and line splitting on the platform line ending.</PackageReleaseNotes>
-        <PackageTags>C#;Solution;Project;XAML;SyntaxTree;Syntax;slnx</PackageTags>
-        <PackageId>Solution.Parser</PackageId>
-        <OutputType>Library</OutputType>
-        <AssemblyName>Solution.Parser</AssemblyName>
+        <Description>Lightweight abstractions over C# syntax trees, XAML markup, csproj, sln and nuspec files. Main goal for easy code rule tests.</Description>
+        <PackageTags>C#;Solution;Project;XAML;WPF;SyntaxTree;Syntax;slnx;CodeRules</PackageTags>
         <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
-        <PackageLicenseFile>License.txt</PackageLicenseFile>
+
+        <!--
+          The project carries no code of its own, so its own assembly is an empty one. It is packed
+          all the same, so that the assembly identity Solution.Parser keeps existing, and the
+          assemblies of the referenced projects are added next to it by the target below.
+        -->
+        <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);AddReferencedAssembliesToPackage</TargetsForTfmSpecificBuildOutput>
     </PropertyGroup>
 
-    <!--Property group settings for source link !-->
     <PropertyGroup>
-        <PublishRepositoryUrl>true</PublishRepositoryUrl>
-        <EmbedUntrackedSources>true</EmbedUntrackedSources>
-        <DebugType>embedded</DebugType>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-        <DocumentationFile>.\Solution.Parser.xml</DocumentationFile>
+        <PackageReleaseNotes>C# breaking: member lists now hold only the members a type declares itself; use AllTypes(), DescendantTypes() and AllMethods() for the recursive walk. Class, Struct, Record, Interface and Enum are now siblings below TypeDeclaration with a TypeKind. Declarations carry Location, Accessibility, XML documentation and type parameters. Delegates, indexers, operators and finalizers are parsed. C# fixes: fully qualified names under a file scoped or nested namespace, SyntaxTree returning the whole file, only the first variable of a shared field declaration, missing modifiers such as sealed, virtual, override, new and async, IsNullable on a nullable type argument, IsReadOnly decided by text search, and line splitting on the platform line ending. Namespaces: Solution.Parser.XAML became Solution.Parser.Xaml and XAMLFileInfo became XamlFileInfo; Solution.Parser.Solution became Solution.Parser.Sln and Solution.Parser.Common became Solution.Parser.Core. ProjectFile.CSharpFileInfos and ProjectFile.XAMLFileInfos became the extension methods project.CSharpFiles() and project.XamlFiles(); the project directory is now enumerated once instead of once per file type. XAML breaking: the element tree is now built from direct children, so Controls became Children and holds only what an element declares itself; use AllElements(), DescendantElements(), AllStyles(), AllBindings() and FindByName() for the recursive walk. Property elements such as Grid.RowDefinitions are properties rather than children. Window, UserControl, Page, Application and ResourceDictionary are siblings below Root with a RootKind; Style, Setter, Trigger and Template are siblings below ElementBase with an ElementKind. Models are records with init properties, LineNumber became Location, and a file that cannot be read fully reports XamlSyntaxTree.Diagnostics instead of throwing. XAML fixes: nesting was flattened and duplicated and the parse was exponential in the nesting depth, Parent was always null, Styles was always empty, DataContext was never null, a plain value containing a colon and a StringFormat containing a comma each killed the whole file, the {} escape was mistaken for markup, x:Name was indistinguishable from Name, an attached property was named RowProperty so element["Grid.Row"] never matched, x:Static returned an x:Type, RelativeSource folded its ancestor type into its mode, and element text content was dropped. Support for the new xml based slnx solution format.</PackageReleaseNotes>
     </PropertyGroup>
 
+    <!--
+      PrivateAssets keeps these out of the package as dependencies, because their assemblies travel
+      inside the package instead.
+    -->
     <ItemGroup>
-        <PackageReference Include="NuGet.Configuration" Version="7.3.0" />
-        <PackageReference Include="NuGet.Versioning" Version="7.3.0" />
+        <ProjectReference Include="..\Solution.Parser.Core\Solution.Parser.Core.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Solution.Parser.CSharp\Solution.Parser.CSharp.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Solution.Parser.Xaml\Solution.Parser.Xaml.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Solution.Parser.Nuspec\Solution.Parser.Nuspec.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Solution.Parser.Project\Solution.Parser.Project.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Solution.Parser.Sln\Solution.Parser.Sln.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Solution.Parser.AspNet\Solution.Parser.AspNet.csproj" PrivateAssets="all" />
+    </ItemGroup>
+
+    <!--
+      The third party dependencies of the referenced projects. PrivateAssets above cuts off the
+      transitive flow, so they are declared here to stay dependencies of the package. Keep in sync
+      when a referenced project gains or drops a PackageReference; PackageDependencyTest guards it.
+    -->
+    <ItemGroup>
         <PackageReference Include="Extensions.Pack" Version="7.0.0" />
         <PackageReference Include="FileSystem.Abstraction" Version="0.1.2" />
-        <PackageReference Include="GitVersion.MsBuild" Version="5.12.0">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" />
         <PackageReference Include="Microsoft.Build" Version="18.4.0" />
         <!-- Required at runtime by Microsoft.Build to parse the xml based slnx solution format. Microsoft.Build does not declare it as dependency. -->
         <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" />
-        <PackageReference Include="Microsoft.SourceLink.AzureRepos.Git" Version="10.0.401" PrivateAssets="All" />
+        <PackageReference Include="NuGet.Configuration" Version="7.3.0" />
+        <PackageReference Include="NuGet.Versioning" Version="7.3.0" />
     </ItemGroup>
 
-    <ItemGroup>
-        <None Include="..\..\License.txt">
-            <Pack>True</Pack>
-            <PackagePath></PackagePath>
-        </None>
-        <None Include="..\..\README.md">
-            <Pack>True</Pack>
-            <PackagePath>\</PackagePath>
-        </None>
-    </ItemGroup>
+    <Target Name="AddReferencedAssembliesToPackage" DependsOnTargets="ResolveReferences">
+        <ItemGroup>
+            <_ReferencedAssembly Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))"
+                                 Condition="'%(Extension)' == '.dll'" />
+
+            <BuildOutputInPackage Include="@(_ReferencedAssembly)" />
+
+            <!--
+              The documentation files are not on ReferenceCopyLocalPaths, so they are derived from the
+              assembly paths. Without them a consumer loses IntelliSense on everything but the empty
+              Solution.Parser assembly.
+            -->
+            <BuildOutputInPackage Include="@(_ReferencedAssembly->'%(RootDir)%(Directory)%(Filename).xml')"
+                                  Condition="Exists('%(RootDir)%(Directory)%(Filename).xml')" />
+        </ItemGroup>
+    </Target>
 
 </Project>

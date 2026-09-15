@@ -6,8 +6,10 @@
 trigger:
   - '*'
 
+# Windows, because SampleApp.Wpf is a real WPF project: it is the fixture the XAML parser tests
+# run against, and only a Windows agent compiles its markup. On Linux that check would be skipped.
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'windows-latest'
 
 variables:
   buildConfiguration: 'Release'

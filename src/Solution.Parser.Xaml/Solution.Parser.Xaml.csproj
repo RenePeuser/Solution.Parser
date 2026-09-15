@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>A lightweight abstraction around XAML markup: elements, properties, bindings and markup extensions. Main goal for easy code rule tests. Needs neither Roslyn nor MSBuild.</Description>
+        <PackageTags>XAML;WPF;Binding;MarkupExtension;SyntaxTree;CodeRules</PackageTags>
+        <!-- Shipped inside the Solution.Parser package, not published on its own. -->
+        <IsPackable>false</IsPackable>
+        <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Solution.Parser.Core\Solution.Parser.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="FileSystem.Abstraction" Version="0.1.2" />
+    </ItemGroup>
+
+</Project>

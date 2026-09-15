@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>Analyses ASP.NET controllers, routes and response types across a solution.</Description>
+        <PackageTags>AspNet;WebApi;Controller;CodeRules</PackageTags>
+        <!-- Shipped inside the Solution.Parser package, not published on its own. -->
+        <IsPackable>false</IsPackable>
+        <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Solution.Parser.Sln\Solution.Parser.Sln.csproj" />
+        <ProjectReference Include="..\Solution.Parser.CSharp\Solution.Parser.CSharp.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="NuGet.Configuration" Version="7.3.0" />
+        <PackageReference Include="NuGet.Versioning" Version="7.3.0" />
+    </ItemGroup>
+
+</Project>

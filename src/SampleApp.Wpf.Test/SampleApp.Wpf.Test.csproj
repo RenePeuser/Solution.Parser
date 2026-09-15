@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <!--
+      Code rules over SampleApp.Wpf, written the way a consumer of the packages would write them.
+      It references the parser packages it needs and deliberately NOT SampleApp.Wpf itself: the rules
+      read the markup and the sources from disk, so this project builds and runs on any platform even
+      though the sample it inspects only builds on Windows.
+    -->
+    <PropertyGroup>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AspNetCore.Simple.MsTest.Sdk" Version="9.5.15" />
+        <PackageReference Include="Extensions.Pack" Version="7.0.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.0" />
+        <PackageReference Include="MSTest.TestAdapter" Version="4.4.0" />
+        <PackageReference Include="MSTest.TestFramework" Version="4.4.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Solution.Parser.Sln\Solution.Parser.Sln.csproj" />
+        <ProjectReference Include="..\Solution.Parser.CSharp\Solution.Parser.CSharp.csproj" />
+        <ProjectReference Include="..\Solution.Parser.Xaml\Solution.Parser.Xaml.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>Parses csproj files in both the old and the SDK style format. Language agnostic: add Solution.Parser.CSharp or Solution.Parser.Xaml for the typed file views.</Description>
+        <PackageTags>Project;csproj;MSBuild;CodeRules</PackageTags>
+        <!-- Shipped inside the Solution.Parser package, not published on its own. -->
+        <IsPackable>false</IsPackable>
+        <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Solution.Parser.Core\Solution.Parser.Core.csproj" />
+    </ItemGroup>
+
+</Project>

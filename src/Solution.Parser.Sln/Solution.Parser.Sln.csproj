@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>Parses sln and the xml based slnx solution format and walks their projects.</Description>
+        <PackageTags>Solution;sln;slnx;MSBuild;CodeRules</PackageTags>
+        <!-- Shipped inside the Solution.Parser package, not published on its own. -->
+        <IsPackable>false</IsPackable>
+        <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Solution.Parser.Project\Solution.Parser.Project.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Build" Version="18.4.0" />
+        <!-- Required at runtime by Microsoft.Build to parse the xml based slnx solution format. Microsoft.Build does not declare it as dependency. -->
+        <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52" />
+    </ItemGroup>
+
+</Project>

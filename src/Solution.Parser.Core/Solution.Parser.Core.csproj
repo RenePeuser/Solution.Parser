@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>Shared contracts and helpers for the Solution.Parser packages. Referenced by the other packages rather than used on its own.</Description>
+        <PackageTags>Solution;Parser;CodeRules</PackageTags>
+        <!-- Shipped inside the Solution.Parser package, not published on its own. -->
+        <IsPackable>false</IsPackable>
+        <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Extensions.Pack" Version="7.0.0" />
+        <PackageReference Include="FileSystem.Abstraction" Version="0.1.2" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <!--
+      A pretend customer application. It exists so the parser tests run against markup that WPF
+      itself accepts: if the XAML in here is wrong, this project fails to build, and the fixture
+      cannot quietly drift away from reality the way a folder of loose .xaml files would.
+      It is never packed, and nothing in the library references it.
+    -->
+    <PropertyGroup>
+        <TargetFramework>net10.0-windows</TargetFramework>
+        <OutputType>WinExe</OutputType>
+        <UseWPF>true</UseWPF>
+        <IsPackable>false</IsPackable>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    </PropertyGroup>
+
+</Project>
