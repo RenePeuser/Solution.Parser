@@ -1,4 +1,4 @@
-﻿namespace Solution.Parser.CSharp
+namespace Solution.Parser.CSharp
 {
     public enum Modifier
     {
@@ -20,6 +20,34 @@
 
         Partial,
 
-        Required
+        Required,
+
+        Sealed,
+
+        Virtual,
+
+        Override,
+
+        New,
+
+        Async,
+
+        Extern,
+
+        Unsafe,
+
+        Volatile,
+
+        File,
+
+        Fixed,
+
+        Ref,
+
+        In,
+
+        Out,
+
+        Scoped
     }
 }

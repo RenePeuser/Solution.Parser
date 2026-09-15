@@ -1,4 +1,3 @@
-﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Argument.Check;
@@ -8,55 +7,43 @@ namespace Solution.Parser.CSharp
 {
     internal static class FieldDeclarationSyntaxExtensions
     {
-        internal static Field ToField(this FieldDeclarationSyntax fieldDeclarationSyntax, string filePath)
+        /// <summary>
+        /// One <see cref="Field"/> per declared variable, so <c>private int _a, _b;</c> reports both.
+        /// </summary>
+        internal static ImmutableList<Field> ToFields(this FieldDeclarationSyntax fieldDeclarationSyntax, string filePath)
         {
             Throw.IfNull(fieldDeclarationSyntax);
 
-            var type = fieldDeclarationSyntax.Declaration.Type.ToString();
-            var name = fieldDeclarationSyntax.Declaration.Variables[0].Identifier.Text;
-            var bindingFlags = fieldDeclarationSyntax.ToBindingFlags().ToImmutableList();
-            var initializer = fieldDeclarationSyntax.Declaration.Variables[0].Initializer?.ToInitializer();
+            var declaration = fieldDeclarationSyntax.Declaration;
+            var type = declaration.Type.ToString();
+            var modifiers = fieldDeclarationSyntax.Modifiers.ToModifiers();
+            var accessibility = fieldDeclarationSyntax.Modifiers.ToAccessibility(fieldDeclarationSyntax);
+            var attributes = fieldDeclarationSyntax.AttributeLists.ToAttributes(filePath);
+            var documentation = fieldDeclarationSyntax.ToDocumentation();
+            var isMultiVariable = declaration.Variables.Count > 1;
 
-            return new Field(name, type, bindingFlags, initializer, fieldDeclarationSyntax.SyntaxTree.ToString(), filePath);
+            return declaration.Variables.Select(variable => new Field
+                              {
+                                  Name = variable.Identifier.Text,
+                                  FullQualifiedName = fieldDeclarationSyntax.BuildFullQualifiedName(variable.Identifier.Text),
+                                  Type = type,
+                                  Modifiers = modifiers,
+                                  Accessibility = accessibility,
+                                  Attributes = attributes,
+                                  Documentation = documentation,
+                                  Initializer = variable.Initializer?.ToInitializer(),
+                                  IsNullable = declaration.Type is NullableTypeSyntax,
+                                  IsPartOfMultiVariableDeclaration = isMultiVariable,
+                                  SyntaxTree = fieldDeclarationSyntax.ToString(),
+                                  FilePath = filePath,
+                                  Location = variable.ToCodeLocation(filePath)
+                              })
+                              .ToImmutableList();
         }
 
-        public static ImmutableList<Field> ToFields(this ImmutableList<FieldDeclarationSyntax> fieldDeclarationSyntaxes, string filePath)
+        internal static ImmutableList<Field> ToFields(this ImmutableList<FieldDeclarationSyntax> fieldDeclarationSyntaxes, string filePath)
         {
-            return fieldDeclarationSyntaxes.Select(f => f.ToField(filePath)).ToImmutableList();
-        }
-
-        private static IEnumerable<Modifier> ToBindingFlags(this FieldDeclarationSyntax fieldDeclarationSyntax)
-        {
-            foreach (var syntaxToken in fieldDeclarationSyntax.Modifiers)
-            {
-                switch (syntaxToken.Text)
-                {
-                    case "public":
-                        yield return Modifier.Public;
-                        break;
-                    case "internal":
-                        yield return Modifier.Internal;
-                        break;
-                    case "protected":
-                        yield return Modifier.Protected;
-                        break;
-                    case "private":
-                        yield return Modifier.Private;
-                        break;
-                    case "static":
-                        yield return Modifier.Static;
-                        break;
-                    case "readonly":
-                        yield return Modifier.ReadOnly;
-                        break;
-                    case "const":
-                        yield return Modifier.Const;
-                        break;
-                    case "required":
-                        yield return Modifier.Required;
-                        break;
-                }
-            }
+            return fieldDeclarationSyntaxes.SelectMany(f => f.ToFields(filePath)).ToImmutableList();
         }
     }
 }

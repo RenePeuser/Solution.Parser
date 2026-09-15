@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
 
-namespace Solution.Parser.CSharp.Models
+namespace Solution.Parser.CSharp
 {
-    public record Statement(string SyntaxTree, string FilePath);
+    /// <summary>A top level statement of the file.</summary>
+    [DebuggerDisplay("{SyntaxTree}")]
+    public record Statement(string SyntaxTree, string FilePath, CodeLocation Location);
 }

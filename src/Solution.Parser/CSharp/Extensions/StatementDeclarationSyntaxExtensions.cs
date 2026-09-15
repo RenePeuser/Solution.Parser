@@ -1,37 +1,21 @@
-﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Solution.Parser.CSharp.Models;
 
 namespace Solution.Parser.CSharp
 {
     internal static class StatementSyntaxExtensions
     {
-        internal static Statement ToStatement(this StatementSyntax structDeclarationSyntax, string filePath)
+        /// <summary>
+        /// The top level statements of the file, in source order. A file that declares types only has
+        /// none; statements inside a member belong to that member.
+        /// </summary>
+        internal static ImmutableList<Statement> ToTopLevelStatements(this CompilationUnitSyntax root, string filePath)
         {
-            return new Statement(structDeclarationSyntax.ToString(), filePath);
-
-        }
-
-        internal static ImmutableList<Statement> ToStatements(this ImmutableList<StatementSyntax> statementSyntaxes, string filePath)
-        {
-            var statements = ToStatementInternal(statementSyntaxes, filePath).ToImmutableList();
-            return statements;
-
-            static IEnumerable<Statement> ToStatementInternal(ImmutableList<StatementSyntax> statementSyntaxes, string filePath)
-            {
-                foreach (var statementSyntax in statementSyntaxes)
-                {
-                    switch (statementSyntax)
-                    {
-                        case BlockSyntax:
-                            continue;
-                        default:
-                            yield return statementSyntax.ToStatement(filePath);
-                            break;
-                    }
-                }
-            }
+            return root.Members
+                       .OfType<GlobalStatementSyntax>()
+                       .Select(g => new Statement(g.Statement.ToString(), filePath, g.ToCodeLocation(filePath)))
+                       .ToImmutableList();
         }
     }
 }

@@ -1,4 +1,3 @@
-﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Argument.Check;
@@ -8,72 +7,53 @@ namespace Solution.Parser.CSharp
 {
     internal static class EnumDeclarationSyntaxExtensions
     {
-        internal static IEnumerable<Modifier> ToModifiers(this EnumDeclarationSyntax enumDeclarationSyntax)
-        {
-            foreach (var syntaxToken in enumDeclarationSyntax.Modifiers)
-            {
-                switch (syntaxToken.Text)
-                {
-                    case "public":
-                        yield return Modifier.Public;
-
-                        break;
-                    case "internal":
-                        yield return Modifier.Internal;
-
-                        break;
-                    case "protected":
-                        yield return Modifier.Protected;
-
-                        break;
-                    case "private":
-                        yield return Modifier.Private;
-
-                        break;
-                    case "static":
-                        yield return Modifier.Static;
-
-                        break;
-                    case "const":
-                        yield return Modifier.Const;
-
-                        break;
-                    case "abstract":
-                        yield return Modifier.Abstract;
-
-                        break;
-                    case "partial":
-                        yield return Modifier.Partial;
-                        break;
-                    case "required":
-                        yield return Modifier.Required;
-                        break;
-                }
-            }
-        }
-
-        internal static ImmutableList<Enum> ToEnums(this ImmutableList<EnumDeclarationSyntax> enumDeclarationSyntaxes,
-                                                     string filePath)
-        {
-            return enumDeclarationSyntaxes.Select(item => item.ToEnum(filePath)).ToImmutableList();
-        }
-
-        internal static Enum ToEnum(this EnumDeclarationSyntax enumDeclarationSyntax,
-                                    string filePath)
+        internal static Enum ToEnum(this EnumDeclarationSyntax enumDeclarationSyntax, string filePath)
         {
             Throw.IfNull(enumDeclarationSyntax);
 
-            var nameSpace = enumDeclarationSyntax.SyntaxTree.GetNamespace();
-            var enumFields = enumDeclarationSyntax.Members.Select(m => new EnumField(m.Identifier.ValueText, m.SyntaxTree.ToString(), filePath)).ToImmutableList();
-            var modifiers = enumDeclarationSyntax.ToModifiers().ToImmutableList();
             var name = enumDeclarationSyntax.Identifier.ValueText;
-            var fullQualifiedName = $"{nameSpace.Name}.{name}";
-            var syntaxTree = enumDeclarationSyntax.ToString();
-            var attributes = enumDeclarationSyntax.AttributeLists.ToAttributes(filePath);
+            var baseTypes = enumDeclarationSyntax.BaseList?.ToBaseTypes() ?? ImmutableList<BaseType>.Empty;
 
-            return new Enum(nameSpace, name, modifiers,
-                            enumFields, attributes, fullQualifiedName,
-                            syntaxTree, filePath);
+            return new Enum
+            {
+                Name = name,
+                FullQualifiedName = enumDeclarationSyntax.BuildFullQualifiedName(name),
+                NameSpace = enumDeclarationSyntax.NamespaceOf(),
+                Modifiers = enumDeclarationSyntax.Modifiers.ToModifiers(),
+                Accessibility = enumDeclarationSyntax.Modifiers.ToAccessibility(enumDeclarationSyntax),
+                Attributes = enumDeclarationSyntax.AttributeLists.ToAttributes(filePath),
+                Documentation = enumDeclarationSyntax.ToDocumentation(),
+                BaseTypes = baseTypes,
+
+                // An enum has at most one base type, and it is the underlying integral type.
+                UnderlyingType = baseTypes.FirstOrDefault()?.TypeName,
+                EnumFields = enumDeclarationSyntax.Members.Select(m => m.ToEnumField(filePath)).ToImmutableList(),
+                SyntaxTree = enumDeclarationSyntax.ToString(),
+                FilePath = filePath,
+                Location = enumDeclarationSyntax.ToCodeLocation(filePath)
+            };
+        }
+
+        private static EnumField ToEnumField(this EnumMemberDeclarationSyntax member, string filePath)
+        {
+            var name = member.Identifier.ValueText;
+
+            return new EnumField
+            {
+                Name = name,
+                FullQualifiedName = member.BuildFullQualifiedName(name),
+                Attributes = member.AttributeLists.ToAttributes(filePath),
+                Documentation = member.ToDocumentation(),
+                Value = member.EqualsValue?.Value.ToString(),
+                SyntaxTree = member.ToString(),
+                FilePath = filePath,
+                Location = member.ToCodeLocation(filePath)
+            };
+        }
+
+        internal static ImmutableList<Enum> ToEnums(this ImmutableList<EnumDeclarationSyntax> enumDeclarationSyntaxes, string filePath)
+        {
+            return enumDeclarationSyntaxes.Select(item => item.ToEnum(filePath)).ToImmutableList();
         }
     }
 }

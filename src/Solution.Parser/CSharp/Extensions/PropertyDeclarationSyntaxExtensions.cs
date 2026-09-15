@@ -1,112 +1,41 @@
-﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Argument.Check;
-using Extensions.Pack;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Solution.Parser.CSharp
 {
     internal static class PropertyDeclarationSyntaxExtensions
     {
-        internal static IEnumerable<Modifier> ToModifiers(this PropertyDeclarationSyntax classDeclarationSyntax)
-        {
-            foreach (var syntaxToken in classDeclarationSyntax.Modifiers)
-            {
-                switch (syntaxToken.Text)
-                {
-                    case "public":
-                        yield return Modifier.Public;
-                        break;
-                    case "internal":
-                        yield return Modifier.Internal;
-                        break;
-                    case "protected":
-                        yield return Modifier.Protected;
-                        break;
-                    case "private":
-                        yield return Modifier.Private;
-                        break;
-                    case "static":
-                        yield return Modifier.Static;
-                        break;
-                    case "const":
-                        yield return Modifier.Const;
-                        break;
-                    case "abstract":
-                        yield return Modifier.Abstract;
-                        break;
-                    case "partial":
-                        yield return Modifier.Partial;
-                        break;
-                    case "required":
-                        yield return Modifier.Required;
-                        break;
-                }
-            }
-        }
-
         internal static Property ToProperty(this PropertyDeclarationSyntax propertyDeclarationSyntax, string filePath)
         {
             Throw.IfNull(propertyDeclarationSyntax);
 
-            var propertyType = propertyDeclarationSyntax.Type.ToString();
-            var propertyName = propertyDeclarationSyntax.Identifier.Text;
-            var isReadOnly = propertyDeclarationSyntax.ToString().DoesNotContain("set;");
-            var modifiers = propertyDeclarationSyntax.ToModifiers().ToImmutableList();
-            var syntaxTree = propertyDeclarationSyntax.ToString();
-            var fullqualifiedName = BuildFullQualifiedName(propertyDeclarationSyntax);
-            var attributes = propertyDeclarationSyntax.AttributeLists.ToAttributes(filePath);
-            var isRequired = modifiers.Contains(Modifier.Required);
-            var isNullable = propertyType.Contains('?');
+            var name = propertyDeclarationSyntax.Identifier.Text;
 
-            return new Property(propertyType, propertyName, isReadOnly, isRequired, isNullable, modifiers, attributes, syntaxTree, fullqualifiedName, filePath);
-        }
-
-        internal static string BuildFullQualifiedName(PropertyDeclarationSyntax recordDeclarationSyntax)
-        {
-            var getFullQualifiedName = GetFullQualifiedName().Reverse();
-
-            var flattenParentNameSpaceQualifiers = getFullQualifiedName.Flatten(".");
-            var fullQualifiedName = $"{flattenParentNameSpaceQualifiers}.{recordDeclarationSyntax.Identifier.ValueText}";
-            return fullQualifiedName;
-
-            IEnumerable<string> GetFullQualifiedName()
+            return new Property
             {
-                var parent = recordDeclarationSyntax.Parent;
-                while (parent.IsNotNull())
-                {
-                    switch (parent)
-                    {
-                        case null:
-                            break;
-                        case ClassDeclarationSyntax classDeclarationSyntax:
-                            parent = parent.Parent;
-                            yield return classDeclarationSyntax.Identifier.ValueText;
-                            break;
-                        case InterfaceDeclarationSyntax interfaceDeclarationSyntax:
-                            parent = parent.Parent;
-                            yield return interfaceDeclarationSyntax.Identifier.ValueText;
-                            break;
-                        case RecordDeclarationSyntax recordDeclarationSyntax:
-                            parent = parent.Parent;
-                            yield return recordDeclarationSyntax.Identifier.ValueText;
-                            break;
-                        case NamespaceDeclarationSyntax namespaceDeclarationSyntax:
-                            parent = null;
-                            yield return namespaceDeclarationSyntax.ToNamespace().Name;
-                            break;
-                        default:
-                            parent = null;
-                            yield return string.Empty;
-                            break;
-                    }
-                }
-            }
+                Name = name,
+                FullQualifiedName = propertyDeclarationSyntax.BuildFullQualifiedName(name),
+                Type = propertyDeclarationSyntax.Type.ToString(),
+                Modifiers = propertyDeclarationSyntax.Modifiers.ToModifiers(),
+                Accessibility = propertyDeclarationSyntax.Modifiers.ToAccessibility(propertyDeclarationSyntax),
+                Attributes = propertyDeclarationSyntax.AttributeLists.ToAttributes(filePath),
+                Documentation = propertyDeclarationSyntax.ToDocumentation(),
+                Accessors = propertyDeclarationSyntax.AccessorList.ToAccessors(propertyDeclarationSyntax.ExpressionBody, filePath),
+                Initializer = propertyDeclarationSyntax.Initializer?.ToInitializer(),
+                IsAutoProperty = propertyDeclarationSyntax.AccessorList.IsAutoImplemented(),
+                IsExpressionBodied = propertyDeclarationSyntax.ExpressionBody is not null,
+                ExplicitInterfaceSpecifier = propertyDeclarationSyntax.ExplicitInterfaceSpecifier?.Name.ToString(),
+                IsNullable = propertyDeclarationSyntax.Type is NullableTypeSyntax,
+                SyntaxTree = propertyDeclarationSyntax.ToString(),
+                FilePath = filePath,
+                Location = propertyDeclarationSyntax.ToCodeLocation(filePath)
+            };
         }
 
         internal static ImmutableList<Property> ToProperties(this ImmutableList<PropertyDeclarationSyntax> propertyDeclarationSyntaxes,
-                                                              string filePath)
+                                                             string filePath)
         {
             Throw.IfNull(propertyDeclarationSyntaxes);
 

@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using System.Linq;
 using Argument.Check;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -7,20 +7,43 @@ namespace Solution.Parser.CSharp
 {
     internal static class EventFieldDeclarationSyntaxExtensions
     {
-        internal static ImmutableList<EventField> ToEventFields(this ImmutableList<EventFieldDeclarationSyntax> eventDeclarationSyntaxes,
-                                                                 string filePath)
+        /// <summary>
+        /// One <see cref="EventField"/> per declared variable, mirroring how fields are reported.
+        /// </summary>
+        internal static ImmutableList<EventField> ToEventFields(this EventFieldDeclarationSyntax eventFieldSyntax, string filePath)
         {
-            return eventDeclarationSyntaxes.Select(item => item.ToEventField(filePath)).ToImmutableList();
+            Throw.IfNull(eventFieldSyntax);
+
+            var declaration = eventFieldSyntax.Declaration;
+            var type = declaration.Type.ToString();
+            var modifiers = eventFieldSyntax.Modifiers.ToModifiers();
+            var accessibility = eventFieldSyntax.Modifiers.ToAccessibility(eventFieldSyntax);
+            var attributes = eventFieldSyntax.AttributeLists.ToAttributes(filePath);
+            var documentation = eventFieldSyntax.ToDocumentation();
+            var isMultiVariable = declaration.Variables.Count > 1;
+
+            return declaration.Variables.Select(variable => new EventField
+                              {
+                                  Name = variable.Identifier.ValueText,
+                                  FullQualifiedName = eventFieldSyntax.BuildFullQualifiedName(variable.Identifier.ValueText),
+                                  Type = type,
+                                  Modifiers = modifiers,
+                                  Accessibility = accessibility,
+                                  Attributes = attributes,
+                                  Documentation = documentation,
+                                  Initializer = variable.Initializer?.ToInitializer(),
+                                  IsPartOfMultiVariableDeclaration = isMultiVariable,
+                                  SyntaxTree = eventFieldSyntax.ToString(),
+                                  FilePath = filePath,
+                                  Location = variable.ToCodeLocation(filePath)
+                              })
+                              .ToImmutableList();
         }
 
-        internal static EventField ToEventField(this EventFieldDeclarationSyntax eventDeclarationSyntax, string filePath)
+        internal static ImmutableList<EventField> ToEventFields(this ImmutableList<EventFieldDeclarationSyntax> eventFieldSyntaxes,
+                                                                string filePath)
         {
-            Throw.IfNull(eventDeclarationSyntax);
-
-            return new EventField(eventDeclarationSyntax.Declaration.Type.ToString(),
-                                  eventDeclarationSyntax.Declaration.Variables.First().Identifier.ValueText,
-                                  eventDeclarationSyntax.SyntaxTree.ToString(),
-                                  filePath);
+            return eventFieldSyntaxes.SelectMany(item => item.ToEventFields(filePath)).ToImmutableList();
         }
     }
 }

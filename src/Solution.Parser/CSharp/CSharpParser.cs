@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using Argument.Check;
@@ -14,24 +14,39 @@ public static class CSharpParser
     {
         Throw.IfNull(syntaxTree);
 
-        var nameSpace = syntaxTree.GetNamespaceOrDefault();
-
-        var usings = syntaxTree.AllOfType<UsingDirectiveSyntax>().Select(u =>
-        {
-            var value = u.Name?.As<NameSyntax>()?.GetText().ToString() ?? string.Empty;
-            return new Using(value);
-        }).ToImmutableList();
-
+        var root = syntaxTree.GetRoot();
+        var nameSpaces = syntaxTree.GetNamespaces();
+        var nameSpace = nameSpaces.FirstOrDefault() ?? new NameSpace(string.Empty);
         var fixedFilePath = filePath.IsNullOrWhiteSpace() ? nameSpace.Name : filePath;
 
-        var classes = syntaxTree.AllOfType<ClassDeclarationSyntax>().ToClasses(fixedFilePath);
-        var records = syntaxTree.AllOfType<RecordDeclarationSyntax>().ToRecords(fixedFilePath);
-        var interfaces = syntaxTree.AllOfType<InterfaceDeclarationSyntax>().ToInterfaces(fixedFilePath);
-        var enums = syntaxTree.AllOfType<EnumDeclarationSyntax>().ToEnums(fixedFilePath);
-        var structs = syntaxTree.AllOfType<StructDeclarationSyntax>().ToStructs(fixedFilePath);
-        var statements = syntaxTree.AllOfType<StatementSyntax>().ToStatements(fixedFilePath);
+        // Descends through namespaces but not into types, so a nested type is reported by its
+        // declaring type rather than a second time at file level.
+        var topLevelDeclarations = root.TopLevelTypeDeclarations();
 
-        return new CSharpSyntaxTree(nameSpace, fixedFilePath, usings, classes, records, interfaces, enums, structs, statements, syntaxTree.ToString());
+        var types = topLevelDeclarations.Select(d => d.ToTypeDeclarationOrDefault(fixedFilePath))
+                                        .Where(t => t is not null)
+                                        .Select(t => t!)
+                                        .ToImmutableList();
+
+        var delegates = topLevelDeclarations.OfType<DelegateDeclarationSyntax>()
+                                            .Select(d => d.ToDelegate(fixedFilePath))
+                                            .ToImmutableList();
+
+        var compilationUnit = root as CompilationUnitSyntax;
+
+        return new CSharpSyntaxTree
+        {
+            NameSpace = nameSpace,
+            NameSpaces = nameSpaces,
+            FileName = fixedFilePath,
+            Usings = root.ToUsings(fixedFilePath),
+            Types = types,
+            Delegates = delegates,
+            Statements = compilationUnit?.ToTopLevelStatements(fixedFilePath) ?? ImmutableList<Statement>.Empty,
+            AssemblyAttributes = compilationUnit?.AttributeLists.ToAttributes(fixedFilePath) ?? ImmutableList<Attribute>.Empty,
+            Diagnostics = syntaxTree.ToParseDiagnostics(fixedFilePath),
+            SyntaxTree = syntaxTree.ToString()
+        };
     }
 
     public static CSharpSyntaxTree Parse(this CSharpFileInfo csharpFileInfo)
@@ -40,6 +55,7 @@ public static class CSharpParser
 
         var code = File.ReadAllText(csharpFileInfo.Value.FullName);
         var syntaxTree = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(code);
+
         return Parse(syntaxTree, csharpFileInfo.Value.FullName);
     }
 }

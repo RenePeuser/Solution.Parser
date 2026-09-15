@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -7,17 +7,39 @@ namespace Solution.Parser.CSharp
 {
     internal static class AttributeSyntaxListExtensions
     {
-        internal static ImmutableList<Attribute> ToAttributes(this SyntaxList<AttributeListSyntax> argSyntaxList, string filePath)
+        internal static ImmutableList<Attribute> ToAttributes(this SyntaxList<AttributeListSyntax> attributeLists, string filePath)
         {
-            return argSyntaxList.SelectMany(list =>
+            return attributeLists.SelectMany(list => list.Attributes.Select(a => a.ToAttribute(list, filePath))).ToImmutableList();
+        }
+
+        private static Attribute ToAttribute(this AttributeSyntax attribute, AttributeListSyntax list, string filePath)
+        {
+            var arguments = attribute.ArgumentList?.Arguments ?? default;
+            var name = attribute.Name.ToString();
+
+            var positional = arguments.Where(a => a.NameEquals is null && a.NameColon is null)
+                                      .Select(a => a.Expression.ToString())
+                                      .ToImmutableList();
+
+            var named = arguments.Where(a => a.NameEquals is not null || a.NameColon is not null)
+                                 .Select(a => new AttributeArgument(a.NameEquals?.Name.Identifier.ValueText ??
+                                                                    a.NameColon?.Name.Identifier.ValueText ??
+                                                                    string.Empty,
+                                                                    a.Expression.ToString()))
+                                 .ToImmutableList();
+
+            return new Attribute
             {
-                return list.Attributes.Select(a =>
-                {
-                    var name = a.Name.ToString();
-                    var immutableList = a.ArgumentList?.Arguments.Select(p => p.ToString()).ToImmutableList() ?? ImmutableList<string>.Empty;
-                    return new Attribute(name, immutableList, a.Parent?.ToString() ?? string.Empty, filePath);
-                }).ToImmutableList();
-            }).ToImmutableList();
+                Name = name,
+                FullQualifiedName = attribute.BuildFullQualifiedName(name),
+                Arguments = arguments.Select(a => a.ToString()).ToImmutableList(),
+                PositionalArguments = positional,
+                NamedArguments = named,
+                Target = list.Target?.Identifier.ValueText,
+                SyntaxTree = attribute.ToString(),
+                FilePath = filePath,
+                Location = attribute.ToCodeLocation(filePath)
+            };
         }
     }
 }
