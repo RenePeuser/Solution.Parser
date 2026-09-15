@@ -2,10 +2,11 @@
 
 ## Packages
 
-The library is split so that a consumer only pays for the part it uses. `Solution.Parser` still
-pulls everything, so an existing reference needs no change.
+One package ships: `Solution.Parser`. It contains everything, so an existing reference needs no
+change. The split below is how the source is organised; the assemblies all travel inside that one
+package and none of them is published on its own.
 
-| Package | What it parses | What it drags in |
+| Assembly | What it parses | What it drags in |
 |---|---|---|
 | `Solution.Parser.Core` | shared contracts, nothing on its own | — |
 | `Solution.Parser.CSharp` | C# files into syntax trees | Roslyn |
@@ -14,17 +15,18 @@ pulls everything, so an existing reference needs no change.
 | `Solution.Parser.Sln` | sln and slnx, and their projects | MSBuild |
 | `Solution.Parser.Nuspec` | nuspec files and NuGet folders | nothing but Core |
 | `Solution.Parser.AspNet` | controllers, routes, response types | NuGet client libraries |
-| `Solution.Parser` | meta package, pulls all of the above | all of the above |
+| `Solution.Parser` | the shipped package, contains all of the above | all of the above |
 
 `Solution.Parser.Project` deliberately knows no language: `ProjectFile.SourceFiles` is a plain file
-list, and the typed views come from whichever language package you reference.
+list, and the typed views come from the language assembly you use.
 
 ```csharp
-project.SourceFiles.CSharpFiles()   // needs Solution.Parser.CSharp
-project.SourceFiles.XamlFiles()     // needs Solution.Parser.Xaml
+project.SourceFiles.CSharpFiles()   // Solution.Parser.CSharp
+project.SourceFiles.XamlFiles()     // Solution.Parser.Xaml
 ```
 
-That is what keeps XAML out of a C# only consumer and the other way round.
+Should the parts ever be published separately, that boundary is what lets a C# only consumer skip
+XAML and the other way round. Today it is a source boundary, not a packaging one.
 
 ## Solution formats
 
@@ -254,7 +256,13 @@ code rules over it. Two of them are worth reading as examples:
 Each rule is also run against a deliberately broken view parsed from memory, because a rule that
 never fails proves nothing.
 
-## Migrating from 5.x
+## Migrating
+
+Upgrading from an older major? See **[MIGRATION.md](MIGRATION.md)** — it covers the mechanical
+renames and, more importantly, the changes that still compile but report something different. It is
+written so you can hand it to an AI assistant along with your rule suite.
+
+The short version:
 
 | Before | Now |
 |---|---|
@@ -275,7 +283,7 @@ kept as the previous names for `SyntaxTree` and `Body`.
 
 | Before | Now |
 |---|---|
-| one `Solution.Parser` package | seven packages plus the meta package; see the table at the top |
+| one `Solution.Parser` package | unchanged: still one package, now holding seven assemblies |
 | `project.CSharpFileInfos` | `project.SourceFiles.CSharpFiles()` |
 | `project.XAMLFileInfos` | `project.SourceFiles.XamlFiles()` |
 | namespace `Solution.Parser.Common` | `Solution.Parser.Core` |
