@@ -2,19 +2,12 @@
 
 namespace SampleApp.Wpf.ViewModels
 {
-    public sealed class PersonViewModel : ViewModelBase
+    public sealed class PersonViewModel(Person person) : ViewModelBase
     {
-        private readonly Person _person;
+        public string FullName => person.FirstName + " " + person.LastName;
 
-        public PersonViewModel(Person person)
-        {
-            _person = person;
-        }
+        public int Age => person.Age;
 
-        public string FullName => _person.FirstName + " " + _person.LastName;
-
-        public int Age => _person.Age;
-
-        public string City => _person.City;
+        public string City => person.City;
     }
 }
