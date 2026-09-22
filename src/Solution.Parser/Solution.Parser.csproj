@@ -24,7 +24,7 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <PackageReleaseNotes>Version 5.0 - Major release with breaking changes. Full migration guide in MIGRATION.md. New: .NET 10 support, slnx solution format, Location on all declarations (clickable path(line,column)), complete modifier support (sealed/virtual/override/async), indexers/operators/finalizers, XML documentation, TypeKind, better XAML element tree. Breaking: Namespaces renamed (XAML→Xaml, Solution→Sln, Common→Core), member lists now non-recursive (use AllTypes()/AllMethods()), type hierarchy changed (Class/Record/Struct/Interface are siblings), XAML Controls→Children, project.CSharpFileInfos→SourceFiles.CSharpFiles(). Fixes: SyntaxTree scope, shared field declarations, IsNullable/IsReadOnly/IsAsync accuracy, XAML Parent/nesting/property elements.</PackageReleaseNotes>
+        <PackageReleaseNotes>Major release with breaking changes. Full migration guide in MIGRATION.md. New: .NET 10 support, slnx solution format, Location on all declarations (clickable path(line,column)), complete modifier support (sealed/virtual/override/async), indexers/operators/finalizers, XML documentation, TypeKind, better XAML element tree. Breaking: Namespaces renamed (XAML→Xaml, Solution→Sln, Common→Core), member lists now non-recursive (use AllTypes()/AllMethods()), type hierarchy changed (Class/Record/Struct/Interface are siblings), XAML Controls→Children, project.CSharpFileInfos→SourceFiles.CSharpFiles(). Fixes: SyntaxTree scope, shared field declarations, IsNullable/IsReadOnly/IsAsync accuracy, XAML Parent/nesting/property elements.</PackageReleaseNotes>
     </PropertyGroup>
 
     <!--
