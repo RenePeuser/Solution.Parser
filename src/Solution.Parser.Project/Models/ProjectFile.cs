@@ -105,8 +105,8 @@ namespace Solution.Parser.Project
         /// Every file that belongs to the project, without deciding what kind of file it is.
         /// </summary>
         /// <remarks>
-        /// The typed views live in the language packages, as <c>SourceFiles.CSharpFiles()</c> and
-        /// <c>SourceFiles.XamlFiles()</c>. That is what keeps this package language agnostic: while
+        /// The typed views live in the language packages, as <c>SourceFiles.GetCSharpFiles()</c> and
+        /// <c>SourceFiles.GetXamlFiles()</c>. That is what keeps this package language agnostic: while
         /// <c>ProjectFile</c> itself carried <c>CSharpFileInfos</c> and <c>XamlFileInfos</c>, anyone
         /// reading a solution had to pull both languages whether they used them or not.
         /// </remarks>

@@ -30,7 +30,7 @@ namespace Solution.Parser.Sln.Test
         {
             var parsedSolutionFile = _solutionFileInfo.Parse();
 
-            var csharpFiles = parsedSolutionFile.Projects.SelectMany(p => p.SourceFiles.CSharpFiles()).ToList();
+            var csharpFiles = parsedSolutionFile.Projects.SelectMany(p => p.SourceFiles.GetCSharpFiles()).ToList();
             var projects = parsedSolutionFile.Projects.Count;
             var parsedCSharpFiles = csharpFiles.Select(c => c.Parse());
             var classes = parsedCSharpFiles.SelectMany(c => c.Classes);
@@ -123,7 +123,7 @@ namespace Solution.Parser.Sln.Test
         {
             var tcSolutionFile = _solutionFileInfo.Parse();
 
-            var csharpSyntaxTrees = tcSolutionFile.Projects.SelectMany(p => p.SourceFiles.CSharpFiles()).Select(c => c.Parse()).ToList();
+            var csharpSyntaxTrees = tcSolutionFile.Projects.SelectMany(p => p.SourceFiles.GetCSharpFiles()).Select(c => c.Parse()).ToList();
 
             Assert.IsTrue(csharpSyntaxTrees.Any());
         }
@@ -133,7 +133,7 @@ namespace Solution.Parser.Sln.Test
         {
             var tcSolutionFile = _solutionFileInfo.Parse();
 
-            var csharpSyntaxTrees = tcSolutionFile.Projects.SelectMany(p => p.SourceFiles.CSharpFiles()).Select(c => c.Parse()).ToList();
+            var csharpSyntaxTrees = tcSolutionFile.Projects.SelectMany(p => p.SourceFiles.GetCSharpFiles()).Select(c => c.Parse()).ToList();
 
             var csharpParser = csharpSyntaxTrees.SelectMany(csharp => csharp.Classes).Where(c => c.Name == "CSharpParser").ToImmutableList();
 

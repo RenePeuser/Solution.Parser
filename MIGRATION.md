@@ -57,21 +57,21 @@ The compiler catches all of these.
 | Before | Now |
 |---|---|
 | `XAMLFileInfo` | `XamlFileInfo` |
-| `project.CSharpFileInfos` | `project.SourceFiles.CSharpFiles()` |
-| `project.XAMLFileInfos` | `project.SourceFiles.XamlFiles()` |
+| `project.CSharpFileInfos` | `project.SourceFiles.GetCSharpFiles()` |
+| `project.XAMLFileInfos` | `project.SourceFiles.GetXamlFiles()` |
 | `class.Interfaces` | `class.BaseTypes`, or `class.Implements("IFoo")` |
 | `element.Controls` (XAML) | `element.Children` |
 | `element.LineNumber` (XAML) | `element.Location` |
 | `element.DataTemplates` (XAML) | `tree.AllTemplates()` / `tree.AllDataTemplates()` |
 
-`SourceFiles` is a plain `ImmutableList<FileInfo>`; `CSharpFiles()` and `XamlFiles()` are extension
+`SourceFiles` is a plain `ImmutableList<FileInfo>`; `GetCSharpFiles()` and `GetXamlFiles()` are extension
 methods on `IEnumerable<FileInfo>`, so they need the matching `using`:
 
 ```csharp
-using Solution.Parser.CSharp;   // for CSharpFiles()
-using Solution.Parser.Xaml;     // for XamlFiles()
+using Solution.Parser.CSharp;   // for GetCSharpFiles()
+using Solution.Parser.Xaml;     // for GetXamlFiles()
 
-var csharp = project.SourceFiles.CSharpFiles();
+var csharp = project.SourceFiles.GetCSharpFiles();
 ```
 
 ### 2.3 Type hierarchy

@@ -8,7 +8,7 @@ using Extensions.Pack;
 namespace Solution.Parser.CSharp
 {
     /// <summary>
-    /// The C# view on a project's files: <c>project.SourceFiles.CSharpFiles()</c>.
+    /// The C# view on a project's files: <c>project.SourceFiles.GetCSharpFiles()</c>.
     /// </summary>
     /// <remarks>
     /// This lives here rather than on <c>ProjectFile</c> so that the project package stays language
@@ -17,7 +17,7 @@ namespace Solution.Parser.CSharp
     /// </remarks>
     public static class SourceFileExtensions
     {
-        public static ImmutableList<CSharpFileInfo> CSharpFiles(this IEnumerable<FileInfo> sourceFiles)
+        public static ImmutableList<CSharpFileInfo> GetCSharpFiles(this IEnumerable<FileInfo> sourceFiles)
         {
             Throw.IfNull(sourceFiles);
 

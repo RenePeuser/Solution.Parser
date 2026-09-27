@@ -34,8 +34,8 @@ namespace SampleApp.Wpf.Test
 
             var sampleApp = solution.Projects.Single(p => p.ProjectFileInfo.FileNameWithoutExtenion == "SampleApp.Wpf");
 
-            return new Parsed(sampleApp.SourceFiles.XamlFiles().Select(x => x.Parse()).ToImmutableList(),
-                              sampleApp.SourceFiles.CSharpFiles().Select(c => c.Parse()).AllTypes());
+            return new Parsed(sampleApp.SourceFiles.GetXamlFiles().Select(x => x.Parse()).ToImmutableList(),
+                              sampleApp.SourceFiles.GetCSharpFiles().Select(c => c.Parse()).AllTypes());
         }
 
         private sealed record Parsed(ImmutableList<XamlSyntaxTree> Views, ImmutableList<TypeDeclaration> Types);

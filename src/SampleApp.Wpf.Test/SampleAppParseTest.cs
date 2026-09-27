@@ -19,7 +19,7 @@ namespace SampleApp.Wpf.Test
             Assert.That.AreEqual<string>(["App.xaml", "Controls.xaml", "MainWindow.xaml", "PersonView.xaml"],
                                          SampleApp.Views.Select(v => Path.GetFileName(v.FilePath)).Order(),
                                          because: "walking solution to project to files is the entry point a consumer uses",
-                                         fix: "Check ProjectFile.SourceFiles and the XamlFiles() view");
+                                         fix: "Check ProjectFile.SourceFiles and the GetXamlFiles() view");
         }
 
         [TestMethod]

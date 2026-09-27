@@ -8,7 +8,7 @@ using Extensions.Pack;
 namespace Solution.Parser.Xaml
 {
     /// <summary>
-    /// The XAML view on a project's files: <c>project.SourceFiles.XamlFiles()</c>.
+    /// The XAML view on a project's files: <c>project.SourceFiles.GetXamlFiles()</c>.
     /// </summary>
     /// <remarks>
     /// This lives here rather than on <c>ProjectFile</c> so that the project package stays language
@@ -17,7 +17,7 @@ namespace Solution.Parser.Xaml
     /// </remarks>
     public static class SourceFileExtensions
     {
-        public static ImmutableList<XamlFileInfo> XamlFiles(this IEnumerable<FileInfo> sourceFiles)
+        public static ImmutableList<XamlFileInfo> GetXamlFiles(this IEnumerable<FileInfo> sourceFiles)
         {
             Throw.IfNull(sourceFiles);
 

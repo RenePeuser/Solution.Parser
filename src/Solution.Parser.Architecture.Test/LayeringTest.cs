@@ -28,8 +28,7 @@ namespace Solution.Parser.Architecture.Test
         [ClassInitialize]
         public static void ClassInit(TestContext _)
         {
-            var solutionFile = new SolutionFileName("Solution.Parser.sln")
-                .FindSolutionFileReverseFrom(new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory));
+            var solutionFile = new SolutionFileName("Solution.Parser.sln").FindSolutionFileReverseFrom(new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory));
 
             _solution = solutionFile.Parse();
         }
@@ -122,13 +121,15 @@ namespace Solution.Parser.Architecture.Test
         [TestMethod]
         public void The_Meta_Package_Still_Offers_Everything()
         {
-            Assert.That.AreEqual<string>(["Solution.Parser.AspNet",
-                                          "Solution.Parser.CSharp",
-                                          "Solution.Parser.Core",
-                                          "Solution.Parser.Nuspec",
-                                          "Solution.Parser.Project",
-                                          "Solution.Parser.Sln",
-                                          "Solution.Parser.Xaml"],
+            Assert.That.AreEqual<string>([
+                                             "Solution.Parser.AspNet",
+                                             "Solution.Parser.CSharp",
+                                             "Solution.Parser.Core",
+                                             "Solution.Parser.Nuspec",
+                                             "Solution.Parser.Project",
+                                             "Solution.Parser.Sln",
+                                             "Solution.Parser.Xaml"
+                                         ],
                                          ProjectReferencesOf("Solution.Parser"),
                                          because: "an existing PackageReference to Solution.Parser must keep the surface it had",
                                          fix: "Add the new package to the meta project as well, or existing users lose it");
@@ -142,7 +143,8 @@ namespace Solution.Parser.Architecture.Test
             return seen.ToImmutable();
         }
 
-        private static void Walk(string name, ImmutableList<string>.Builder seen)
+        private static void Walk(string name,
+                                 ImmutableList<string>.Builder seen)
         {
             foreach (var reference in ProjectReferencesOf(name).Where(r => !seen.Contains(r)))
             {

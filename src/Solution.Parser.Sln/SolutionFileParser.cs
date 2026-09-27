@@ -21,21 +21,25 @@ namespace Solution.Parser.Sln
             var solutionFile = Microsoft.Build.Construction.SolutionFile.Parse(solutionFileInfo.Value.FullName);
 
             var tempProjects = solutionFile.ProjectsInOrder
-                .Where(item => Path.GetExtension(item.RelativePath).EqualsTo(PROJECT_FILE_EXTENSION))
-                .Select(item => new { project = item, projectFileInfo = new ProjectFileInfo(item.AbsolutePath) })
-                .Select(item => new ProjectToProjectSolutionItem(item.project, ProjectFileParser.Parse(item.projectFileInfo))).ToImmutableList();
+                                           .Where(item => Path.GetExtension(item.RelativePath).EqualsTo(PROJECT_FILE_EXTENSION))
+                                           .Select(item => new
+                                                           {
+                                                               project = item,
+                                                               projectFileInfo = new ProjectFileInfo(item.AbsolutePath)
+                                                           })
+                                           .Select(item => new ProjectToProjectSolutionItem(item.project, ProjectFileParser.Parse(item.projectFileInfo))).ToImmutableList();
 
             var projects = tempProjects.Select(item => PrepareWithBuildDependencies(item, tempProjects)).ToImmutableList();
 
             var unitTestProjects = projects.Where(item => item.ProjectTypes.Any(type => type.EqualsTo(ProjectType.Test))).ToImmutableList();
             var productiveProjects = projects.Except(unitTestProjects).ToImmutableList();
 
-            return new SolutionFile(solutionFileInfo, projects, productiveProjects, unitTestProjects);
+            return new SolutionFile(solutionFileInfo, projects, productiveProjects,
+                                    unitTestProjects);
         }
 
-        private static ProjectFile PrepareWithBuildDependencies(
-            ProjectToProjectSolutionItem projectToProjectSolutionItem,
-            ImmutableList<ProjectToProjectSolutionItem> allProjectFiles)
+        private static ProjectFile PrepareWithBuildDependencies(ProjectToProjectSolutionItem projectToProjectSolutionItem,
+                                                                ImmutableList<ProjectToProjectSolutionItem> allProjectFiles)
         {
             var projectToCheck = projectToProjectSolutionItem.ProjectInSolution;
             var projctFile = projectToProjectSolutionItem.ProjectFile;
@@ -49,12 +53,14 @@ namespace Solution.Parser.Sln
                                                    .ToImmutableList();
 
             var newProject = projctFile.WithBuildDependencies(buildDependencies);
+
             return newProject;
         }
 
         private sealed class ProjectToProjectSolutionItem
         {
-            internal ProjectToProjectSolutionItem(ProjectInSolution projectInSolution, ProjectFile projectFile)
+            internal ProjectToProjectSolutionItem(ProjectInSolution projectInSolution,
+                                                  ProjectFile projectFile)
             {
                 ProjectInSolution = projectInSolution;
                 ProjectFile = projectFile;

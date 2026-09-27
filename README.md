@@ -21,8 +21,8 @@ package and none of them is published on its own.
 list, and the typed views come from the language assembly you use.
 
 ```csharp
-project.SourceFiles.CSharpFiles()   // Solution.Parser.CSharp
-project.SourceFiles.XamlFiles()     // Solution.Parser.Xaml
+project.SourceFiles.GetCSharpFiles()   // Solution.Parser.CSharp
+project.SourceFiles.GetXamlFiles()     // Solution.Parser.Xaml
 ```
 
 Should the parts ever be published separately, that boundary is what lets a C# only consumer skip
@@ -284,8 +284,8 @@ kept as the previous names for `SyntaxTree` and `Body`.
 | Before | Now |
 |---|---|
 | one `Solution.Parser` package | unchanged: still one package, now holding seven assemblies |
-| `project.CSharpFileInfos` | `project.SourceFiles.CSharpFiles()` |
-| `project.XAMLFileInfos` | `project.SourceFiles.XamlFiles()` |
+| `project.CSharpFileInfos` | `project.SourceFiles.GetCSharpFiles()` |
+| `project.XAMLFileInfos` | `project.SourceFiles.GetXamlFiles()` |
 | namespace `Solution.Parser.Common` | `Solution.Parser.Core` |
 | namespace `Solution.Parser.Solution` | `Solution.Parser.Sln` |
 | namespace `Solution.Parser.XAML` | `Solution.Parser.Xaml` |

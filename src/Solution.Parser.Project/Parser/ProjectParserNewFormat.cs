@@ -63,7 +63,7 @@ namespace Solution.Parser.Project
             if (isTestProject.Contains("true", StringComparison.OrdinalIgnoreCase))
             {
                 yield return ProjectType.Test;
-            } 
+            }
             else if (packageReferences.Any(package => sTestPackages.Any(testPackage => package.Include.Contains(testPackage))))
             {
                 yield return ProjectType.Test;
