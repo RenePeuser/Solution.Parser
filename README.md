@@ -1,5 +1,11 @@
-# Solution Parser
+﻿# Solution.Parser
 
+[![Build](https://github.com/RenePeuser/Solution.Parser/actions/workflows/build.yml/badge.svg)](https://github.com/RenePeuser/Solution.Parser/actions/workflows/build.yml)
+[![NuGet](https://img.shields.io/nuget/v/Solution.Parser.svg)](https://www.nuget.org/packages/Solution.Parser/)
+[![Downloads](https://img.shields.io/nuget/dt/Solution.Parser.svg)](https://www.nuget.org/packages/Solution.Parser/)
+[![Build](https://github.com/RenePeuser/Solution.Parser/actions/workflows/build.yml/badge.svg)](https://github.com/RenePeuser/Solution.Parser/actions/workflows/build.yml)
+[![NuGet](https://img.shields.io/nuget/v/Solution.Parser.svg)](https://www.nuget.org/packages/Solution.Parser/)
+[![Downloads](https://img.shields.io/nuget/dt/Solution.Parser.svg)](https://www.nuget.org/packages/Solution.Parser/)
 ## Packages
 
 One package ships: `Solution.Parser`. It contains everything, so an existing reference needs no
@@ -8,7 +14,7 @@ package and none of them is published on its own.
 
 | Assembly | What it parses | What it drags in |
 |---|---|---|
-| `Solution.Parser.Core` | shared contracts, nothing on its own | — |
+| `Solution.Parser.Core` | shared contracts, nothing on its own | â€” |
 | `Solution.Parser.CSharp` | C# files into syntax trees | Roslyn |
 | `Solution.Parser.Xaml` | XAML markup | nothing but Core |
 | `Solution.Parser.Project` | csproj, old and SDK style | nothing but Core |
@@ -205,9 +211,9 @@ To walk everything, ask for it, the same way as on the C# side:
 ```csharp
 tree.AllElements()              // every element of the file
 tree.AllStyles()                // every Style, however deep in the resource dictionaries
-tree.AllTemplates()             // DataTemplate, ControlTemplate, ItemsPanelTemplate, …
+tree.AllTemplates()             // DataTemplate, ControlTemplate, ItemsPanelTemplate, â€¦
 tree.AllBindings()              // every Binding, nested ones included
-tree.AllMarkupExtensions()      // every {…}, nested ones included
+tree.AllMarkupExtensions()      // every {â€¦}, nested ones included
 tree.FindByName("Save")         // by x:Name
 tree.FindByKey("OkButton")      // by x:Key
 tree.OfTypeName("Button")       // every element written as <Button>
@@ -258,7 +264,7 @@ never fails proves nothing.
 
 ## Migrating
 
-Upgrading from an older major? See **[MIGRATION.md](MIGRATION.md)** — it covers the mechanical
+Upgrading from an older major? See **[MIGRATION.md](MIGRATION.md)** â€” it covers the mechanical
 renames and, more importantly, the changes that still compile but report something different. It is
 written so you can hand it to an AI assistant along with your rule suite.
 
