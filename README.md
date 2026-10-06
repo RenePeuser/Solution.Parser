@@ -315,3 +315,11 @@ kept as the previous names for `SyntaxTree` and `Body`.
 | `new Control(...)` positional | object initializer, `new Control { TypeName = ..., ... }` |
 | an unreadable value threw and lost the file | `tree.Diagnostics` |
 
+## License
+
+Copyright 2022-2026 (c) Rene Peuser.
+
+Licensed under the [PolyForm Shield License 1.0.0](License.txt). You may use, change and
+distribute Solution.Parser, including in commercial projects, but you may not use it to provide a
+product that competes with it, for example by selling or publishing it, or a derivative of it,
+as your own product.
