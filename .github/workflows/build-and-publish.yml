@@ -1,0 +1,178 @@
+name: Build & Publish to NuGet
+
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+    branches: [master, develop]
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for manual release'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-pack:
+    name: Build, Test & Pack
+    runs-on: windows-latest
+    # Windows runner (WPF fixture project); keep bash so the scripts match the Linux workflows.
+    defaults:
+      run:
+        shell: bash
+    outputs:
+      version: ${{ steps.gitversion.outputs.nuGetVersionV2 }}
+      prerelease: ${{ steps.gitversion.outputs.preReleaseTag }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v3.1.1
+        with:
+          versionSpec: '5.x'
+
+      - name: Determine Version
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v3.1.1
+
+      - name: Display Version Info
+        run: |
+          echo "Branch: ${{ github.ref_name }}"
+          echo "NuGetVersionV2: ${{ steps.gitversion.outputs.nuGetVersionV2 }}"
+          echo "PreReleaseTag: ${{ steps.gitversion.outputs.preReleaseTag }}"
+          echo "Is PreRelease: ${{ steps.gitversion.outputs.preReleaseTag != '' }}"
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      # This command reports vulnerabilities; it does not fail the job solely for findings.
+      - name: Vulnerability check
+        run: dotnet list package --include-transitive --vulnerable
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test --configuration Release --no-build
+
+      # The package bundles the referenced projects through a target that invokes Build,
+      # which fails with --no-build (NETSDK1085), so pack builds the project itself.
+      - name: Pack
+        run: dotnet pack src/Solution.Parser/Solution.Parser.csproj --configuration Release --no-restore --output ./nupkgs
+
+      - name: Upload NuGet Package as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-package
+          path: ./nupkgs/*.nupkg
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Build Summary
+        run: |
+          echo "## 📦 Package Built Successfully" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ steps.gitversion.outputs.nuGetVersionV2 }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Type:** ${{ steps.gitversion.outputs.preReleaseTag != '' && 'Preview (Alpha)' || 'Stable Release' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Publishing on master or develop waits for production environment approval when required reviewers are configured." >> $GITHUB_STEP_SUMMARY
+
+  deploy:
+    name: Publish to NuGet
+    if: >-
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
+    permissions:
+      contents: write
+      id-token: write
+    concurrency:
+      group: nuget-publish-${{ github.ref }}
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    needs: build-and-pack
+    environment:
+      name: production
+      url: https://www.nuget.org/packages/Solution.Parser/${{ needs.build-and-pack.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download NuGet Package
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget-package
+          path: ./nupkgs
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: NuGet Login (Trusted Publishing)
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: Rene.Peuser
+
+      - name: Push to NuGet.org
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+        run: |
+          dotnet nuget push ./nupkgs/*.nupkg \
+            --api-key "$NUGET_API_KEY" \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
+
+      - name: Create GitHub Release (stable only)
+        if: needs.build-and-pack.outputs.prerelease == ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.build-and-pack.outputs.version }}
+          RELEASE_REASON: ${{ inputs.reason }}
+        run: |
+          tag="v$VERSION"
+          if ! git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null; then
+            git tag "$tag"
+            git push origin "$tag"
+          else
+            git fetch origin "refs/tags/$tag:refs/tags/$tag"
+            if [ "$(git rev-parse "$tag^{commit}")" != "$(git rev-parse HEAD)" ]; then
+              echo "Existing tag $tag points to a different commit."
+              exit 1
+            fi
+          fi
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            {
+              printf '## Release %s\n\n' "$VERSION"
+              printf 'Published from branch: %s\n' "$GITHUB_REF_NAME"
+              printf 'Reason: %s\n\n' "${RELEASE_REASON:-Manual release}"
+              printf 'https://www.nuget.org/packages/Solution.Parser/%s\n' "$VERSION"
+            } > "$RUNNER_TEMP/release-notes.md"
+            gh release create "$tag" --verify-tag --title "Release $VERSION" \
+              --notes-file "$RUNNER_TEMP/release-notes.md"
+          fi
+
+      - name: Deployment Summary
+        run: |
+          echo "## 🚀 Deployment Successful" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ needs.build-and-pack.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Type:** ${{ needs.build-and-pack.outputs.prerelease != '' && 'Preview (Alpha)' || 'Stable Release' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📦 NuGet Package" >> $GITHUB_STEP_SUMMARY
+          echo "https://www.nuget.org/packages/Solution.Parser/${{ needs.build-and-pack.outputs.version }}" >> $GITHUB_STEP_SUMMARY
