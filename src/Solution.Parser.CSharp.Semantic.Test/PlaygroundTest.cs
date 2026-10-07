@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -64,15 +64,15 @@ namespace Solution.Parser.CSharp.Semantic.Test
         public void Dump_The_Calls_Of_A_Project()
         {
             var solutionFile = new SolutionFileName("Solution.Parser.sln").FindSolutionFileReverseFrom(new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory));
-            var code = CodeBase.Open(solutionFile).WithSymbols();
-            var project = code.Solution!.Projects.Single(p => p.ProjectFileInfo.FileNameWithoutExtenion == ProjectName);
+            var solution = solutionFile.Parse(ParseMode.WithSymbols);
+            var project = solution.Projects.Single(p => p.ProjectFileInfo.FileNameWithoutExtenion == ProjectName);
 
-            foreach (var diagnostic in code.CompilationDiagnostics(project).Where(d => d.IsError))
+            foreach (var diagnostic in project.CompilationDiagnostics().Where(d => d.IsError))
             {
                 TestContext.WriteLine($"ERROR {diagnostic.Location}: {diagnostic.Id} {diagnostic.Message}");
             }
 
-            var calls = code.Trees(project)
+            var calls = project.Trees
                             .AllInvocations()
                             .Where(c => MethodName.Length == 0 || c.Name == MethodName)
                             .Take(20)

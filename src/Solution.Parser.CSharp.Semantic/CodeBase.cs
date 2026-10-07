@@ -9,14 +9,17 @@ using Solution.Parser.Sln;
 namespace Solution.Parser.CSharp
 {
     /// <summary>
-    /// The entry point for code rules over a whole solution, in two modes:
+    /// The code behind a solution, in two modes:
     /// <list type="bullet">
-    /// <item><c>CodeBase.Open(solution)</c> is the fast mode: syntax trees only, exactly what
-    /// <c>CSharpFileInfo.Parse()</c> gives, but parsed once and cached.</item>
+    /// <item>the fast mode: syntax trees only, exactly what <c>CSharpFileInfo.Parse()</c> gives, but
+    /// parsed once and cached.</item>
     /// <item><c>.WithSymbols()</c> adds the full mode on top: <c>call.Method</c>,
     /// <c>call.Argument("writeResponse")</c> and the like answer from a Roslyn compilation per
     /// project, built the first time a symbol of that project is asked for.</item>
     /// </list>
+    /// For a solution there is nothing to open: <c>solutionFileInfo.Parse(ParseMode.WithSymbols)</c>
+    /// and the members of <see cref="SolutionCode"/> run on this. Opened directly it is only for code in
+    /// memory, see <see cref="FromSources"/>.
     /// </summary>
     /// <remarks>
     /// Both modes share the caches, so asking for symbols later never parses a file again. A symbol
@@ -35,8 +38,8 @@ namespace Solution.Parser.CSharp
             HasSymbols = hasSymbols;
         }
 
-        /// <summary>The parsed solution, null for code given with <see cref="FromSources"/>.</summary>
-        public SolutionFile? Solution { get; }
+        /// <summary>The parsed solution, null for a single project or code given with <see cref="FromSources"/>.</summary>
+        internal SolutionFile? Solution { get; }
 
         /// <summary>True after <see cref="WithSymbols"/>.</summary>
         public bool HasSymbols { get; }
@@ -44,26 +47,27 @@ namespace Solution.Parser.CSharp
         /// <summary>Every syntax tree of every project, a file linked into two projects once.</summary>
         public ImmutableList<CSharpSyntaxTree> AllTrees => TreesOf(_workspace.Projects);
 
-        public ImmutableList<CSharpSyntaxTree> ProductiveTrees => Solution is null ? AllTrees : Trees(Solution.ProductiveProjects);
+        internal ImmutableList<CSharpSyntaxTree> ProductiveTrees => Solution is null ? AllTrees : Trees(Solution.ProductiveProjects);
 
-        public ImmutableList<CSharpSyntaxTree> UnitTestTrees => Solution is null ? ImmutableList<CSharpSyntaxTree>.Empty : Trees(Solution.UnitTestProjects);
+        internal ImmutableList<CSharpSyntaxTree> UnitTestTrees => Solution is null ? ImmutableList<CSharpSyntaxTree>.Empty : Trees(Solution.UnitTestProjects);
 
         internal Workspace Workspace => _workspace;
 
-        public static CodeBase Open(SolutionFileInfo solutionFileInfo)
-        {
-            Throw.IfNull(solutionFileInfo);
-
-            return Open(solutionFileInfo.Parse());
-        }
-
-        public static CodeBase Open(SolutionFile solution)
+        internal static CodeBase Open(SolutionFile solution)
         {
             Throw.IfNull(solution);
 
             var projects = solution.Projects.Select(ProjectInput.From).ToImmutableList();
 
             return new CodeBase(new Workspace(projects, ImmutableDictionary<string, string>.Empty), solution, hasSymbols: false);
+        }
+
+        /// <summary>One project on its own, for a project that was not parsed as part of a solution.</summary>
+        internal static CodeBase Open(ProjectFile project)
+        {
+            Throw.IfNull(project);
+
+            return new CodeBase(new Workspace(ImmutableList.Create(ProjectInput.From(project)), ImmutableDictionary<string, string>.Empty), solution: null, hasSymbols: false);
         }
 
         /// <summary>
@@ -101,14 +105,14 @@ namespace Solution.Parser.CSharp
             return new CodeBase(_workspace, Solution, hasSymbols: true);
         }
 
-        public ImmutableList<CSharpSyntaxTree> Trees(ProjectFile project)
+        internal ImmutableList<CSharpSyntaxTree> Trees(ProjectFile project)
         {
             Throw.IfNull(project);
 
             return Trees([project]);
         }
 
-        public ImmutableList<CSharpSyntaxTree> Trees(ImmutableList<ProjectFile> projects)
+        internal ImmutableList<CSharpSyntaxTree> Trees(ImmutableList<ProjectFile> projects)
         {
             Throw.IfNull(projects);
 
@@ -122,7 +126,7 @@ namespace Solution.Parser.CSharp
         /// example because the solution was not restored; a rule can assert on that before trusting
         /// <c>Unresolved</c>.
         /// </summary>
-        public ImmutableList<ParseDiagnostic> CompilationDiagnostics(ProjectFile project)
+        internal ImmutableList<ParseDiagnostic> CompilationDiagnostics(ProjectFile project)
         {
             Throw.IfNull(project);
 
@@ -182,7 +186,8 @@ namespace Solution.Parser.CSharp
         internal static InvalidOperationException Exception(string member)
         {
             return new InvalidOperationException($"Symbols are not loaded, so '{member}' cannot be answered. "
-                                                 + "Open the code with CodeBase.Open(...).WithSymbols() to resolve symbols; "
+                                                 + "Parse the solution with solutionFileInfo.Parse(ParseMode.WithSymbols), or use "
+                                                 + "CodeBase.FromSources(...).WithSymbols() for code in memory, to resolve symbols; "
                                                  + "the fast mode only knows the syntax.");
         }
     }
