@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
 using Argument.Check;
@@ -26,7 +26,9 @@ namespace Solution.Parser.CSharp
     {
         private readonly Workspace _workspace;
 
-        private CodeBase(Workspace workspace, SolutionFile? solution, bool hasSymbols)
+        private CodeBase(Workspace workspace,
+                         SolutionFile? solution,
+                         bool hasSymbols)
         {
             _workspace = workspace;
             Solution = solution;
@@ -159,6 +161,7 @@ namespace Solution.Parser.CSharp
         private static ParseDiagnostic ToParseDiagnostic(Diagnostic diagnostic)
         {
             var span = diagnostic.Location.GetLineSpan();
+
             var location = diagnostic.Location.IsInSource
                                ? new CodeLocation(span.Path,
                                                   span.StartLinePosition.Line + 1,
@@ -169,7 +172,8 @@ namespace Solution.Parser.CSharp
                                                   diagnostic.Location.SourceSpan.Length)
                                : CodeLocation.None;
 
-            return new ParseDiagnostic(diagnostic.Id, diagnostic.Severity, diagnostic.GetMessage(), location);
+            return new ParseDiagnostic(diagnostic.Id, diagnostic.Severity, diagnostic.GetMessage(),
+                                       location);
         }
     }
 
