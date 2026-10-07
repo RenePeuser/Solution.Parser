@@ -30,7 +30,9 @@ namespace Solution.Parser.CSharp
         private readonly ConcurrentDictionary<SyntaxTree, SemanticModel> _semanticModels = new();
         private readonly ConcurrentDictionary<string, PackageAssembly> _packagesByPath = new(PathComparer);
         private readonly ImmutableHashSet<string> _sourceFiles;
+        private readonly ImmutableDictionary<string, string> _projectKeyByFile;
         private int _compilationCount;
+        private volatile bool _hasSymbols;
 
         internal Workspace(ImmutableList<ProjectInput> projects, ImmutableDictionary<string, string> inMemorySources)
         {
@@ -38,6 +40,11 @@ namespace Solution.Parser.CSharp
             ProjectsByKey = projects.ToImmutableDictionary(p => p.Key, PathComparer);
             _inMemorySources = inMemorySources.WithComparers(PathComparer);
             _sourceFiles = projects.SelectMany(p => p.SourceFiles).ToImmutableHashSet(PathComparer);
+
+            // A file linked into two projects belongs to the first one that lists it.
+            _projectKeyByFile = projects.SelectMany(p => p.SourceFiles.Select(f => (File: f, p.Key)))
+                                        .DistinctBy(e => e.File, PathComparer)
+                                        .ToImmutableDictionary(e => e.File, e => e.Key, PathComparer);
         }
 
         internal ImmutableList<ProjectInput> Projects { get; }
@@ -53,9 +60,45 @@ namespace Solution.Parser.CSharp
             return _sourceFiles.Contains(path);
         }
 
+        /// <summary>True once <see cref="EnableSymbols"/> ran; the calls of every tree are then known to the registry.</summary>
+        internal bool HasSymbols => _hasSymbols;
+
         internal CSharpSyntaxTree Model(string path)
         {
-            return _models.GetOrAdd(path, p => new Lazy<CSharpSyntaxTree>(() => SyntaxTree(p).Parse(p))).Value;
+            return _models.GetOrAdd(path, p => new Lazy<CSharpSyntaxTree>(() =>
+                                                {
+                                                    var model = SyntaxTree(p).Parse(p);
+
+                                                    if (_hasSymbols)
+                                                    {
+                                                        Register(p, model);
+                                                    }
+
+                                                    return model;
+                                                })).Value;
+        }
+
+        /// <summary>
+        /// Makes the calls of this workspace resolvable: those of the trees parsed so far right away, the
+        /// others as they are parsed.
+        /// </summary>
+        /// <remarks>
+        /// The flag goes first, so a tree is either parsed after it and registers itself, or is already in
+        /// the cache and registered here; reading the value waits for a parse in flight.
+        /// </remarks>
+        internal void EnableSymbols()
+        {
+            if (_hasSymbols)
+            {
+                return;
+            }
+
+            _hasSymbols = true;
+
+            foreach (var (path, model) in _models)
+            {
+                Register(path, model.Value);
+            }
         }
 
         internal ProjectCompilation Compilation(string projectKey)
@@ -71,6 +114,14 @@ namespace Solution.Parser.CSharp
         internal PackageAssembly? PackageOf(string assemblyPath)
         {
             return _packagesByPath.TryGetValue(assemblyPath, out var package) ? package : null;
+        }
+
+        private void Register(string path, CSharpSyntaxTree model)
+        {
+            if (_projectKeyByFile.TryGetValue(path, out var projectKey))
+            {
+                SemanticRegistry.Register(model, this, projectKey);
+            }
         }
 
         /// <summary>

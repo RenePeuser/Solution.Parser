@@ -23,7 +23,7 @@ namespace Solution.Parser.CSharp
                 return cached;
             }
 
-            if (!SemanticRegistry.TryGet(call.FilePath, out var workspace, out var projectKey))
+            if (!SemanticRegistry.TryGet(call, out var workspace, out var projectKey))
             {
                 throw SymbolsNotLoaded.Exception(member);
             }
