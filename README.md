@@ -16,6 +16,7 @@ package and none of them is published on its own.
 |---|---|---|
 | `Solution.Parser.Core` | shared contracts, nothing on its own | â€” |
 | `Solution.Parser.CSharp` | C# files into syntax trees | Roslyn |
+| `Solution.Parser.CSharp.Semantic` | symbols: which method a call binds to, which parameter an argument fills | Roslyn, CSharp and Sln |
 | `Solution.Parser.Xaml` | XAML markup | nothing but Core |
 | `Solution.Parser.Project` | csproj, old and SDK style | nothing but Core |
 | `Solution.Parser.Sln` | sln and slnx, and their projects | MSBuild |
@@ -172,6 +173,55 @@ ProductiveCode.AllTypes()     // the same across a whole solution
 Predicates that read the way a rule means: `IsPublic()`, `IsStatic()`, `IsSealed()`, `IsAbstract()`,
 `IsPartial()`, `IsOverride()`, `IsVirtual()`, `HasAttribute(name)`, `Implements(name)`,
 `InheritsFrom(name)`.
+
+Every member with a body reports the method calls in it, lambdas included, a local function on its own:
+
+```csharp
+method.Invocations                         // Client.AssertPostAsync("..", "..", true)
+tree.AllInvocations().Named("AssertPostAsync")
+call.Target                                // "Client"
+call.Arguments                             // as written, in source order
+call.NamedArgument("writeResponse")        // only for writeResponse: true, see below for the rest
+```
+
+## Symbols (full mode)
+
+The syntax alone cannot tell that `true` in `Client.AssertPostAsync("..", "..", true)` is the
+parameter `writeResponse`, least of all when the method comes from a NuGet package. The compiler can.
+`CodeBase` offers both modes over the same records:
+
+```csharp
+var code = CodeBase.Open(solutionFileInfo);          // fast mode: syntax only, parsed once and cached
+var full = code.WithSymbols();                       // full mode: a Roslyn compilation per project, built on first use
+
+var findings = from call in full.UnitTestTrees.AllInvocations().Named("AssertPostAsync")
+               where call.Argument("writeResponse")?.Is(true) == true
+               select $"{call.Location}: writeResponse is true";
+```
+
+What a resolved call tells, in the vocabulary of the syntax model:
+
+```csharp
+call.Resolution            // Resolved | Ambiguous | Unresolved
+call.Method                // a Method record; for code of the solution the very record the tree holds
+call.Method.Origin         // Source | Package("AspNetCore.Simple.MsTest.Sdk", "9.5.15") | Framework
+call.BoundArguments        // every parameter with what is passed for it, in parameter order
+call.Argument("writeResponse").Expression    // "true", by position or by name alike
+call.Argument("writeResponse").IsExplicit    // false when left out and the default applies
+call.Argument("writeResponse").Is(true)      // literal, const or default value alike
+call.Candidates            // the competing overloads of an ambiguous call
+call.Roslyn                // node, semantic model, symbol and operation, for anything not covered
+```
+
+The compilation is built from what restore and build left on disk: package assemblies from
+`obj/project.assets.json`, the framework reference packs, project references as compilations, the
+generated global usings and XAML output from obj, and the source generators of frameworks and packages.
+The solution therefore has to be restored, which it is whenever its tests run. `code.CompilationDiagnostics(project)`
+shows what the compiler could not resolve.
+
+In the fast mode a symbol access throws instead of guessing, so the cost of a rule stays visible:
+nothing is compiled unless a rule asks for symbols. `CodeBase.FromSources(("Sample.cs", code))` gives
+the same API for code in memory, which is handy in tests.
 
 ## XAML
 

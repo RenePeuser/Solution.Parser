@@ -23,6 +23,7 @@ namespace Solution.Parser.CSharp
                 Statements = body.Statements,
                 LineStatements = body.LineStatements,
                 LocalFunctions = body.LocalFunctions,
+                Invocations = body.Invocations,
                 IsExpressionBodied = body.IsExpressionBodied,
                 SyntaxTree = destructorSyntax.ToString(),
                 FilePath = filePath,

@@ -31,6 +31,7 @@ namespace Solution.Parser.CSharp
                 Statements = body.Statements,
                 LineStatements = body.LineStatements,
                 LocalFunctions = body.LocalFunctions,
+                Invocations = body.Invocations,
                 IsExpressionBodied = body.IsExpressionBodied,
                 IsIterator = body.IsIterator,
                 ExplicitInterfaceSpecifier = methodDeclarationSyntax.ExplicitInterfaceSpecifier?.Name.ToString(),

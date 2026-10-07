@@ -21,6 +21,12 @@ namespace Solution.Parser.CSharp
 
         public ImmutableList<LocalFunction> LocalFunctions { get; init; } = ImmutableList<LocalFunction>.Empty;
 
+        /// <summary>
+        /// The method calls in the body, in source order, including those inside lambdas. A local
+        /// function reports its own.
+        /// </summary>
+        public ImmutableList<Invocation> Invocations { get; init; } = ImmutableList<Invocation>.Empty;
+
         public ImmutableList<Parameter> Parameters { get; init; } = ImmutableList<Parameter>.Empty;
 
         /// <summary>True for <c>=&gt; expression</c> rather than a block body.</summary>
