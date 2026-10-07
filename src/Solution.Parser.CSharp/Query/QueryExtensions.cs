@@ -69,6 +69,29 @@ namespace Solution.Parser.CSharp
             return syntaxTree.AllTypes().SelectMany(t => t.Fields).ToImmutableList();
         }
 
+        /// <summary>
+        /// Every member of the type that can carry a body: methods, constructors, operators,
+        /// finalizers and the local functions declared inside them.
+        /// </summary>
+        public static ImmutableList<MemberWithBody> AllMembersWithBody(this TypeDeclaration type)
+        {
+            IEnumerable<MemberWithBody> members = [..type.Methods, ..type.Constructors, ..type.Operators, ..type.Finalizers];
+
+            return members.SelectMany(m => m.LocalFunctions.Prepend<MemberWithBody>(m)).ToImmutableList();
+        }
+
+        /// <summary>Every method call in the file, in every member and local function of every type.</summary>
+        public static ImmutableList<Invocation> AllInvocations(this CSharpSyntaxTree syntaxTree)
+        {
+            return syntaxTree.AllTypes().SelectMany(AllMembersWithBody).SelectMany(m => m.Invocations).ToImmutableList();
+        }
+
+        /// <summary>Every method call in the files, in every member and local function of every type.</summary>
+        public static ImmutableList<Invocation> AllInvocations(this IEnumerable<CSharpSyntaxTree> syntaxTrees)
+        {
+            return syntaxTrees.SelectMany(AllInvocations).ToImmutableList();
+        }
+
         /// <summary>Matches with or without the <c>Attribute</c> suffix, see <see cref="Attribute.IsNamed"/>.</summary>
         public static bool HasAttribute(this DeclarationWithModifiers declaration, string attributeName)
         {

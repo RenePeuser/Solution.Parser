@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>Symbols for the C# syntax trees: which method a call binds to and which parameter an argument fills, built from a Roslyn compilation per project.</Description>
+        <PackageTags>C#;CSharp;Roslyn;Symbols;SemanticModel;CodeRules</PackageTags>
+        <!-- Shipped inside the Solution.Parser package, not published on its own. -->
+        <IsPackable>false</IsPackable>
+        <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Solution.Parser.CSharp.Semantic.Test" />
+    </ItemGroup>
+
+    <!-- The one place where the language meets the project: the compilation needs both the C# trees and
+         the references a csproj declares. Solution.Parser.CSharp itself stays free of any project knowledge. -->
+    <ItemGroup>
+        <ProjectReference Include="..\Solution.Parser.CSharp\Solution.Parser.CSharp.csproj" />
+        <ProjectReference Include="..\Solution.Parser.Sln\Solution.Parser.Sln.csproj" />
+    </ItemGroup>
+
+</Project>

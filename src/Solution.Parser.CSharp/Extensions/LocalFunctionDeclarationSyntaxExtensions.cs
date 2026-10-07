@@ -31,6 +31,7 @@ namespace Solution.Parser.CSharp
 
                 // A nested local function is reported once, by the enclosing member.
                 LocalFunctions = ImmutableList<LocalFunction>.Empty,
+                Invocations = body.Invocations,
                 IsExpressionBodied = body.IsExpressionBodied,
                 IsIterator = body.IsIterator,
                 SyntaxTree = localFunctionSyntax.ToString(),

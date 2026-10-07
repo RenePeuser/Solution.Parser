@@ -14,6 +14,7 @@ namespace Solution.Parser.CSharp
                                                ImmutableList<string> Statements,
                                                ImmutableList<string> LineStatements,
                                                ImmutableList<LocalFunction> LocalFunctions,
+                                               ImmutableList<Invocation> Invocations,
                                                bool IsExpressionBodied,
                                                bool IsIterator);
 
@@ -29,6 +30,7 @@ namespace Solution.Parser.CSharp
                                       block.Statements.Select(s => s.ToString()).ToImmutableList(),
                                       ToLineStatements(text),
                                       block.ToLocalFunctions(filePath),
+                                      block.ToInvocations(filePath),
                                       IsExpressionBodied: false,
                                       IsIterator: block.ContainsYield());
             }
@@ -41,6 +43,7 @@ namespace Solution.Parser.CSharp
                                       ImmutableList.Create(text),
                                       ToLineStatements(text),
                                       ImmutableList<LocalFunction>.Empty,
+                                      expressionBody.Expression.ToInvocations(filePath),
                                       IsExpressionBodied: true,
                                       IsIterator: false);
             }
@@ -49,6 +52,7 @@ namespace Solution.Parser.CSharp
                                   ImmutableList<string>.Empty,
                                   ImmutableList<string>.Empty,
                                   ImmutableList<LocalFunction>.Empty,
+                                  ImmutableList<Invocation>.Empty,
                                   IsExpressionBodied: false,
                                   IsIterator: false);
         }

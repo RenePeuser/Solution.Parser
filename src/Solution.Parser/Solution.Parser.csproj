@@ -34,6 +34,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Solution.Parser.Core\Solution.Parser.Core.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Solution.Parser.CSharp\Solution.Parser.CSharp.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\Solution.Parser.CSharp.Semantic\Solution.Parser.CSharp.Semantic.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Solution.Parser.Xaml\Solution.Parser.Xaml.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Solution.Parser.Nuspec\Solution.Parser.Nuspec.csproj" PrivateAssets="all" />
         <ProjectReference Include="..\Solution.Parser.Project\Solution.Parser.Project.csproj" PrivateAssets="all" />

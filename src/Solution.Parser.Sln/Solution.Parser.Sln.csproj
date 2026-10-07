@@ -14,4 +14,8 @@
         <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52" />
     </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\Solution.Parser.Project\Solution.Parser.Project.csproj" />
+    </ItemGroup>
+
 </Project>

@@ -100,6 +100,31 @@ namespace Solution.Parser.Architecture.Test
         }
 
         [TestMethod]
+        public void Sln_Reads_Projects()
+        {
+            Assert.That.AreEqual<string>(["Solution.Parser.Project"],
+                                         ProjectReferencesOf("Solution.Parser.Sln"),
+                                         because: "walking a solution means parsing its csproj files; the reference was once lost "
+                                                  + "and the solution reader stopped compiling",
+                                         fix: "Reference Solution.Parser.Project from Solution.Parser.Sln");
+        }
+
+        [TestMethod]
+        public void Symbols_Join_The_Language_And_The_Project_Only_In_The_Semantic_Package()
+        {
+            Assert.That.AreEqual<string>(["Solution.Parser.CSharp", "Solution.Parser.Sln"],
+                                         ProjectReferencesOf("Solution.Parser.CSharp.Semantic"),
+                                         because: "a compilation needs the C# trees and the references a csproj declares; this is "
+                                                  + "the one package allowed to know both, so the C# parser keeps knowing no project",
+                                         fix: LayeringFix);
+
+            Assert.That.DoesNotContain(TransitiveProjectReferencesOf("Solution.Parser.CSharp.Semantic"),
+                                       "Solution.Parser.Xaml",
+                                       because: "symbols for C# have nothing to do with markup",
+                                       fix: LayeringFix);
+        }
+
+        [TestMethod]
         public void Reading_A_Solution_Does_Not_Pull_Xaml()
         {
             Assert.That.DoesNotContain(TransitiveProjectReferencesOf("Solution.Parser.Sln"),
@@ -124,6 +149,7 @@ namespace Solution.Parser.Architecture.Test
             Assert.That.AreEqual<string>([
                                              "Solution.Parser.AspNet",
                                              "Solution.Parser.CSharp",
+                                             "Solution.Parser.CSharp.Semantic",
                                              "Solution.Parser.Core",
                                              "Solution.Parser.Nuspec",
                                              "Solution.Parser.Project",
