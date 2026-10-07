@@ -100,7 +100,7 @@ namespace Solution.Parser.CSharp
                 return this;
             }
 
-            SemanticRegistry.Register(_workspace);
+            _workspace.EnableSymbols();
 
             return new CodeBase(_workspace, Solution, hasSymbols: true);
         }

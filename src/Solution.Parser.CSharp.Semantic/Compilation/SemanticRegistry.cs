@@ -1,6 +1,5 @@
-using System;
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace Solution.Parser.CSharp
 {
@@ -10,44 +9,42 @@ namespace Solution.Parser.CSharp
     /// <c>call.Method</c> still finds the compilation that knows the answer.
     /// </summary>
     /// <remarks>
-    /// The last <see cref="CodeBase.WithSymbols"/> for a file wins. The workspace is held weakly, so a
-    /// code base nobody uses any more can still be collected.
+    /// A call is known by its instance, not by its file: two code bases over the same files never answer
+    /// for each other, and a call of a code base without symbols stays unknown however many others have
+    /// them. A copy made with <c>with</c> is a new instance and therefore unknown too. The table holds
+    /// nothing alive; an entry goes with its call.
     /// </remarks>
     internal static class SemanticRegistry
     {
-        private static readonly ConcurrentDictionary<string, (WeakReference<Workspace> Workspace, string ProjectKey)> Files = new(Workspace.PathComparer);
+        private static readonly ConditionalWeakTable<Invocation, Owner> Owners = new();
 
-        internal static void Register(Workspace workspace)
+        /// <summary>Makes the calls of the tree known as calls of the project in the workspace.</summary>
+        internal static void Register(CSharpSyntaxTree tree, Workspace workspace, string projectKey)
         {
-            var reference = new WeakReference<Workspace>(workspace);
-            var seen = new ConcurrentDictionary<string, bool>(Workspace.PathComparer);
+            var owner = new Owner(workspace, projectKey);
 
-            // A file linked into two projects belongs to the first one that lists it.
-            foreach (var project in workspace.Projects)
+            foreach (var call in tree.AllInvocations())
             {
-                foreach (var file in project.SourceFiles)
-                {
-                    if (seen.TryAdd(file, true))
-                    {
-                        Files[file] = (reference, project.Key);
-                    }
-                }
+                Owners.AddOrUpdate(call, owner);
             }
         }
 
-        internal static bool TryGet(string filePath, [NotNullWhen(true)] out Workspace? workspace, [NotNullWhen(true)] out string? projectKey)
+        internal static bool TryGet(Invocation call, [NotNullWhen(true)] out Workspace? workspace, [NotNullWhen(true)] out string? projectKey)
         {
-            workspace = null;
-            projectKey = null;
-
-            if (!Files.TryGetValue(filePath, out var entry) || !entry.Workspace.TryGetTarget(out workspace))
+            if (!Owners.TryGetValue(call, out var owner))
             {
+                workspace = null;
+                projectKey = null;
+
                 return false;
             }
 
-            projectKey = entry.ProjectKey;
+            workspace = owner.Workspace;
+            projectKey = owner.ProjectKey;
 
             return true;
         }
+
+        private sealed record Owner(Workspace Workspace, string ProjectKey);
     }
 }
