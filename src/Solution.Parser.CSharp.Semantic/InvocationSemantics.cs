@@ -5,8 +5,8 @@ namespace Solution.Parser.CSharp
 {
     /// <summary>
     /// What the compiler knows about the records of the syntax model. These members only answer for
-    /// code opened with <c>CodeBase.Open(...).WithSymbols()</c>; anywhere else they throw rather than
-    /// guess.
+    /// a solution parsed with <c>Parse(ParseMode.WithSymbols)</c> or code in memory opened with
+    /// <c>CodeBase.FromSources(...).WithSymbols()</c>; anywhere else they throw rather than guess.
     /// </summary>
     /// <example>
     /// <code>

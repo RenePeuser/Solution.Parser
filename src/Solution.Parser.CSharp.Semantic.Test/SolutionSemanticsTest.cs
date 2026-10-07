@@ -17,19 +17,19 @@ namespace Solution.Parser.CSharp.Semantic.Test
     {
         private const string CompilationFix = "Check ProjectInput.From and Workspace.Build, a reference the real build has is missing";
 
-        private static CodeBase _code = null!;
+        private static SolutionFile _solution = null!;
 
         [ClassInitialize]
         public static void ClassInit(TestContext _)
         {
             var solutionFile = new SolutionFileName("Solution.Parser.sln").FindSolutionFileReverseFrom(new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory));
 
-            _code = CodeBase.Open(solutionFile).WithSymbols();
+            _solution = solutionFile.Parse(ParseMode.WithSymbols);
         }
 
         private static ProjectFile Project(string name)
         {
-            return _code.Solution!.Projects.Single(p => p.ProjectFileInfo.FileNameWithoutExtenion == name);
+            return _solution.Projects.Single(p => p.ProjectFileInfo.FileNameWithoutExtenion == name);
         }
 
         [TestMethod]
@@ -50,7 +50,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
         [DataRow("SampleApp.Wpf")]
         public void A_Restored_Project_Compiles_Without_Errors(string projectName)
         {
-            var errors = _code.CompilationDiagnostics(Project(projectName))
+            var errors = Project(projectName).CompilationDiagnostics()
                               .Where(d => d.IsError)
                               .Select(e => $"{e.Location}: {e.Id} {e.Message}")
                               .ToList();
@@ -64,7 +64,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
         [TestMethod]
         public void A_Call_Into_A_Package_Knows_The_Package_And_The_Parameter_Names()
         {
-            var call = _code.Trees(Project("Solution.Parser.Architecture.Test"))
+            var call = Project("Solution.Parser.Architecture.Test").Trees
                             .AllInvocations()
                             .Named("HasCount")
                             .First();
@@ -80,7 +80,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
         [TestMethod]
         public void A_Call_Into_A_Referenced_Project_Is_The_Declared_Method()
         {
-            var call = _code.Trees(Project("Solution.Parser.CSharp.Test"))
+            var call = Project("Solution.Parser.CSharp.Test").Trees
                             .AllInvocations()
                             .Named("Parse")
                             .First(c => c.FilePath.EndsWith("ParseHelper.cs", StringComparison.OrdinalIgnoreCase));
@@ -94,7 +94,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
         [TestMethod]
         public void A_Package_Call_In_Productive_Code_Resolves_Too()
         {
-            var calls = _code.Trees(Project("Solution.Parser.CSharp"))
+            var calls = Project("Solution.Parser.CSharp").Trees
                              .AllInvocations()
                              .Named("IfNull")
                              .Where(c => c.Target == "Throw")

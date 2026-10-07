@@ -188,16 +188,20 @@ call.NamedArgument("writeResponse")        // only for writeResponse: true, see 
 
 The syntax alone cannot tell that `true` in `Client.AssertPostAsync("..", "..", true)` is the
 parameter `writeResponse`, least of all when the method comes from a NuGet package. The compiler can.
-`CodeBase` offers both modes over the same records:
+The parse mode of the solution decides which of the two you get, over the same records:
 
 ```csharp
-var code = CodeBase.Open(solutionFileInfo);          // fast mode: syntax only, parsed once and cached
-var full = code.WithSymbols();                       // full mode: a Roslyn compilation per project, built on first use
+var solution = solutionFileInfo.Parse(ParseMode.SyntaxOnly);   // fast mode: syntax only, parsed once and cached
+var solution = solutionFileInfo.Parse(ParseMode.WithSymbols);  // full mode: a Roslyn compilation per project, built on first use
 
-var findings = from call in full.UnitTestTrees.AllInvocations().Named("AssertPostAsync")
+var findings = from call in solution.UnitTestTrees.AllInvocations().Named("AssertPostAsync")
                where call.Argument("writeResponse")?.Is(true) == true
                select $"{call.Location}: writeResponse is true";
 ```
+
+The code hangs on the solution and its projects: `solution.AllTrees`, `solution.ProductiveTrees`,
+`solution.UnitTestTrees`, `project.Trees`, `solution.CompilationDiagnostics()` and
+`project.CompilationDiagnostics()`. A solution parsed without a mode gets the syntax on first use.
 
 What a resolved call tells, in the vocabulary of the syntax model:
 
@@ -216,7 +220,7 @@ call.Roslyn                // node, semantic model, symbol and operation, for an
 The compilation is built from what restore and build left on disk: package assemblies from
 `obj/project.assets.json`, the framework reference packs, project references as compilations, the
 generated global usings and XAML output from obj, and the source generators of frameworks and packages.
-The solution therefore has to be restored, which it is whenever its tests run. `code.CompilationDiagnostics(project)`
+The solution therefore has to be restored, which it is whenever its tests run. `project.CompilationDiagnostics()`
 shows what the compiler could not resolve.
 
 In the fast mode a symbol access throws instead of guessing, so the cost of a rule stays visible:
