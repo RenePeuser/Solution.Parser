@@ -1,22 +1,22 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 
 namespace Solution.Parser.Project
 {
-    [DebuggerDisplay("{PackageId.Value}")]
+    /// <summary>An entry of an old style <c>packages.config</c>.</summary>
+    [DebuggerDisplay("{Id} {Version}")]
     public class Package
     {
-        internal Package(PackageId packageId, PackageVersion packageVersion,
-            PackageTargetFrameworkVersion packageTargetFrameworkVersion)
+        internal Package(string id, string version, string targetFramework)
         {
-            PackageId = packageId;
-            PackageVersion = packageVersion;
-            PackageTargetFrameworkVersion = packageTargetFrameworkVersion;
+            Id = id;
+            Version = version;
+            TargetFramework = targetFramework;
         }
 
-        public PackageId PackageId { get; }
+        public string Id { get; }
 
-        public PackageVersion PackageVersion { get; }
+        public string Version { get; }
 
-        public PackageTargetFrameworkVersion PackageTargetFrameworkVersion { get; }
+        public string TargetFramework { get; }
     }
 }

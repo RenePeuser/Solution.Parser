@@ -18,10 +18,10 @@ namespace Solution.Parser.CSharp
         public required string Name { get; init; }
 
         /// <summary>Namespace, enclosing types and name, separated by dots.</summary>
-        public required string FullQualifiedName { get; init; }
+        public required string FullyQualifiedName { get; init; }
 
         /// <summary>The source text of this declaration only, not of the whole file.</summary>
-        public required string SyntaxTree { get; init; }
+        public required string SourceCode { get; init; }
 
         public required string FilePath { get; init; }
 

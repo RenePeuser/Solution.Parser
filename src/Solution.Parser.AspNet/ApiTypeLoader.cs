@@ -29,17 +29,17 @@ namespace Solution.Parser.AspNet
     {
         public ImmutableList<Type> GetAllTypesFrom(SolutionFile parsedSolution, DirectoryInfo assemblyDirectory)
         {
-            var webAppProject = parsedSolution.ProductiveProjects.FirstOrDefault(p => p.Document.ToString().Contains("Sdk=\"Microsoft.NET.Sdk.Web\""));
+            var webAppProject = parsedSolution.ProductionProjects.FirstOrDefault(p => p.Document.ToString().Contains("Sdk=\"Microsoft.NET.Sdk.Web\""));
             if (webAppProject.IsNull())
             {
-                throw new InvalidOperationException($"Your solution: {parsedSolution.SolutionFileInfo.Value} does not contain a project which is defined as Sdk=\"Microsoft.NET.Sdk.Web\"");
+                throw new InvalidOperationException($"Your solution: {parsedSolution.SolutionFileInfo.FullName} does not contain a project which is defined as Sdk=\"Microsoft.NET.Sdk.Web\"");
             }
 
-            var searchPattern = $"{webAppProject.ProjectFileInfo.FileNameWithoutExtenion}.dll";
+            var searchPattern = $"{webAppProject.ProjectFileInfo.FileNameWithoutExtension}.dll";
             var assembly = assemblyDirectory.EnumerateFiles(searchPattern, SearchOption.AllDirectories).FirstOrDefault();
             if (assembly.IsNull())
             {
-                throw new InvalidOperationException($"Your project: '{webAppProject.ProjectFileInfo.Value.FullName}' path does not contain the matching assembly: '{assembly}'. Please build your project or solution before you want to create a client from");
+                throw new InvalidOperationException($"Your project: '{webAppProject.ProjectFileInfo.FullName}' path does not contain the matching assembly: '{assembly}'. Please build your project or solution before you want to create a client from");
             }
 
             // Get all types which are declared in the API assembly - Need to unique ident the types for client generation.
@@ -50,17 +50,17 @@ namespace Solution.Parser.AspNet
 
         public ImmutableList<Type> GetAllTypesFrom(SolutionFile parsedSolution)
         {
-            var webAppProject = parsedSolution.ProductiveProjects.FirstOrDefault(p => p.Document.ToString().Contains("Sdk=\"Microsoft.NET.Sdk.Web\""));
+            var webAppProject = parsedSolution.ProductionProjects.FirstOrDefault(p => p.Document.ToString().Contains("Sdk=\"Microsoft.NET.Sdk.Web\""));
             if (webAppProject.IsNull())
             {
-                throw new InvalidOperationException($"Your solution: {parsedSolution.SolutionFileInfo.Value} does not contain a project which is defined as Sdk=\"Microsoft.NET.Sdk.Web\"");
+                throw new InvalidOperationException($"Your solution: {parsedSolution.SolutionFileInfo.FullName} does not contain a project which is defined as Sdk=\"Microsoft.NET.Sdk.Web\"");
             }
 
-            var searchPattern = $"{webAppProject.ProjectFileInfo.FileNameWithoutExtenion}.dll";
-            var assembly = webAppProject.ProjectFileInfo.Value.Directory!.EnumerateFiles(searchPattern, SearchOption.AllDirectories).FirstOrDefault(file => file.FullName.Contains("Debug") && file.FullName.Contains("net7") && !file.FullName.Contains("obj"));
+            var searchPattern = $"{webAppProject.ProjectFileInfo.FileNameWithoutExtension}.dll";
+            var assembly = webAppProject.ProjectFileInfo.Directory!.EnumerateFiles(searchPattern, SearchOption.AllDirectories).FirstOrDefault(file => file.FullName.Contains("Debug") && file.FullName.Contains("net7") && !file.FullName.Contains("obj"));
             if (assembly.IsNull())
             {
-                throw new InvalidOperationException($"Your project: '{webAppProject.ProjectFileInfo.Value.FullName}' path does not contain the matching assembly: '{assembly}'. Please build your project or solution before you want to create a client from");
+                throw new InvalidOperationException($"Your project: '{webAppProject.ProjectFileInfo.FullName}' path does not contain the matching assembly: '{assembly}'. Please build your project or solution before you want to create a client from");
             }
 
             // Get all types which are declared in the API assembly - Need to unique ident the types for client generation.

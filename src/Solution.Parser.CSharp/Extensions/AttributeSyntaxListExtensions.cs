@@ -31,12 +31,12 @@ namespace Solution.Parser.CSharp
             return new Attribute
             {
                 Name = name,
-                FullQualifiedName = attribute.BuildFullQualifiedName(name),
+                FullyQualifiedName = attribute.BuildFullyQualifiedName(name),
                 Arguments = arguments.Select(a => a.ToString()).ToImmutableList(),
                 PositionalArguments = positional,
                 NamedArguments = named,
                 Target = list.Target?.Identifier.ValueText,
-                SyntaxTree = attribute.ToString(),
+                SourceCode = attribute.ToString(),
                 FilePath = filePath,
                 Location = attribute.ToCodeLocation(filePath)
             };

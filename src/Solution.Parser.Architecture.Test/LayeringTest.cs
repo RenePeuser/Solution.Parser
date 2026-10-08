@@ -28,14 +28,12 @@ namespace Solution.Parser.Architecture.Test
         [ClassInitialize]
         public static void ClassInit(TestContext _)
         {
-            var solutionFile = new SolutionFileName("Solution.Parser.sln").FindSolutionFileReverseFrom(new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory));
-
-            _solution = solutionFile.Parse();
+            _solution = SolutionFile.Find("Solution.Parser.sln");
         }
 
         private static ProjectFile Project(string name)
         {
-            return _solution.Projects.Single(p => p.ProjectFileInfo.FileNameWithoutExtenion == name);
+            return _solution.Project(name);
         }
 
         private static ImmutableList<string> ProjectReferencesOf(string name)

@@ -27,7 +27,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
         {
             var solution = SolutionFileInfo().Parse();
 
-            Assert.That.IsTrue(solution.ProductiveTrees.Count > 0, because: "the syntax costs nothing until it is asked for", fix: SolutionCodeFix);
+            Assert.That.IsTrue(solution.ProductionTrees.Count > 0, because: "the syntax costs nothing until it is asked for", fix: SolutionCodeFix);
             Assert.That.IsFalse(solution.HasSymbols, because: "symbols are only there when asked for at parse time", fix: SolutionCodeFix);
         }
 
@@ -42,7 +42,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
         public void A_Project_Has_Its_Own_Trees_Out_Of_The_Solution_Cache()
         {
             var solution = SolutionFileInfo().Parse(ParseMode.SyntaxOnly);
-            var project = solution.Projects.Single(p => p.ProjectFileInfo.FileNameWithoutExtenion == "Solution.Parser.CSharp");
+            var project = solution.Projects.Single(p => p.ProjectFileInfo.FileNameWithoutExtension == "Solution.Parser.CSharp");
 
             var trees = project.Trees;
 
@@ -58,7 +58,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
         public void A_Project_Of_A_Solution_Parsed_Without_A_Mode_Has_Its_Trees()
         {
             var solution = SolutionFileInfo().Parse();
-            var project = solution.Projects.Single(p => p.ProjectFileInfo.FileNameWithoutExtenion == "Solution.Parser.CSharp");
+            var project = solution.Projects.Single(p => p.ProjectFileInfo.FileNameWithoutExtension == "Solution.Parser.CSharp");
 
             Assert.That.IsTrue(project.Trees.Count > 0, because: "Parse() stays compatible and the code comes on first use, also per project", fix: SolutionCodeFix);
         }
@@ -66,7 +66,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
         [TestMethod]
         public void A_Project_Parsed_On_Its_Own_Has_Its_Trees()
         {
-            var projectFileInfo = SolutionFileInfo().Parse().Projects.Single(p => p.ProjectFileInfo.FileNameWithoutExtenion == "Solution.Parser.CSharp").ProjectFileInfo;
+            var projectFileInfo = SolutionFileInfo().Parse().Projects.Single(p => p.ProjectFileInfo.FileNameWithoutExtension == "Solution.Parser.CSharp").ProjectFileInfo;
 
             var project = ProjectFileParser.Parse(projectFileInfo);
 

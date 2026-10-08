@@ -92,6 +92,16 @@ namespace Solution.Parser.CSharp
             return syntaxTrees.SelectMany(AllInvocations).ToImmutableList();
         }
 
+        /// <summary>
+        /// The declarations with exactly this name, for example <c>tree.AllMethods().Named("Dispose")</c> or
+        /// <c>tree.AllInvocations().Named("AssertPostAsync")</c>.
+        /// </summary>
+        public static ImmutableList<T> Named<T>(this IEnumerable<T> declarations, string name)
+            where T : DeclarationBase
+        {
+            return declarations.Where(d => d.Name.Equals(name, StringComparison.Ordinal)).ToImmutableList();
+        }
+
         /// <summary>Matches with or without the <c>Attribute</c> suffix, see <see cref="Attribute.IsNamed"/>.</summary>
         public static bool HasAttribute(this DeclarationWithModifiers declaration, string attributeName)
         {

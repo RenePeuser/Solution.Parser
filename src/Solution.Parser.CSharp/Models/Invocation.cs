@@ -13,7 +13,7 @@ namespace Solution.Parser.CSharp
     /// method is meant and which parameter an argument binds to needs symbols, see the semantic
     /// package.
     /// </remarks>
-    [DebuggerDisplay("{SyntaxTree}")]
+    [DebuggerDisplay("{SourceCode}")]
     public record Invocation : DeclarationBase
     {
         /// <summary>The expression the method is called on, <c>Client</c> in <c>Client.Go()</c>; null for a plain <c>Go()</c>.</summary>
@@ -58,11 +58,6 @@ namespace Solution.Parser.CSharp
 
     public static class InvocationListExtensions
     {
-        public static ImmutableList<Invocation> Named(this ImmutableList<Invocation> invocations, string name)
-        {
-            return invocations.Where(i => i.Name.Equals(name, StringComparison.Ordinal)).ToImmutableList();
-        }
-
         /// <summary>
         /// The argument given with <c>name:</c>. The syntax alone cannot tell which parameter a
         /// positional argument binds to; with symbols loaded, <c>BoundArgument</c> can.

@@ -11,10 +11,10 @@ namespace Solution.Parser.CSharp
     /// <summary>
     /// The code behind a solution, in two modes:
     /// <list type="bullet">
-    /// <item>the fast mode: syntax trees only, exactly what <c>CSharpFileInfo.Parse()</c> gives, but
+    /// <item><see cref="ParseMode.SyntaxOnly"/>: syntax trees only, exactly what <c>CSharpFileInfo.Parse()</c> gives, but
     /// parsed once and cached.</item>
-    /// <item><c>.WithSymbols()</c> adds the full mode on top: <c>call.Method</c>,
-    /// <c>call.Argument("writeResponse")</c> and the like answer from a Roslyn compilation per
+    /// <item><c>.WithSymbols()</c> adds <see cref="ParseMode.WithSymbols"/> on top: <c>call.Method</c>,
+    /// <c>call.ArgumentFor("writeResponse")</c> and the like answer from a Roslyn compilation per
     /// project, built the first time a symbol of that project is asked for.</item>
     /// </list>
     /// For a solution there is nothing to open: <c>solutionFileInfo.Parse(ParseMode.WithSymbols)</c>
@@ -23,7 +23,7 @@ namespace Solution.Parser.CSharp
     /// </summary>
     /// <remarks>
     /// Both modes share the caches, so asking for symbols later never parses a file again. A symbol
-    /// access in the fast mode throws instead of guessing, which keeps the cost of a rule visible.
+    /// access without symbols throws instead of guessing, which keeps the cost of a rule visible.
     /// </remarks>
     public sealed class CodeBase
     {
@@ -47,7 +47,7 @@ namespace Solution.Parser.CSharp
         /// <summary>Every syntax tree of every project, a file linked into two projects once.</summary>
         public ImmutableList<CSharpSyntaxTree> AllTrees => TreesOf(_workspace.Projects);
 
-        internal ImmutableList<CSharpSyntaxTree> ProductiveTrees => Solution is null ? AllTrees : Trees(Solution.ProductiveProjects);
+        internal ImmutableList<CSharpSyntaxTree> ProductionTrees => Solution is null ? AllTrees : Trees(Solution.ProductionProjects);
 
         internal ImmutableList<CSharpSyntaxTree> UnitTestTrees => Solution is null ? ImmutableList<CSharpSyntaxTree>.Empty : Trees(Solution.UnitTestProjects);
 
@@ -90,6 +90,17 @@ namespace Solution.Parser.CSharp
         }
 
         /// <summary>
+        /// A single file of code in memory, see <see cref="FromSources"/>; <c>CodeBase.FromSource(code).WithSymbols()</c>
+        /// is the shortest way to try a rule out.
+        /// </summary>
+        public static CodeBase FromSource(string code)
+        {
+            Throw.IfNull(code);
+
+            return FromSources(("Source.cs", code));
+        }
+
+        /// <summary>
         /// The same code base with symbols. Nothing is compiled yet; each project is compiled the first
         /// time one of its symbols is asked for.
         /// </summary>
@@ -116,7 +127,7 @@ namespace Solution.Parser.CSharp
         {
             Throw.IfNull(projects);
 
-            var keys = projects.Select(p => p.ProjectFileInfo.Value.FullName).ToImmutableHashSet(Workspace.PathComparer);
+            var keys = projects.Select(p => p.ProjectFileInfo.FullName).ToImmutableHashSet(Workspace.PathComparer);
 
             return TreesOf(_workspace.Projects.Where(p => keys.Contains(p.Key)));
         }
@@ -130,7 +141,7 @@ namespace Solution.Parser.CSharp
         {
             Throw.IfNull(project);
 
-            return Diagnostics(project.ProjectFileInfo.Value.FullName);
+            return Diagnostics(project.ProjectFileInfo.FullName);
         }
 
         /// <summary>What the compiler reports for every project.</summary>
@@ -187,8 +198,8 @@ namespace Solution.Parser.CSharp
         {
             return new InvalidOperationException($"Symbols are not loaded, so '{member}' cannot be answered. "
                                                  + "Parse the solution with solutionFileInfo.Parse(ParseMode.WithSymbols), or use "
-                                                 + "CodeBase.FromSources(...).WithSymbols() for code in memory, to resolve symbols; "
-                                                 + "the fast mode only knows the syntax.");
+                                                 + "CodeBase.FromSource(code).WithSymbols() for code in memory, to resolve symbols; "
+                                                 + "ParseMode.SyntaxOnly only knows the syntax.");
         }
     }
 }

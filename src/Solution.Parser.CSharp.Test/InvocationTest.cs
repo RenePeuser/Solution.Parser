@@ -184,7 +184,7 @@ namespace Solution.Parser.CSharp.Test
             Assert.That.AreEqual(5, call.Location.StartLine, because: "a finding must point at the call",
                                  fix: InvocationFix);
 
-            Assert.That.AreEqual("Run(1)", call.SyntaxTree, because: "the source of the call is the call only",
+            Assert.That.AreEqual("Run(1)", call.SourceCode, because: "the source of the call is the call only",
                                  fix: InvocationFix);
         }
     }

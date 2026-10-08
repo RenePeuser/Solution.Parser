@@ -49,7 +49,7 @@ namespace Solution.Parser.AspNet
             {
                 // 0. Reflection controller
                 //    This is the case if an alive controller comes from another lib
-                var controllerType = reflectionTypes.FirstOrDefault(type => type.FullName.EqualsTo(controller.FullQualifiedName));
+                var controllerType = reflectionTypes.FirstOrDefault(type => type.FullName.EqualsTo(controller.FullyQualifiedName));
                 if (controllerType.IsNull())
                 {
                     continue;
@@ -107,35 +107,35 @@ namespace Solution.Parser.AspNet
             fullqualifiedName = fullqualifiedName.Split("`").First();
 
             // 2.1 Check find class first
-            var @class = syntaxTrees.SelectMany(tree => tree.Classes).FirstOrDefault(c => c.FullQualifiedName.EqualsTo(fullqualifiedName));
+            var @class = syntaxTrees.SelectMany(tree => tree.Classes).FirstOrDefault(c => c.FullyQualifiedName.EqualsTo(fullqualifiedName));
             if (@class.IsNotNull())
             {
                 return (@class, reflectionType);
             }
 
             // 2.2. Check records
-            var @record = syntaxTrees.SelectMany(tree => tree.Records).FirstOrDefault(c => c.FullQualifiedName.EqualsTo(fullqualifiedName));
+            var @record = syntaxTrees.SelectMany(tree => tree.Records).FirstOrDefault(c => c.FullyQualifiedName.EqualsTo(fullqualifiedName));
             if (@record.IsNotNull())
             {
                 return (@record, reflectionType);
             }
 
             // 2.3. Check enum
-            var @enum = syntaxTrees.SelectMany(tree => tree.Enums).FirstOrDefault(c => c.FullQualifiedName.EqualsTo(fullqualifiedName));
+            var @enum = syntaxTrees.SelectMany(tree => tree.Enums).FirstOrDefault(c => c.FullyQualifiedName.EqualsTo(fullqualifiedName));
             if (@enum.IsNotNull())
             {
                 return (@enum, reflectionType);
             }
 
             // 2.3. Check interface
-            var @interface = syntaxTrees.SelectMany(tree => tree.Interfaces).FirstOrDefault(c => c.FullQualifiedName.EqualsTo(fullqualifiedName));
+            var @interface = syntaxTrees.SelectMany(tree => tree.Interfaces).FirstOrDefault(c => c.FullyQualifiedName.EqualsTo(fullqualifiedName));
             if (@interface.IsNotNull())
             {
                 return (@interface, reflectionType);
             }
 
             // 2.4. Check interface
-            var @stuct = syntaxTrees.SelectMany(tree => tree.Structs).FirstOrDefault(c => c.FullQualifiedName.EqualsTo(fullqualifiedName));
+            var @stuct = syntaxTrees.SelectMany(tree => tree.Structs).FirstOrDefault(c => c.FullyQualifiedName.EqualsTo(fullqualifiedName));
             if (@stuct.IsNotNull())
             {
                 return (@stuct, reflectionType);

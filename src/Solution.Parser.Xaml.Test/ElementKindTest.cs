@@ -156,7 +156,7 @@ namespace Solution.Parser.Xaml.Test
                                                  fix: "Window and UserControl are siblings below Root");
 
             Assert.That.AreEqual("My.Sample.MainWindow",
-                                 window.FullQualifiedName,
+                                 window.FullyQualifiedName,
                                  because: "x:Class names the code behind type a rule pairs the markup with",
                                  fix: "Check ElementBuilder.BuildRoot");
 
@@ -176,7 +176,7 @@ namespace Solution.Parser.Xaml.Test
                                                          fix: "Check ElementBuilder.CreateEmptyRoot");
 
             Assert.That.AreEqual("Sample",
-                                 root.FullQualifiedName,
+                                 root.FullyQualifiedName,
                                  because: "a dictionary declares no x:Class, so its file name is the only name it has",
                                  fix: "Check XamlParser.FallbackName");
         }

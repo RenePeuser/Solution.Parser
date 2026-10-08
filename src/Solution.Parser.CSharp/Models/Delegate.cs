@@ -7,7 +7,7 @@ namespace Solution.Parser.CSharp
     [DebuggerDisplay("delegate {Name}")]
     public record Delegate : DeclarationWithModifiers
     {
-        public required NameSpace NameSpace { get; init; }
+        public required Namespace Namespace { get; init; }
 
         public required string ReturnParameter { get; init; }
 

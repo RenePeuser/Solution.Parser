@@ -19,7 +19,7 @@ namespace Solution.Parser.CSharp
             return new Method
             {
                 Name = name,
-                FullQualifiedName = methodDeclarationSyntax.BuildFullQualifiedName(name),
+                FullyQualifiedName = methodDeclarationSyntax.BuildFullyQualifiedName(name),
                 ReturnParameter = methodDeclarationSyntax.ReturnType.ToString(),
                 Parameters = methodDeclarationSyntax.ParameterList.ToParameters(filePath),
                 TypeParameters = methodDeclarationSyntax.TypeParameterList.ToTypeParameters(methodDeclarationSyntax.ConstraintClauses, filePath),
@@ -36,7 +36,7 @@ namespace Solution.Parser.CSharp
                 IsIterator = body.IsIterator,
                 ExplicitInterfaceSpecifier = methodDeclarationSyntax.ExplicitInterfaceSpecifier?.Name.ToString(),
                 IsPartialDefinition = modifiers.Contains(Modifier.Partial) && hasNoBody,
-                SyntaxTree = methodDeclarationSyntax.ToString(),
+                SourceCode = methodDeclarationSyntax.ToString(),
                 FilePath = filePath,
                 Location = methodDeclarationSyntax.ToCodeLocation(filePath)
             };

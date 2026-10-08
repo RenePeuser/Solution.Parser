@@ -5,12 +5,12 @@ namespace Solution.Parser.CSharp
 {
     internal static class FileScopedNamespaceDeclarationSyntaxExtensions
     {
-        internal static NameSpace ToNamespace(this FileScopedNamespaceDeclarationSyntax fileScopedNamespaceDeclarationSyntax)
+        internal static Namespace ToNamespace(this FileScopedNamespaceDeclarationSyntax fileScopedNamespaceDeclarationSyntax)
         {
             Throw.IfNull(fileScopedNamespaceDeclarationSyntax);
 
             var fullqualifiedName = fileScopedNamespaceDeclarationSyntax.Name.ToString();
-            return new NameSpace(fullqualifiedName);
+            return new Namespace(fullqualifiedName);
         }
     }
 }

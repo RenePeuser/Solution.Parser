@@ -4,9 +4,9 @@ namespace Solution.Parser.Xaml
 {
     public interface IXamlParser
     {
-        XamlSyntaxTree Parse(IXamlFileInfo xamlFileInfo);
+        XamlSyntaxTree Parse(XamlFileInfo xamlFileInfo);
 
-        XamlSyntaxTree Parse(IXamlFileInfo xamlFileInfo, string xamlContent);
+        XamlSyntaxTree Parse(XamlFileInfo xamlFileInfo, string xamlContent);
 
         XamlSyntaxTree ParseContent(string xamlContent, string filePath);
 

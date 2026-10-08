@@ -48,12 +48,12 @@ namespace Solution.Parser.AspNet
 
 
                         // If property type is matching data model use simplified version :) 
-                        if (declarationToTypes.Any(declaratonToType => declaratonToType.Declaration.FullQualifiedName.EqualsTo(type.FullName)))
+                        if (declarationToTypes.Any(declaratonToType => declaratonToType.Declaration.FullyQualifiedName.EqualsTo(type.FullName)))
                         {
                             continue;
                         }
 
-                        var newSyntaxTree = newDeclarationType.SyntaxTree.Replace($"<{type.Name}>", $"<{type.FullName}>", StringComparison.Ordinal);
+                        var newSyntaxTree = newDeclarationType.SourceCode.Replace($"<{type.Name}>", $"<{type.FullName}>", StringComparison.Ordinal);
                         newSyntaxTree = newSyntaxTree.Replace($"private {type.Name}", $"private {type.FullName}", StringComparison.Ordinal);
                         newSyntaxTree = newSyntaxTree.Replace($"internal {type.Name}", $"internal {type.FullName}", StringComparison.Ordinal);
                         newSyntaxTree = newSyntaxTree.Replace($"public {type.Name}", $"public {type.FullName}", StringComparison.Ordinal);
@@ -63,7 +63,7 @@ namespace Solution.Parser.AspNet
                         // Unknown type like Pulse.Common or external lib so we have to replace it with full qualified name
                         newDeclarationType = newDeclarationType with
                         {
-                            SyntaxTree = newSyntaxTree
+                            SourceCode = newSyntaxTree
                         };
                     }
                 }

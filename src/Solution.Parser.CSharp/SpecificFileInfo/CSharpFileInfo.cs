@@ -1,10 +1,6 @@
-﻿namespace Solution.Parser.CSharp
+using Solution.Parser.Core;
+
+namespace Solution.Parser.CSharp
 {
-    public record CSharpFileInfo : SpecificFileInfoBase
-    {
-        public CSharpFileInfo(string path)
-            : base(path, ".cs")
-        {
-        }
-    }
+    public class CSharpFileInfo(string path) : SpecificFileInfo(path, ".cs");
 }

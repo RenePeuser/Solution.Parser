@@ -3,11 +3,11 @@ using System.Diagnostics;
 namespace Solution.Parser.CSharp
 {
     /// <summary>
-    /// A using directive. <c>Value</c> stays the namespace or type
-    /// being imported, so existing rules keep working; the flags describe how it was written.
+    /// A using directive. <c>Name</c> is the namespace or type being imported; the flags describe how
+    /// it was written.
     /// </summary>
-    [DebuggerDisplay("{Value}")]
-    public record Using(string Value) : ImmutableSemanticType<string>(Value)
+    [DebuggerDisplay("{Name}")]
+    public record Using(string Name)
     {
         /// <summary>The alias in <c>using Foo = System.Bar;</c>, otherwise null.</summary>
         public string? Alias { get; init; }

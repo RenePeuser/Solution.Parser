@@ -56,7 +56,7 @@ namespace SampleApp.Wpf.Test
         public void The_Code_Behind_Type_Is_Reachable_From_The_Markup()
         {
             Assert.That.AreEqual("SampleApp.Wpf.MainWindow",
-                                 SampleApp.View("MainWindow.xaml").FullQualifiedName,
+                                 SampleApp.View("MainWindow.xaml").FullyQualifiedName,
                                  because: "x:Class is what pairs a view with its code behind",
                                  fix: "Check ElementBuilder.BuildRoot");
         }

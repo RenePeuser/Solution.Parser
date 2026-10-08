@@ -34,10 +34,10 @@ namespace Solution.Parser.Sln
         {
             if (solutionFileName.HasExplicitFormat)
             {
-                return [solutionFileName.Value];
+                return [solutionFileName.Name];
             }
 
-            return SolutionFileFormat.All.Select(extension => $"{solutionFileName.Value}{extension}").ToImmutableList();
+            return SolutionFileFormat.All.Select(extension => $"{solutionFileName.Name}{extension}").ToImmutableList();
         }
 
         private static SolutionFileInfo? FindSolutionFileFrom(ImmutableList<string> candidateFileNames, DirectoryInfo? startUpDirectory)

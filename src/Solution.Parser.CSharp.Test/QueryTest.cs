@@ -103,7 +103,7 @@ namespace Solution.Parser.CSharp.Test
             var findings = (from type in parsed.AllTypes()
                             from property in type.Properties
                             where !property.IsReadOnly
-                            select $"{property.Location}: {type.FullQualifiedName}.{property.Name} is mutable").ToList();
+                            select $"{property.Location}: {type.FullyQualifiedName}.{property.Name} is mutable").ToList();
 
             Assert.That.HasCount(1,
                                  findings,

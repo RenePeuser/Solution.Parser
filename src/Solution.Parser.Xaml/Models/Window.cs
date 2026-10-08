@@ -2,7 +2,7 @@
 
 namespace Solution.Parser.Xaml
 {
-    [DebuggerDisplay("{FullQualifiedName}")]
+    [DebuggerDisplay("{FullyQualifiedName}")]
     public record Window : Root
     {
         public override RootKind RootKind => RootKind.Window;

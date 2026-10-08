@@ -11,8 +11,8 @@ namespace Solution.Parser.CSharp
 
         public ImmutableList<TypeParameter> TypeParameters { get; init; } = ImmutableList<TypeParameter>.Empty;
 
-        /// <summary>Kept as the previous name for <see cref="DeclarationBase.SyntaxTree"/>.</summary>
-        public string LocalFunctionValue => SyntaxTree;
+        /// <summary>Kept as the previous name for <see cref="DeclarationBase.SourceCode"/>.</summary>
+        public string LocalFunctionValue => SourceCode;
 
         /// <summary>Kept as the previous name for <see cref="MemberWithBody.Body"/>.</summary>
         public string LocalFunctionBody => Body;

@@ -19,7 +19,7 @@ namespace Solution.Parser.CSharp
             return new Parameter
             {
                 Name = name,
-                FullQualifiedName = name,
+                FullyQualifiedName = name,
                 Type = parameterSyntax.Type?.ToString() ?? string.Empty,
                 Attributes = parameterSyntax.AttributeLists.ToAttributes(filePath),
                 Modifiers = parameterSyntax.Modifiers.ToModifiers(),
@@ -28,7 +28,7 @@ namespace Solution.Parser.CSharp
                 IsParams = parameterSyntax.Modifiers.Any(SyntaxKind.ParamsKeyword),
                 IsNullable = parameterSyntax.Type is NullableTypeSyntax,
                 Ordinal = ordinal,
-                SyntaxTree = parameterSyntax.ToString(),
+                SourceCode = parameterSyntax.ToString(),
                 FilePath = filePath,
                 Location = parameterSyntax.ToCodeLocation(filePath)
             };

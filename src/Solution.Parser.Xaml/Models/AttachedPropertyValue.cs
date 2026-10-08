@@ -13,6 +13,6 @@
 
         public required string PropertyName { get; init; }
 
-        public string FullQualifiedName => $"{OwnerTypeName}.{PropertyName}";
+        public string FullyQualifiedName => $"{OwnerTypeName}.{PropertyName}";
     }
 }

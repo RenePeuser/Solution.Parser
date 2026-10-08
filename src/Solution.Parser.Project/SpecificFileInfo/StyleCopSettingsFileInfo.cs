@@ -1,6 +1,8 @@
-﻿namespace Solution.Parser.Project
+using Solution.Parser.Core;
+
+namespace Solution.Parser.Project
 {
-    public class StyleCopSettingsFileInfo : SpecificFileInfoBase
+    public class StyleCopSettingsFileInfo : SpecificFileInfo
     {
         internal StyleCopSettingsFileInfo(string path)
             : base(path, ".StyleCop")

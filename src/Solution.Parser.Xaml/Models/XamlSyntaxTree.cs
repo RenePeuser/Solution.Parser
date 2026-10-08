@@ -22,7 +22,7 @@ namespace Solution.Parser.Xaml
         public ImmutableList<XamlDiagnostic> Diagnostics { get; init; } = ImmutableList<XamlDiagnostic>.Empty;
 
         /// <summary>The file this tree was read from, null when the content was parsed from memory.</summary>
-        public IXamlFileInfo? FileInfo { get; init; }
+        public XamlFileInfo? FileInfo { get; init; }
 
         public bool HasDiagnostics => !Diagnostics.IsEmpty;
 
@@ -30,7 +30,7 @@ namespace Solution.Parser.Xaml
         public ImmutableList<XamlUsing> XmlnsDeclarations => Root.XmlnsDeclarations;
 
         /// <summary>The value of <c>x:Class</c>, which names the code behind type.</summary>
-        public string FullQualifiedName => Root.FullQualifiedName;
+        public string FullyQualifiedName => Root.FullyQualifiedName;
 
         public XamlUsing? Xmlns(string alias)
         {

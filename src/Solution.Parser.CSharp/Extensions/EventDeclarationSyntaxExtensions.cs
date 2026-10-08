@@ -19,7 +19,7 @@ namespace Solution.Parser.CSharp
             return new Event
             {
                 Name = name,
-                FullQualifiedName = eventDeclarationSyntax.BuildFullQualifiedName(name),
+                FullyQualifiedName = eventDeclarationSyntax.BuildFullyQualifiedName(name),
                 Type = eventDeclarationSyntax.Type.ToString(),
                 Modifiers = eventDeclarationSyntax.Modifiers.ToModifiers(),
                 Accessibility = eventDeclarationSyntax.Modifiers.ToAccessibility(eventDeclarationSyntax),
@@ -28,7 +28,7 @@ namespace Solution.Parser.CSharp
                 ExplicitInterfaceSpecifier = eventDeclarationSyntax.ExplicitInterfaceSpecifier?.Name.ToString(),
                 HasAdd = accessors.Any(a => a.IsKind(SyntaxKind.AddAccessorDeclaration)),
                 HasRemove = accessors.Any(a => a.IsKind(SyntaxKind.RemoveAccessorDeclaration)),
-                SyntaxTree = eventDeclarationSyntax.ToString(),
+                SourceCode = eventDeclarationSyntax.ToString(),
                 FilePath = filePath,
                 Location = eventDeclarationSyntax.ToCodeLocation(filePath)
             };

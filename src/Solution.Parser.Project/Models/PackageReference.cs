@@ -1,17 +1,18 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 
 namespace Solution.Parser.Project
 {
-    [DebuggerDisplay("{Include} : {PackageVersion.Value}")]
+    [DebuggerDisplay("{Include} : {Version}")]
     public class PackageReference
     {
-        internal PackageReference(string include, PackageVersion packageVersion)
+        internal PackageReference(string include, string version)
         {
             Include = include;
-            PackageVersion = packageVersion;
+            Version = version;
         }
 
         public string Include { get; }
-        public PackageVersion PackageVersion { get; }
+
+        public string Version { get; }
     }
 }

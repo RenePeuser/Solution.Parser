@@ -29,7 +29,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
 
         private static ProjectFile Project(string name)
         {
-            return _solution.Projects.Single(p => p.ProjectFileInfo.FileNameWithoutExtenion == name);
+            return _solution.Projects.Single(p => p.ProjectFileInfo.FileNameWithoutExtension == name);
         }
 
         [TestMethod]
@@ -72,7 +72,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
             Assert.That.IsTrue(call.IsResolved, because: "AspNetCore.Simple.MsTest.Sdk is restored for the test project", fix: CompilationFix);
             Assert.That.AreEqual("AspNetCore.Simple.MsTest.Sdk", call.Method!.Origin.Name, because: "the assembly path maps back to its package", fix: "Check AssetsFile and Workspace.PackageOf");
             Assert.That.IsTrue(call.Method!.Origin.IsPackage, because: "it comes from a NuGet package", fix: "Check AssetsFile and Workspace.PackageOf");
-            Assert.That.IsTrue(call.Argument("because")?.IsExplicit == true,
+            Assert.That.IsTrue(call.ArgumentFor("because")?.IsExplicit == true,
                                because: "the parameter name comes from the package metadata, not from the source",
                                fix: CompilationFix);
         }

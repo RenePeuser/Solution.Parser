@@ -5,7 +5,7 @@ using Argument.Check;
 
 namespace Solution.Parser.Nuspec
 {
-    [DebuggerDisplay("{NuspecFileInfo.FileNameWithoutExtenion}")]
+    [DebuggerDisplay("{NuspecFileInfo.FileNameWithoutExtension}")]
     public class NuspecFile
     {
         internal NuspecFile(NuspecFileInfo nuspecFileInfo, XDocument document,

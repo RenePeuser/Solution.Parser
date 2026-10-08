@@ -30,7 +30,7 @@ namespace Solution.Parser.Project
             var contentItems = ImmutableList<ProjectContentItem>.Empty;
             var assemblyReferences = ImmutableList<AssemblyReference>.Empty;
 
-            var assemblyName = document.ElementBy(ParserHelper.AssemblyName)?.ValueOrDefault() ?? projectFileInfo.FileNameWithoutExtenion;
+            var assemblyName = document.ElementBy(ParserHelper.AssemblyName)?.ValueOrDefault() ?? projectFileInfo.FileNameWithoutExtension;
 
             var imports = GetAllImports(document);
             var targetFrameworkVersion = document.ElementBy(ParserHelper.TargetFrameworkNewFormat)?.ValueOrDefault();
@@ -49,9 +49,9 @@ namespace Solution.Parser.Project
 
         private static Package ParseElement(XElement element)
         {
-            var id = new PackageId(element.Attribute("id")?.Value ?? string.Empty);
-            var version = new PackageVersion(element.Attribute("version")?.Value ?? string.Empty);
-            var targetFramework = new PackageTargetFrameworkVersion(element.Attribute("targetFramework")?.Value ?? string.Empty);
+            var id = element.Attribute("id")?.Value ?? string.Empty;
+            var version = element.Attribute("version")?.Value ?? string.Empty;
+            var targetFramework = element.Attribute("targetFramework")?.Value ?? string.Empty;
             return new Package(id, version, targetFramework);
         }
 
@@ -95,7 +95,7 @@ namespace Solution.Parser.Project
         /// </summary>
         private static ImmutableList<FileInfo> GetSourceFiles(ProjectFileInfo projectFileInfo)
         {
-            var projectDirectory = projectFileInfo.Value.Directory!;
+            var projectDirectory = projectFileInfo.Directory!;
 
             return projectDirectory.EnumerateFiles("*.*", SearchOption.AllDirectories)
                                    .Where(file => SourceFileFilter.IsSourceFile(file, projectDirectory))
@@ -104,7 +104,7 @@ namespace Solution.Parser.Project
 
         private static ImmutableList<Package> GetPackagesFrom(ProjectFileInfo projectFileInfo)
         {
-            var packagesConfigFileInfo = new FileInfo(Path.Combine(projectFileInfo.Value.Directory!.FullName, "packages.config"));
+            var packagesConfigFileInfo = new FileInfo(Path.Combine(projectFileInfo.Directory!.FullName, "packages.config"));
             if (packagesConfigFileInfo.Exists.IsFalse())
             {
                 return ImmutableList<Package>.Empty;
@@ -127,7 +127,7 @@ namespace Solution.Parser.Project
                 var include = p.AttributeBy("Include")?.Value is null ? p.AttributeBy("Update")?.Value : p.AttributeBy("Include")?.Value;
                 var versionAttribute = p.AttributeBy("Version");
                 var version = versionAttribute?.Value ?? p.ElementBy("Version")?.Value;
-                return new PackageReference(include ?? string.Empty, new PackageVersion(version ?? string.Empty));
+                return new PackageReference(include ?? string.Empty, version ?? string.Empty);
             }).ToImmutableList();
         }
     }

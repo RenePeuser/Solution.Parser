@@ -34,13 +34,13 @@ namespace Solution.Parser.Sln.Test
             var projects = parsedSolutionFile.Projects.Count;
             var parsedCSharpFiles = csharpFiles.Select(c => c.Parse());
             var classes = parsedCSharpFiles.SelectMany(c => c.Classes);
-            var maxLineOfSyntaxTree = classes.Max(c => c.SyntaxTree.Split(Environment.NewLine).Length);
+            var maxLineOfSyntaxTree = classes.Max(c => c.SourceCode.Split(Environment.NewLine).Length);
             var maxMethodLineCount = classes.SelectMany(c => c.Methods).Max(m => m.MethodBody.Split(Environment.NewLine).Length);
             var enums = parsedCSharpFiles.SelectMany(c => c.Enums).Count();
             var interfaces = parsedCSharpFiles.SelectMany(c => c.Interfaces).Count();
             var records = parsedCSharpFiles.SelectMany(c => c.Records).Count();
             var structs = parsedCSharpFiles.SelectMany(c => c.Structs).Count();
-            var totalLines = parsedCSharpFiles.Sum(c => c.SyntaxTree.Split(Environment.NewLine).Length);
+            var totalLines = parsedCSharpFiles.Sum(c => c.SourceCode.Split(Environment.NewLine).Length);
             var testClasses = classes.Count(c => c.Attributes.Any(a => a.Name == "TestClass"));
             var testMethods = classes.SelectMany(c => c.Methods).Count(m => m.Attributes.Any(a => a.Name == "TestMethod"));
 
@@ -64,7 +64,7 @@ namespace Solution.Parser.Sln.Test
                 TestMethodAttributes = testMethods
             };
 
-            Assert.Fail($"{Environment.NewLine}{Environment.NewLine}{_solutionFileInfo.FileNameWithoutExtenion}:{Environment.NewLine}{ConsoleTables.ConsoleTable.From([record])}{Environment.NewLine}{Environment.NewLine}{ConsoleTables.ConsoleTable.From([tests])}");
+            Assert.Fail($"{Environment.NewLine}{Environment.NewLine}{_solutionFileInfo.FileNameWithoutExtension}:{Environment.NewLine}{ConsoleTables.ConsoleTable.From([record])}{Environment.NewLine}{Environment.NewLine}{ConsoleTables.ConsoleTable.From([tests])}");
 
         }
 
@@ -91,7 +91,7 @@ namespace Solution.Parser.Sln.Test
             var parsedSolutionFile = _solutionFileInfo.Parse();
 
             var testProjects = parsedSolutionFile.UnitTestProjects
-                                                 .Select(p => p.ProjectFileInfo.FileNameWithoutExtenion)
+                                                 .Select(p => p.ProjectFileInfo.FileNameWithoutExtension)
                                                  .ToImmutableList();
 
             // One test project per package since the split, so a fixed count would only record how
@@ -106,8 +106,8 @@ namespace Solution.Parser.Sln.Test
         {
             var parsedSolutionFile = _solutionFileInfo.Parse();
 
-            var productiveProjects = parsedSolutionFile.ProductiveProjects
-                                                       .Select(p => p.ProjectFileInfo.FileNameWithoutExtenion)
+            var productiveProjects = parsedSolutionFile.ProductionProjects
+                                                       .Select(p => p.ProjectFileInfo.FileNameWithoutExtension)
                                                        .ToImmutableList();
 
             // Asserting the exact count would break every time the solution gains a project, which
@@ -137,7 +137,7 @@ namespace Solution.Parser.Sln.Test
 
             var csharpParser = csharpSyntaxTrees.SelectMany(csharp => csharp.Classes).Where(c => c.Name == "CSharpParser").ToImmutableList();
 
-            Assert.AreEqual("Solution.Parser.CSharp.CSharpParser", csharpParser[0].FullQualifiedName);
+            Assert.AreEqual("Solution.Parser.CSharp.CSharpParser", csharpParser[0].FullyQualifiedName);
         }
 
         [TestMethod]

@@ -17,7 +17,7 @@ namespace Solution.Parser.CSharp
             return new Operator
             {
                 Name = name,
-                FullQualifiedName = operatorSyntax.BuildFullQualifiedName(name),
+                FullyQualifiedName = operatorSyntax.BuildFullyQualifiedName(name),
                 ReturnParameter = operatorSyntax.ReturnType.ToString(),
                 Symbol = symbol,
                 OperatorKind = OperatorKind.Operator,
@@ -34,7 +34,7 @@ namespace Solution.Parser.CSharp
                 Invocations = body.Invocations,
                 IsExpressionBodied = body.IsExpressionBodied,
                 IsIterator = body.IsIterator,
-                SyntaxTree = operatorSyntax.ToString(),
+                SourceCode = operatorSyntax.ToString(),
                 FilePath = filePath,
                 Location = operatorSyntax.ToCodeLocation(filePath)
             };
@@ -50,7 +50,7 @@ namespace Solution.Parser.CSharp
             return new Operator
             {
                 Name = name,
-                FullQualifiedName = conversionSyntax.BuildFullQualifiedName(name),
+                FullyQualifiedName = conversionSyntax.BuildFullyQualifiedName(name),
                 ReturnParameter = target,
                 Symbol = target,
                 OperatorKind = isImplicit ? OperatorKind.ImplicitConversion : OperatorKind.ExplicitConversion,
@@ -67,7 +67,7 @@ namespace Solution.Parser.CSharp
                 Invocations = body.Invocations,
                 IsExpressionBodied = body.IsExpressionBodied,
                 IsIterator = body.IsIterator,
-                SyntaxTree = conversionSyntax.ToString(),
+                SourceCode = conversionSyntax.ToString(),
                 FilePath = filePath,
                 Location = conversionSyntax.ToCodeLocation(filePath)
             };

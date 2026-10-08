@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.IO;
 using System.Runtime.CompilerServices;
 using Argument.Check;
 using Solution.Parser.Project;
@@ -34,7 +35,7 @@ namespace Solution.Parser.CSharp
     /// var solution = solutionFileInfo.Parse(ParseMode.WithSymbols);
     ///
     /// from call in solution.UnitTestTrees.AllInvocations().Named("AssertPostAsync")
-    /// where call.Argument("writeResponse")?.Is(true) == true
+    /// where call.Passes("writeResponse", true)
     /// select $"{call.Location}: writeResponse is true";
     /// </code>
     /// </example>
@@ -60,13 +61,26 @@ namespace Solution.Parser.CSharp
 
         extension(SolutionFile solution)
         {
+            /// <summary>
+            /// Finds the solution from <paramref name="startDirectory"/> upwards and parses it with its C#
+            /// code in the given mode, see <see cref="SolutionFile.Find(string, DirectoryInfo?)"/>.
+            /// </summary>
+            public static SolutionFile Find(string solutionName, ParseMode mode, DirectoryInfo? startDirectory = null)
+            {
+                var found = SolutionFile.Find(solutionName, startDirectory);
+
+                Attach(found, mode == ParseMode.WithSymbols ? CodeBase.Open(found).WithSymbols() : CodeBase.Open(found));
+
+                return found;
+            }
+
             /// <summary>True for a solution parsed with <see cref="ParseMode.WithSymbols"/>.</summary>
             public bool HasSymbols => CodeOf(solution).HasSymbols;
 
             /// <summary>Every syntax tree of every project, a file linked into two projects once.</summary>
             public ImmutableList<CSharpSyntaxTree> AllTrees => CodeOf(solution).AllTrees;
 
-            public ImmutableList<CSharpSyntaxTree> ProductiveTrees => CodeOf(solution).ProductiveTrees;
+            public ImmutableList<CSharpSyntaxTree> ProductionTrees => CodeOf(solution).ProductionTrees;
 
             public ImmutableList<CSharpSyntaxTree> UnitTestTrees => CodeOf(solution).UnitTestTrees;
 
@@ -106,7 +120,7 @@ namespace Solution.Parser.CSharp
         {
             CodeBases.TryAdd(solution, code);
 
-            foreach (var project in solution.Projects.AddRange(solution.ProductiveProjects).AddRange(solution.UnitTestProjects))
+            foreach (var project in solution.Projects.AddRange(solution.ProductionProjects).AddRange(solution.UnitTestProjects))
             {
                 Owners.AddOrUpdate(project, solution);
             }

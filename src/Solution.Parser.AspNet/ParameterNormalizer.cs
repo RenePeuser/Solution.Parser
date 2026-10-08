@@ -45,7 +45,7 @@ namespace Solution.Parser.AspNet
 
                 // New: If someone use a full qualified name at parameter level which will be copied as data type into client
                 //      this have to be replaced by the new name of the copy
-                var model = allModels.FirstOrDefault(m => m.Declaration.FullQualifiedName.EqualsTo(p.Type));
+                var model = allModels.FirstOrDefault(m => m.Declaration.FullyQualifiedName.EqualsTo(p.Type));
                 if (model.IsNotNull())
                 {
                     return p with { Type = model.Declaration.Name };

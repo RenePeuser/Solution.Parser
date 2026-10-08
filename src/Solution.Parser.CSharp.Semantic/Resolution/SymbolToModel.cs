@@ -83,7 +83,7 @@ namespace Solution.Parser.CSharp
             return new Parameter
             {
                 Name = parameter.Name,
-                FullQualifiedName = parameter.Name,
+                FullyQualifiedName = parameter.Name,
                 Type = parameter.Type.ToDisplayString(TypeFormat),
                 Modifiers = modifiers.ToImmutable(),
                 IsOptional = parameter.IsOptional,
@@ -91,7 +91,7 @@ namespace Solution.Parser.CSharp
                 IsParams = parameter.IsParams,
                 IsNullable = parameter.NullableAnnotation == NullableAnnotation.Annotated,
                 Ordinal = parameter.Ordinal,
-                SyntaxTree = parameter.ToDisplayString(),
+                SourceCode = parameter.ToDisplayString(),
                 FilePath = filePath
             };
         }
@@ -131,7 +131,7 @@ namespace Solution.Parser.CSharp
             return new Method
             {
                 Name = definition.Name,
-                FullQualifiedName = containingType is null ? definition.Name : $"{containingType}.{definition.Name}",
+                FullyQualifiedName = containingType is null ? definition.Name : $"{containingType}.{definition.Name}",
                 ReturnParameter = definition.ReturnType.ToDisplayString(TypeFormat),
                 Parameters = definition.Parameters.Select(p => ToParameter(p, filePath)).ToImmutableList(),
                 TypeParameters = definition.TypeParameters
@@ -147,7 +147,7 @@ namespace Solution.Parser.CSharp
                                            .ToImmutableList(),
                 Modifiers = ModifiersOf(definition),
                 Accessibility = AccessibilityOf(definition.DeclaredAccessibility),
-                SyntaxTree = definition.ToDisplayString(),
+                SourceCode = definition.ToDisplayString(),
                 FilePath = filePath,
                 Location = sourceLocation is null ? CodeLocation.None : ToCodeLocation(sourceLocation)
             };

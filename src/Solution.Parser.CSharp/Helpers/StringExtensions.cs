@@ -6,7 +6,7 @@
 
         public static string FormatSyntaxTree(this DeclarationBase declarationBase)
         {
-            return CodeFormatter.FormatCode(declarationBase.SyntaxTree);
+            return CodeFormatter.FormatCode(declarationBase.SourceCode);
         }
     }
 }

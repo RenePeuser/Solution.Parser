@@ -30,16 +30,16 @@ namespace Solution.Parser.CSharp.Test
             var holder = parsed.Classes.Single();
 
             Assert.That.AreEqual("public void Go() { }",
-                                 holder.Methods.Single().SyntaxTree,
+                                 holder.Methods.Single().SourceCode,
                                  because: "SyntaxTree must be the source of this declaration so a rule can quote just the offending member",
                                  fix: "Use node.ToString() instead of node.SyntaxTree.ToString(), which returns the whole file");
 
             Assert.That.AreEqual("private int _value;",
-                                 holder.Fields.Single().SyntaxTree,
+                                 holder.Fields.Single().SourceCode,
                                  because: "SyntaxTree must be the source of this declaration so a rule can quote just the offending member",
                                  fix: "Use node.ToString() instead of node.SyntaxTree.ToString(), which returns the whole file");
 
-            Assert.That.DoesNotContain(holder.Methods.Single().SyntaxTree,
+            Assert.That.DoesNotContain(holder.Methods.Single().SourceCode,
                                        "class Holder",
                                        because: "the source of a method must not drag in the declaring type",
                                        fix: "Use node.ToString() instead of node.SyntaxTree.ToString(), which returns the whole file");
@@ -84,7 +84,7 @@ namespace Solution.Parser.CSharp.Test
             var count = holder.Fields.Single(f => f.Name == "_count");
 
             Assert.That.AreEqual("\"x\"",
-                                 name.Initializer?.Value,
+                                 name.Initializer,
                                  because: "the initializer is what a rule about magic values inspects",
                                  fix: "Read the initializer from the declarator, each variable may carry its own");
 

@@ -20,7 +20,7 @@ namespace Solution.Parser.CSharp
             return new Constructor
             {
                 Name = name,
-                FullQualifiedName = constructorDeclarationSyntax.BuildFullQualifiedName(name),
+                FullyQualifiedName = constructorDeclarationSyntax.BuildFullyQualifiedName(name),
                 Parameters = constructorDeclarationSyntax.ParameterList.ToParameters(filePath),
                 Arguments = initializer?.ArgumentList.Arguments.Select(a => a.ToString()).ToImmutableList() ?? ImmutableList<string>.Empty,
                 InitializerKind = initializer.ToInitializerKind(),
@@ -36,7 +36,7 @@ namespace Solution.Parser.CSharp
                 IsExpressionBodied = body.IsExpressionBodied,
                 IsIterator = body.IsIterator,
                 IsPrimary = false,
-                SyntaxTree = constructorDeclarationSyntax.ToString(),
+                SourceCode = constructorDeclarationSyntax.ToString(),
                 FilePath = filePath,
                 Location = constructorDeclarationSyntax.ToCodeLocation(filePath)
             };
@@ -63,13 +63,13 @@ namespace Solution.Parser.CSharp
             return new Constructor
             {
                 Name = name,
-                FullQualifiedName = typeDeclarationSyntax.BuildFullQualifiedName(name),
+                FullyQualifiedName = typeDeclarationSyntax.BuildFullyQualifiedName(name),
                 Parameters = parameters,
                 Arguments = arguments,
                 InitializerKind = arguments.IsEmpty ? ConstructorInitializerKind.None : ConstructorInitializerKind.Base,
                 Accessibility = typeDeclarationSyntax.Modifiers.ToAccessibility(typeDeclarationSyntax),
                 IsPrimary = true,
-                SyntaxTree = parameterList?.ToString() ?? string.Empty,
+                SourceCode = parameterList?.ToString() ?? string.Empty,
                 FilePath = filePath,
                 Location = locationNode.ToCodeLocation(filePath)
             };

@@ -9,7 +9,7 @@ namespace Solution.Parser.Xaml
     /// element, not as children of it, which is why they live in
     /// <see cref="ElementBase.Properties"/> rather than <see cref="ElementBase.Children"/>.
     /// </summary>
-    [DebuggerDisplay("{FullQualifiedName,nq} ({Children.Count} children)")]
+    [DebuggerDisplay("{FullyQualifiedName,nq} ({Children.Count} children)")]
     public record PropertyElement : Property
     {
         /// <summary>The type declaring the property, for example <c>Grid</c> for <c>&lt;Grid.RowDefinitions&gt;</c>.</summary>
@@ -19,6 +19,6 @@ namespace Solution.Parser.Xaml
         public ImmutableList<ElementBase> Children { get; init; } = ImmutableList<ElementBase>.Empty;
 
         /// <summary><c>Owner.Name</c>, exactly as the element is written without its prefix.</summary>
-        public string FullQualifiedName => $"{OwnerTypeName}.{Name}";
+        public string FullyQualifiedName => $"{OwnerTypeName}.{Name}";
     }
 }

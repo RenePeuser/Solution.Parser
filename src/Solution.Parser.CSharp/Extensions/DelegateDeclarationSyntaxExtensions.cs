@@ -16,8 +16,8 @@ namespace Solution.Parser.CSharp
             return new Delegate
             {
                 Name = name,
-                FullQualifiedName = delegateSyntax.BuildFullQualifiedName(name),
-                NameSpace = delegateSyntax.NamespaceOf(),
+                FullyQualifiedName = delegateSyntax.BuildFullyQualifiedName(name),
+                Namespace = delegateSyntax.NamespaceOf(),
                 ReturnParameter = delegateSyntax.ReturnType.ToString(),
                 Parameters = delegateSyntax.ParameterList.ToParameters(filePath),
                 TypeParameters = delegateSyntax.TypeParameterList.ToTypeParameters(delegateSyntax.ConstraintClauses, filePath),
@@ -25,7 +25,7 @@ namespace Solution.Parser.CSharp
                 Accessibility = delegateSyntax.Modifiers.ToAccessibility(delegateSyntax),
                 Attributes = delegateSyntax.AttributeLists.ToAttributes(filePath),
                 Documentation = delegateSyntax.ToDocumentation(),
-                SyntaxTree = delegateSyntax.ToString(),
+                SourceCode = delegateSyntax.ToString(),
                 FilePath = filePath,
                 Location = delegateSyntax.ToCodeLocation(filePath)
             };

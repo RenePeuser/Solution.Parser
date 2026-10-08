@@ -9,7 +9,7 @@ namespace Solution.Parser.Nuspec
     {
         public static NuspecFile Parse(NuspecFileInfo nuspecFileInfo)
         {
-            var document = XDocument.Load(nuspecFileInfo.Value.FullName);
+            var document = XDocument.Load(nuspecFileInfo.FullName);
 
 
             var frameworkAssemblies = document.ElementsBy("frameworkAssembly").Select(element =>

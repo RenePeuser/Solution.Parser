@@ -3,9 +3,35 @@
 [![Build](https://github.com/RenePeuser/Solution.Parser/actions/workflows/build.yml/badge.svg)](https://github.com/RenePeuser/Solution.Parser/actions/workflows/build.yml)
 [![NuGet](https://img.shields.io/nuget/v/Solution.Parser.svg)](https://www.nuget.org/packages/Solution.Parser/)
 [![Downloads](https://img.shields.io/nuget/dt/Solution.Parser.svg)](https://www.nuget.org/packages/Solution.Parser/)
-[![Build](https://github.com/RenePeuser/Solution.Parser/actions/workflows/build.yml/badge.svg)](https://github.com/RenePeuser/Solution.Parser/actions/workflows/build.yml)
-[![NuGet](https://img.shields.io/nuget/v/Solution.Parser.svg)](https://www.nuget.org/packages/Solution.Parser/)
-[![Downloads](https://img.shields.io/nuget/dt/Solution.Parser.svg)](https://www.nuget.org/packages/Solution.Parser/)
+
+## Quick start
+
+A code rule is a query over the solution and an assertion that it finds nothing:
+
+```csharp
+using Solution.Parser.Core;     // ShouldBeEmpty
+using Solution.Parser.CSharp;   // the C# model and its queries
+using Solution.Parser.Sln;      // SolutionFile
+
+var solution = SolutionFile.Find("MySolution.sln");   // searched upwards from the running test
+
+var findings = from type in solution.ProductionTrees.AllTypes()
+               from property in type.Properties
+               where !property.IsReadOnly
+               select $"{property.Location}: {type.FullyQualifiedName}.{property.Name} is mutable";
+
+findings.ShouldBeEmpty("Properties must be immutable");
+```
+
+A failing rule lists every finding on its own line, as `path(line,column): message`, which test
+runners and IDEs turn into a link:
+
+```
+Properties must be immutable. 2 findings:
+  D:\repo\src\Person.cs(12,5): My.Sample.Person.Name is mutable
+  D:\repo\src\Order.cs(8,5): My.Sample.Order.Total is mutable
+```
+
 ## Packages
 
 One package ships: `Solution.Parser`. It contains everything, so an existing reference needs no
@@ -14,7 +40,7 @@ package and none of them is published on its own.
 
 | Assembly | What it parses | What it drags in |
 |---|---|---|
-| `Solution.Parser.Core` | shared contracts, nothing on its own | â€” |
+| `Solution.Parser.Core` | shared contracts, nothing on its own | — |
 | `Solution.Parser.CSharp` | C# files into syntax trees | Roslyn |
 | `Solution.Parser.CSharp.Semantic` | symbols: which method a call binds to, which parameter an argument fills | Roslyn, CSharp and Sln |
 | `Solution.Parser.Xaml` | XAML markup | nothing but Core |
@@ -40,89 +66,65 @@ XAML and the other way round. Today it is a source boundary, not a packaging one
 Both the classic `.sln` and the new xml based `.slnx` format are supported:
 
 ```csharp
-// classic
-var solutionFileInfo = new SolutionFileName("MySolution.sln").FindSolutionFileReverseFrom(startUpDirectory);
+SolutionFile.Find("MySolution.sln")    // exactly that file
+SolutionFile.Find("MySolution.slnx")   // exactly that file
+SolutionFile.Find("MySolution")        // either of both, '.slnx' wins when both exist side by side
 
-// slnx
-var solutionFileInfo = new SolutionFileName("MySolution.slnx").FindSolutionFileReverseFrom(startUpDirectory);
-
-// either of both, '.slnx' wins when both files exist side by side
-var solutionFileInfo = SolutionFileName.WithAnySolutionFormat("MySolution").FindSolutionFileReverseFrom(startUpDirectory);
+SolutionFile.Find("MySolution.sln", startDirectory: new DirectoryInfo(@"D:\repo"))   // search from elsewhere
 ```
 
-`SolutionFileInfo.IsSlnx` tells which format was found. Everything behind `Parse()` is format agnostic.
+`solution.SolutionFileInfo.IsSlnx` tells which format was found. Everything behind it is format agnostic.
 
-## Sample
+## Solution, projects and code
+
 ```csharp
- [TestClass]
- public abstract class MsTestBase
- {
-     protected static IImmutableList<CSharpSyntaxTree> TestCode { get; private set; } = ImmutableList<CSharpSyntaxTree>.Empty;
+solution.Projects                       // every project
+solution.ProductionProjects             // the ones that are not test projects
+solution.UnitTestProjects
+solution.Project("My.Sample")           // by name; an unknown name lists the ones there are
 
-     protected static IImmutableList<CSharpSyntaxTree> AllSyntaxTrees { get; private set; } = ImmutableList<CSharpSyntaxTree>.Empty;
+solution.AllTrees                       // the C# code of every project, parsed once and cached
+solution.ProductionTrees
+solution.UnitTestTrees
+project.Trees
 
-     protected static IImmutableList<CSharpSyntaxTree> ProductiveCode { get; private set; } = ImmutableList<CSharpSyntaxTree>.Empty;
-
-     protected static IImmutableList<CSharpSyntaxTree> ProductiveCodeToAnaylze { get; private set; } = ImmutableList<CSharpSyntaxTree>.Empty;
-
-     protected static SolutionFile Solution { get; private set; } = null!;
-      
-     [AssemblyInitialize]
-     public static void Init(TestContext _)
-     {
-         var sSolutionFileInfo = new SolutionFileName("MySolution.sln").FindSolutionFileReverseFrom(new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory));
-         Throw.IfNull(sSolutionFileInfo);
-
-         Solution = sSolutionFileInfo.Parse();
-
-         ProductiveCode = Solution.ProductiveProjects.SelectMany(p => p.CSharpFileInfos)                                 
-												     .Select(c => c.Parse())
-												     .ToImmutableList();
-
-         TestCode = Solution.UnitTestProjects.SelectMany(p => p.CSharpFileInfos)
-											 .Select(c => c.Parse())
-											 .ToImmutableList();
-
-         AllSyntaxTrees = ProductiveCode.Concat(TestCode).ToImmutableList();        
-     }
- }
+project.Name                            // "My.Sample"
+project.Path                            // D:\repo\src\My.Sample\My.Sample.csproj
+project.PackageReferences               // Include and Version
 ```
 
-## CodeRule sample
+A file is a `CSharpFileInfo`, `XamlFileInfo`, `ProjectFileInfo` or `SolutionFileInfo` and answers
+`FullName`, `Name`, `FileNameWithoutExtension`, `Directory` and `File` directly. Two infos of the same
+file are equal.
+
+## A base class for a rule suite
+
 ```csharp
-[TestCategory("Coding-Rules")]
-[TestCategory("Coding-Rules Records")]
 [TestClass]
-public class Records : MsTestBase // <-- MsTestBase is a base class that provides the ProductiveCode property
+public abstract class CodeRuleBase
+{
+    protected static SolutionFile Solution { get; private set; } = null!;
+
+    [AssemblyInitialize]
+    public static void Init(TestContext _) => Solution = SolutionFile.Find("MySolution.sln");
+}
+
+[TestClass]
+public class Records : CodeRuleBase
 {
     [TestMethod]
-    public void Record_Properties_Have_To_Be_Be_Immutable()
+    public void Record_Properties_Have_To_Be_Immutable()
     {
-        var mutableProperties = (from syntaxTree in ProductiveCode
-                                 from @record in syntaxTree.Records
-                                 from property in @record.Properties
-                                 where property.IsReadOnly.IsFalse()
-                                 select new
-                                 {
-                                     Error = $@"
+        var findings = from tree in Solution.ProductionTrees
+                       from record in tree.Records
+                       from property in record.Properties
+                       where !property.IsReadOnly
+                       select $"{property.Location}: {record.FullyQualifiedName}.{property.Name} should be {{ get; init; }}";
 
-Please do not use mutable properties
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-FullName:  {@record.FullQualifiedName}
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Property:  {property.Type} {property.Name}
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Should be: {property.Type} {{get; init;}}
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-"
-                                    }).ToImmutableList();
-
-        Assert.IsTrue(mutableProperties.IsEmpty(),
-            $"Properties must be immutable. Findings: '{mutableProperties.Count}':{Environment.NewLine}{mutableProperties.Select(error => error.Error).Flatten(Environment.NewLine)}{Environment.NewLine}");
-        }
+        findings.ShouldBeEmpty("Record properties must be immutable");
+    }
+}
 ```
-
-
 
 ## What the model gives you
 
@@ -130,11 +132,10 @@ Every declaration carries a `Location`, so a finding points at the source instea
 type. `Location.ToString()` renders `path(line,column)`, which test runners and IDEs turn into a link:
 
 ```csharp
-var findings = from tree in ProductiveCode
-               from type in tree.AllTypes()
+var findings = from type in solution.ProductionTrees.AllTypes()
                from property in type.Properties
-               where property.IsReadOnly.IsFalse()
-               select $"{property.Location}: {type.FullQualifiedName}.{property.Name} is mutable";
+               where !property.IsReadOnly
+               select $"{property.Location}: {type.FullyQualifiedName}.{property.Name} is mutable";
 
 // D:\repo\src\Person.cs(12,5): My.Sample.Person.Name is mutable
 ```
@@ -167,7 +168,7 @@ tree.AllTypes()               // every type of the file, nested ones included
 tree.AllMethods()             // every method of the file
 type.DescendantTypes()        // every type declared inside this one, at any depth
 type.AllMethods()             // this type and every type nested in it
-ProductiveCode.AllTypes()     // the same across a whole solution
+solution.AllTrees.AllTypes()  // the same across a whole solution
 ```
 
 Predicates that read the way a rule means: `IsPublic()`, `IsStatic()`, `IsSealed()`, `IsAbstract()`,
@@ -178,28 +179,29 @@ Every member with a body reports the method calls in it, lambdas included, a loc
 
 ```csharp
 method.Invocations                         // Client.AssertPostAsync("..", "..", true)
-tree.AllInvocations().Named("AssertPostAsync")
+tree.AllInvocations().Named("AssertPostAsync")   // Named works on any declaration list
 call.Target                                // "Client"
 call.Arguments                             // as written, in source order
-call.NamedArgument("writeResponse")        // only for writeResponse: true, see below for the rest
+call.NamedArgument("writeResponse")        // only what is written as writeResponse: true
+call.ArgumentFor("writeResponse")          // by position, by name or by default; needs symbols, see below
 ```
 
-## Symbols (full mode)
+## Symbols
 
 The syntax alone cannot tell that `true` in `Client.AssertPostAsync("..", "..", true)` is the
 parameter `writeResponse`, least of all when the method comes from a NuGet package. The compiler can.
 The parse mode of the solution decides which of the two you get, over the same records:
 
 ```csharp
-var solution = solutionFileInfo.Parse(ParseMode.SyntaxOnly);   // fast mode: syntax only, parsed once and cached
-var solution = solutionFileInfo.Parse(ParseMode.WithSymbols);  // full mode: a Roslyn compilation per project, built on first use
+var solution = SolutionFile.Find("MySolution.sln", ParseMode.SyntaxOnly);   // syntax only, parsed once and cached
+var solution = SolutionFile.Find("MySolution.sln", ParseMode.WithSymbols);  // plus a Roslyn compilation per project, built on first use
 
 var findings = from call in solution.UnitTestTrees.AllInvocations().Named("AssertPostAsync")
-               where call.Argument("writeResponse")?.Is(true) == true
+               where call.Passes("writeResponse", true)
                select $"{call.Location}: writeResponse is true";
 ```
 
-The code hangs on the solution and its projects: `solution.AllTrees`, `solution.ProductiveTrees`,
+The code hangs on the solution and its projects: `solution.AllTrees`, `solution.ProductionTrees`,
 `solution.UnitTestTrees`, `project.Trees`, `solution.CompilationDiagnostics()` and
 `project.CompilationDiagnostics()`. A solution parsed without a mode gets the syntax on first use.
 
@@ -210,9 +212,10 @@ call.Resolution            // Resolved | Ambiguous | Unresolved
 call.Method                // a Method record; for code of the solution the very record the tree holds
 call.Method.Origin         // Source | Package("AspNetCore.Simple.MsTest.Sdk", "9.5.15") | Framework
 call.BoundArguments        // every parameter with what is passed for it, in parameter order
-call.Argument("writeResponse").Expression    // "true", by position or by name alike
-call.Argument("writeResponse").IsExplicit    // false when left out and the default applies
-call.Argument("writeResponse").Is(true)      // literal, const or default value alike
+call.ArgumentFor("writeResponse").Expression    // "true", by position or by name alike
+call.ArgumentFor("writeResponse").IsExplicit    // false when left out and the default applies
+call.ArgumentFor("writeResponse").Is(true)      // literal, const or default value alike
+call.Passes("writeResponse", true)              // the same in one go, false for an unresolved call
 call.Candidates            // the competing overloads of an ambiguous call
 call.Roslyn                // node, semantic model, symbol and operation, for anything not covered
 ```
@@ -223,18 +226,19 @@ generated global usings and XAML output from obj, and the source generators of f
 The solution therefore has to be restored, which it is whenever its tests run. `project.CompilationDiagnostics()`
 shows what the compiler could not resolve.
 
-In the fast mode a symbol access throws instead of guessing, so the cost of a rule stays visible:
-nothing is compiled unless a rule asks for symbols. `CodeBase.FromSources(("Sample.cs", code))` gives
-the same API for code in memory, which is handy in tests.
+With `ParseMode.SyntaxOnly` a symbol access throws instead of guessing, so the cost of a rule stays
+visible: nothing is compiled unless a rule asks for symbols. `CodeBase.FromSource(code).WithSymbols()`
+gives the same API for code in memory, which is handy for trying a rule out;
+`CodeBase.FromSources(("A.cs", a), ("B.cs", b))` takes several files.
 
 ## XAML
 
 `.xaml` files parse into the same shape of model, so a rule can reach across markup and code behind:
 
 ```csharp
-var tree = new XAMLFileInfo(@"D:\repo\src\MainWindow.xaml").Parse();
+var tree = new XamlFileInfo(@"D:\repo\src\MainWindow.xaml").Parse();
 
-tree.FullQualifiedName          // "My.Sample.MainWindow", the x:Class
+tree.FullyQualifiedName          // "My.Sample.MainWindow", the x:Class
 tree.Root                       // a Window, UserControl, Page, Application,
                                 // ResourceDictionaryRoot or ControlRoot
 tree.Diagnostics                // what could not be read, instead of a lost file
@@ -265,9 +269,9 @@ To walk everything, ask for it, the same way as on the C# side:
 ```csharp
 tree.AllElements()              // every element of the file
 tree.AllStyles()                // every Style, however deep in the resource dictionaries
-tree.AllTemplates()             // DataTemplate, ControlTemplate, ItemsPanelTemplate, â€¦
+tree.AllTemplates()             // DataTemplate, ControlTemplate, ItemsPanelTemplate, …
 tree.AllBindings()              // every Binding, nested ones included
-tree.AllMarkupExtensions()      // every {â€¦}, nested ones included
+tree.AllMarkupExtensions()      // every {…}, nested ones included
 tree.FindByName("Save")         // by x:Name
 tree.FindByKey("OkButton")      // by x:Key
 tree.OfTypeName("Button")       // every element written as <Button>
@@ -318,11 +322,23 @@ never fails proves nothing.
 
 ## Migrating
 
-Upgrading from an older major? See **[MIGRATION.md](MIGRATION.md)** â€” it covers the mechanical
+Upgrading from an older major? See **[MIGRATION.md](MIGRATION.md)** — it covers the mechanical
 renames and, more importantly, the changes that still compile but report something different. It is
 written so you can hand it to an AI assistant along with your rule suite.
 
-The short version:
+The short version for 6.0, all of it caught by the compiler:
+
+| 5.x | 6.0 |
+|---|---|
+| `FullQualifiedName`, `NameSpace` | `FullyQualifiedName`, `Namespace` |
+| `declaration.SyntaxTree` (a `string`) | `declaration.SourceCode` |
+| `ProductiveProjects`, `ProductiveTrees` | `ProductionProjects`, `ProductionTrees` |
+| `call.Argument("x")` | `call.ArgumentFor("x")`, or `call.Passes("x", value)` |
+| `fileInfo.Value.FullName`, `package.PackageId.Value` | `fileInfo.FullName`, `package.Id` |
+| `project.ProjectFileInfo.Value.FullName` | `project.Path` |
+| `attributes.Named(x)` returned the first match | it returns all of them; `declaration.Attribute(x)` for one |
+
+And for 5.0:
 
 | Before | Now |
 |---|---|
@@ -362,7 +378,7 @@ kept as the previous names for `SyntaxTree` and `Body`.
 | `element.DataContext` was set on every element | null unless the element sets one |
 | `element.LineNumber` | `element.Location`, with line, column and path |
 | `<Grid.RowDefinitions>` was a control named `Grid.RowDefinitions` | a `PropertyElement` in `Properties` |
-| attached property named `RowProperty` | `Name` is `Row`, `FullQualifiedName` is `Grid.Row`, `DependencyPropertyName` is `RowProperty` |
+| attached property named `RowProperty` | `Name` is `Row`, `FullyQualifiedName` is `Grid.Row`, `DependencyPropertyName` is `RowProperty` |
 | `x:Name` and `Name` were both called `Name` | `Property.Prefix` and `Property.IsXamlDirective` tell them apart |
 | `Window : UserControl`, `DynamicResource : StaticResource` | siblings, with `RootKind` and a shared `ResourceReference` |
 | `DataTemplate`, `ResourceDictionary`, `ResourceDictionaryControl` | `Template`, `ResourceDictionaryRoot`, `ResourceDictionaryElement` |

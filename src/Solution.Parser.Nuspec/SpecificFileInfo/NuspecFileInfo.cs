@@ -1,7 +1,6 @@
-﻿using System.Diagnostics;
+using Solution.Parser.Core;
 
 namespace Solution.Parser.Nuspec
 {
-    [DebuggerDisplay("{Value.FullName}")]
-    public class NuspecFileInfo(string path) : SpecificFileInfoBase(path, ".nuspec");
+    public class NuspecFileInfo(string path) : SpecificFileInfo(path, ".nuspec");
 }

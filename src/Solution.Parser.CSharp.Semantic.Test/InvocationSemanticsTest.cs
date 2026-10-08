@@ -39,7 +39,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
                 """);
 
             var call = code.AllTrees.AllInvocations().Named("AssertPostAsync").Single();
-            var writeResponse = call.Argument("writeResponse");
+            var writeResponse = call.ArgumentFor("writeResponse");
 
             Assert.That.IsTrue(call.IsResolved, because: "the extension method is declared right there", fix: ResolverFix);
             Assert.That.IsNotNull(writeResponse, because: "the method has a parameter of that name", fix: ResolverFix);
@@ -71,7 +71,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
 
             Assert.That.IsTrue(receiver.IsReceiver, because: "client is passed in front of the dot", fix: ResolverFix);
             Assert.That.AreEqual("client", receiver.Expression, because: "the receiver is what is passed", fix: ResolverFix);
-            Assert.That.AreEqual("\"url\"", call.Argument("url")?.Expression, because: "the shift by the receiver must not move the others", fix: ResolverFix);
+            Assert.That.AreEqual("\"url\"", call.ArgumentFor("url")?.Expression, because: "the shift by the receiver must not move the others", fix: ResolverFix);
         }
 
         [TestMethod]
@@ -85,7 +85,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
                 }
                 """);
 
-            var writeResponse = code.AllTrees.AllInvocations().Single().Argument("writeResponse")!;
+            var writeResponse = code.AllTrees.AllInvocations().Single().ArgumentFor("writeResponse")!;
 
             Assert.That.IsFalse(writeResponse.IsExplicit, because: "the caller did not pass it", fix: ResolverFix);
             Assert.That.IsNull(writeResponse.Expression, because: "nothing was written", fix: ResolverFix);
@@ -110,13 +110,13 @@ namespace Solution.Parser.CSharp.Semantic.Test
             var calls = code.AllTrees.AllInvocations();
 
             Assert.That.All(calls,
-                            c => c.Argument("writeResponse")!.Is(true),
+                            c => c.ArgumentFor("writeResponse")!.Is(true),
                             "passes writeResponse: true",
                             because: "a const and a named argument in any order mean the same to the compiler",
                             fix: ResolverFix);
 
             Assert.That.AreEqual("\"url\"",
-                                 calls[1].Argument("url")?.Expression,
+                                 calls[1].ArgumentFor("url")?.Expression,
                                  because: "named arguments are bound by name, not by position",
                                  fix: ResolverFix);
         }
@@ -174,8 +174,8 @@ namespace Solution.Parser.CSharp.Semantic.Test
 
             var call = code.AllTrees.AllInvocations().Single();
 
-            Assert.That.AreEqual("System.Console.WriteLine", call.Method?.FullQualifiedName, because: "the method is known from metadata", fix: ResolverFix);
-            Assert.That.AreEqual("value", call.Argument("value")?.Parameter.Name, because: "parameter names live in the metadata", fix: ResolverFix);
+            Assert.That.AreEqual("System.Console.WriteLine", call.Method?.FullyQualifiedName, because: "the method is known from metadata", fix: ResolverFix);
+            Assert.That.AreEqual("value", call.ArgumentFor("value")?.Parameter.Name, because: "parameter names live in the metadata", fix: ResolverFix);
             Assert.That.IsFalse(call.Method!.Origin.IsSource, because: "Console is not declared in the code base", fix: "Check SymbolToModel.OriginOf");
         }
 
@@ -190,7 +190,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
                 }
                 """);
 
-            var values = code.AllTrees.AllInvocations().Single().Argument("values")!;
+            var values = code.AllTrees.AllInvocations().Single().ArgumentFor("values")!;
 
             Assert.That.AreEqual("1, 2", values.Expression, because: "every element passed for params belongs to the one parameter", fix: ResolverFix);
             Assert.That.IsTrue(values.IsExplicit, because: "elements were passed", fix: ResolverFix);
@@ -210,7 +210,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
 
             Assert.That.AreEqual(ResolutionStatus.Unresolved, call.Resolution, because: "nothing of that name exists", fix: ResolverFix);
             Assert.That.IsNull(call.Method, because: "there is no method to report", fix: ResolverFix);
-            Assert.That.IsNull(call.Argument("anything"), because: "an unresolved call binds no argument", fix: ResolverFix);
+            Assert.That.IsNull(call.ArgumentFor("anything"), because: "an unresolved call binds no argument", fix: ResolverFix);
         }
 
         [TestMethod]

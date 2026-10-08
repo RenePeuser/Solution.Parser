@@ -25,7 +25,7 @@ namespace Solution.Parser.CSharp
             return declaration.Variables.Select(variable => new EventField
                               {
                                   Name = variable.Identifier.ValueText,
-                                  FullQualifiedName = eventFieldSyntax.BuildFullQualifiedName(variable.Identifier.ValueText),
+                                  FullyQualifiedName = eventFieldSyntax.BuildFullyQualifiedName(variable.Identifier.ValueText),
                                   Type = type,
                                   Modifiers = modifiers,
                                   Accessibility = accessibility,
@@ -33,7 +33,7 @@ namespace Solution.Parser.CSharp
                                   Documentation = documentation,
                                   Initializer = variable.Initializer?.ToInitializer(),
                                   IsPartOfMultiVariableDeclaration = isMultiVariable,
-                                  SyntaxTree = eventFieldSyntax.ToString(),
+                                  SourceCode = eventFieldSyntax.ToString(),
                                   FilePath = filePath,
                                   Location = variable.ToCodeLocation(filePath)
                               })

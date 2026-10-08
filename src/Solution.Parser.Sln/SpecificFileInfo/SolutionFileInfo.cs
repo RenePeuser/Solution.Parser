@@ -1,11 +1,10 @@
-﻿using System.Diagnostics;
-using Extensions.Pack;
+using System;
+using Solution.Parser.Core;
 
 namespace Solution.Parser.Sln
 {
-    [DebuggerDisplay("{Value.FullName}")]
-    public class SolutionFileInfo(string path) : SpecificFileInfoBase(path, SolutionFileFormat.SLNX, SolutionFileFormat.SLN)
+    public class SolutionFileInfo(string path) : SpecificFileInfo(path, SolutionFileFormat.SLNX, SolutionFileFormat.SLN)
     {
-        public bool IsSlnx { get; } = path.EndWith(SolutionFileFormat.SLNX);
+        public bool IsSlnx { get; } = path.EndsWith(SolutionFileFormat.SLNX, StringComparison.OrdinalIgnoreCase);
     }
 }

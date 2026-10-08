@@ -6,8 +6,8 @@ using Extensions.Pack;
 
 namespace Solution.Parser.Sln
 {
-    [DebuggerDisplay("{Value}")]
-    public class SolutionFileName : ImmutableSemanticType<string>
+    [DebuggerDisplay("{Name}")]
+    public class SolutionFileName
     {
         public SolutionFileName(string value)
             : this(value, true)
@@ -15,9 +15,10 @@ namespace Solution.Parser.Sln
         }
 
         private SolutionFileName(string value, bool formatIsMandatory)
-            : base(value)
         {
             Throw.IfNullOrWhiteSpace(value);
+
+            Name = value;
 
             HasExplicitFormat = SolutionFileFormat.All.Any(value.EndWith);
 
@@ -26,6 +27,9 @@ namespace Solution.Parser.Sln
                 throw new ArgumentException($"The solution file '{value}' has to have a solution file extension '{SolutionFileFormat.SLN}' or '{SolutionFileFormat.SLNX}'. Use '{nameof(SolutionFileName)}.{nameof(WithAnySolutionFormat)}' to accept both formats.");
             }
         }
+
+        /// <summary>The name as given, <c>MySolution.sln</c> or, for any format, <c>MySolution</c>.</summary>
+        public string Name { get; }
 
         // False when the name was given without extension, which means every known solution format is accepted.
         public bool HasExplicitFormat { get; }

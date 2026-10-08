@@ -65,7 +65,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
         {
             var solutionFile = new SolutionFileName("Solution.Parser.sln").FindSolutionFileReverseFrom(new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory));
             var solution = solutionFile.Parse(ParseMode.WithSymbols);
-            var project = solution.Projects.Single(p => p.ProjectFileInfo.FileNameWithoutExtenion == ProjectName);
+            var project = solution.Projects.Single(p => p.ProjectFileInfo.FileNameWithoutExtension == ProjectName);
 
             foreach (var diagnostic in project.CompilationDiagnostics().Where(d => d.IsError))
             {
@@ -90,18 +90,18 @@ namespace Solution.Parser.CSharp.Semantic.Test
         {
             var text = new StringBuilder();
 
-            text.AppendLine($"{call.Location}: {call.SyntaxTree}");
+            text.AppendLine($"{call.Location}: {call.SourceCode}");
             text.AppendLine($"  Resolution : {call.Resolution}");
 
             if (call.Method is { } method)
             {
-                text.AppendLine($"  Method     : {method.FullQualifiedName}({string.Join(", ", method.Parameters.Select(p => $"{p.Type} {p.Name}"))})");
+                text.AppendLine($"  Method     : {method.FullyQualifiedName}({string.Join(", ", method.Parameters.Select(p => $"{p.Type} {p.Name}"))})");
                 text.AppendLine($"  Origin     : {method.Origin.Kind} {method.Origin.Name} {method.Origin.Version}");
             }
 
             foreach (var candidate in call.Candidates)
             {
-                text.AppendLine($"  Candidate  : {candidate.SyntaxTree}");
+                text.AppendLine($"  Candidate  : {candidate.SourceCode}");
             }
 
             foreach (var argument in call.BoundArguments)

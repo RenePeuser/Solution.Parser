@@ -17,7 +17,7 @@ namespace Solution.Parser.CSharp
             return new LocalFunction
             {
                 Name = name,
-                FullQualifiedName = localFunctionSyntax.BuildFullQualifiedName(name),
+                FullyQualifiedName = localFunctionSyntax.BuildFullyQualifiedName(name),
                 ReturnParameter = localFunctionSyntax.ReturnType.ToString(),
                 Parameters = localFunctionSyntax.ParameterList.ToParameters(filePath),
                 TypeParameters = localFunctionSyntax.TypeParameterList.ToTypeParameters(localFunctionSyntax.ConstraintClauses, filePath),
@@ -34,7 +34,7 @@ namespace Solution.Parser.CSharp
                 Invocations = body.Invocations,
                 IsExpressionBodied = body.IsExpressionBodied,
                 IsIterator = body.IsIterator,
-                SyntaxTree = localFunctionSyntax.ToString(),
+                SourceCode = localFunctionSyntax.ToString(),
                 FilePath = filePath,
                 Location = localFunctionSyntax.ToCodeLocation(filePath)
             };

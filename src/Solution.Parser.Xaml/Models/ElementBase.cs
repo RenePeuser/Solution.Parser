@@ -99,8 +99,8 @@ namespace Solution.Parser.Xaml
                 return Properties.FirstOrDefault(p => p.Name.EqualsTo(name));
             }
 
-            return Properties.OfType<AttachedProperty>().FirstOrDefault(p => p.FullQualifiedName.EqualsTo(name))
-                   ?? (Property?)Properties.OfType<PropertyElement>().FirstOrDefault(p => p.FullQualifiedName.EqualsTo(name));
+            return Properties.OfType<AttachedProperty>().FirstOrDefault(p => p.FullyQualifiedName.EqualsTo(name))
+                   ?? (Property?)Properties.OfType<PropertyElement>().FirstOrDefault(p => p.FullyQualifiedName.EqualsTo(name));
         }
     }
 }

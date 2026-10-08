@@ -1,3 +1,75 @@
+# Migrating to Solution.Parser 6.0
+
+6.0 makes the API shorter: fewer wrapper types, fewer `.Value` hops, names that read the way .NET
+names read. Nothing here changes what a rule reports. Every change is a rename or a removed
+indirection, so **the compiler finds all of them**; work through the build errors with the tables
+below. Coming from 4.x or older, do the 5.0 migration further down first.
+
+## For the AI assistant doing this migration
+
+- Apply the tables mechanically until the build is green. No rule should report a different number of
+  findings afterwards; if one does, stop and say which.
+- Prefer the new shortcuts where the old chain is spelled out by hand (`SolutionFile.Find`,
+  `solution.Project(name)`, `call.Passes`, `ShouldBeEmpty`), but do not restructure rules beyond that.
+
+## 6.1 Renames
+
+| 5.x | 6.0 |
+|---|---|
+| `FullQualifiedName` (C# and XAML) | `FullyQualifiedName` |
+| `NameSpace` (type), `tree.NameSpace`, `tree.NameSpaces` | `Namespace`, `tree.Namespace`, `tree.Namespaces` |
+| `declaration.SyntaxTree`, `tree.SyntaxTree`, `statement.SyntaxTree` (the source as `string`) | `SourceCode` |
+| `FileNameWithoutExtenion` | `FileNameWithoutExtension` |
+| `solution.ProductiveProjects` | `solution.ProductionProjects` |
+| `solution.ProductiveTrees` | `solution.ProductionTrees` |
+| `call.Argument("name")` | `call.ArgumentFor("name")` |
+| `using.Value` | `using.Name` |
+| `solutionFileName.Value` | `solutionFileName.Name` |
+
+`SyntaxTree` became `SourceCode` because the string was easily mistaken for Roslyn's `SyntaxTree`,
+which `call.Roslyn` hands out for real. `Method.MethodValue` and `Method.MethodBody` keep working.
+
+## 6.2 No more `.Value`
+
+The `ImmutableSemanticType` wrappers are gone. A file info now answers for its file directly, and the
+package types are plain strings.
+
+| 5.x | 6.0 |
+|---|---|
+| `fileInfo.Value.FullName` | `fileInfo.FullName` |
+| `fileInfo.Value.Name` | `fileInfo.Name` |
+| `fileInfo.Value.Directory` | `fileInfo.Directory` |
+| `fileInfo.Value` (the `FileInfo`) | `fileInfo.File` |
+| `project.ProjectFileInfo.Value.FullName` | `project.Path` |
+| `project.ProjectFileInfo.FileNameWithoutExtenion` | `project.Name` |
+| `package.PackageId.Value` | `package.Id` |
+| `package.PackageVersion.Value` | `package.Version` |
+| `package.PackageTargetFrameworkVersion.Value` | `package.TargetFramework` |
+| `packageReference.PackageVersion.Value` | `packageReference.Version` |
+| `field.Initializer?.Value` (also on properties and event fields) | `field.Initializer`, a `string?` |
+| `IXamlFileInfo`, `ISpecificFileInfo` | `XamlFileInfo`, `SpecificFileInfo` |
+
+`CSharpFileInfo` is a class now instead of a record. Two infos of the same file are still equal.
+
+## 6.3 `Named` returns a list everywhere
+
+`attributes.Named("Obsolete")` returned the first match; it now returns every match, like `Named` on
+any other list. For a single attribute use `declaration.Attribute("Obsolete")`. `Named` works on every
+declaration list now, `tree.AllMethods().Named("Dispose")` included.
+
+## 6.4 New shortcuts
+
+```csharp
+var solution = SolutionFile.Find("MySolution.sln");                          // was: new SolutionFileName(..).FindSolutionFileReverseFrom(new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory)).Parse()
+var solution = SolutionFile.Find("MySolution.sln", ParseMode.WithSymbols);
+var project  = solution.Project("My.Sample");                                // was: solution.Projects.Single(p => p.ProjectFileInfo.FileNameWithoutExtenion == "My.Sample")
+where call.Passes("writeResponse", true)                                     // was: call.Argument("writeResponse")?.Is(true) == true
+var code     = CodeBase.FromSource(code).WithSymbols();                      // one file in memory
+findings.ShouldBeEmpty("Properties must be immutable");                      // using Solution.Parser.Core
+```
+
+---
+
 # Migrating to Solution.Parser 5.0
 
 This release changes behaviour that older versions got wrong. Some of it the compiler catches. Some

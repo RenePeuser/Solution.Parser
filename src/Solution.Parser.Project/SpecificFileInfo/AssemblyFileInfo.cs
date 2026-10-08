@@ -1,9 +1,8 @@
-﻿using System.Diagnostics;
+using Solution.Parser.Core;
 
 namespace Solution.Parser.Project
 {
-    [DebuggerDisplay("{Value}")]
-    public class AssemblyFileInfo : SpecificFileInfoBase
+    public class AssemblyFileInfo : SpecificFileInfo
     {
         internal AssemblyFileInfo(string path)
             : base(path, ".dll")

@@ -243,11 +243,11 @@ namespace Solution.Parser.CSharp.Test
                 using System.Linq;
                 """);
 
-            Assert.That.IsTrue(parsed.Usings.Single(u => u.Value == "System").IsGlobal,
+            Assert.That.IsTrue(parsed.Usings.Single(u => u.Name == "System").IsGlobal,
                                because: "a rule about global usings needs to tell them from ordinary ones",
                                fix: "Read the global keyword of the using directive");
 
-            Assert.That.IsTrue(parsed.Usings.Single(u => u.Value == "System.Math").IsStatic,
+            Assert.That.IsTrue(parsed.Usings.Single(u => u.Name == "System.Math").IsStatic,
                                because: "a using static imports members rather than a namespace",
                                fix: "Read the static keyword of the using directive");
 
@@ -259,11 +259,11 @@ namespace Solution.Parser.CSharp.Test
                                  fix: "Read the alias from the using directive");
 
             Assert.That.AreEqual("System.Text.StringBuilder",
-                                 alias.Value,
+                                 alias.Name,
                                  because: "an alias may point at a type, which Name does not cover but NamespaceOrType does",
                                  fix: "Read the target from UsingDirectiveSyntax.NamespaceOrType");
 
-            Assert.That.IsFalse(parsed.Usings.Single(u => u.Value == "System.Linq").IsGlobal,
+            Assert.That.IsFalse(parsed.Usings.Single(u => u.Name == "System.Linq").IsGlobal,
                                 because: "a plain using must not be reported as global",
                                 fix: "Read the global keyword of the using directive");
         }
@@ -360,7 +360,7 @@ namespace Solution.Parser.CSharp.Test
                                  fix: "Read the GlobalStatementSyntax members of the compilation unit");
 
             Assert.That.AreEqual("Console.WriteLine(\"one\");",
-                                 parsed.Statements[0].SyntaxTree,
+                                 parsed.Statements[0].SourceCode,
                                  because: "the statement as written is what a rule about an entry point inspects",
                                  fix: "Report the statement of the global statement, not the global statement itself");
         }

@@ -100,12 +100,12 @@ namespace Solution.Parser.Xaml.Test
             var tree = ParseXaml(Window);
 
             Assert.That.AreEqual("My.Sample.MainWindow",
-                                 tree.FullQualifiedName,
+                                 tree.FullyQualifiedName,
                                  because: "x:Class pairs the markup with its code behind",
                                  fix: "Check ElementBuilder.BuildRoot");
 
             Assert.That.AreEqual("MainViewModel",
-                                 tree.Root.DataContext?.FullQualifiedName,
+                                 tree.Root.DataContext?.FullyQualifiedName,
                                  because: "a rule pairing a view with its view model reads the data context type",
                                  fix: "Check ElementBuilder.ToDataContext");
 

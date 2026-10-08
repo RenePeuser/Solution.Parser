@@ -2,12 +2,12 @@
 {
     public static class XamlParseExtensions
     {
-        public static XamlSyntaxTree Parse(this IXamlFileInfo xamlFileInfo)
+        public static XamlSyntaxTree Parse(this XamlFileInfo xamlFileInfo)
         {
             return new XamlParser().Parse(xamlFileInfo);
         }
 
-        public static XamlSyntaxTree Parse(this IXamlFileInfo xamlFileInfo, string xamlContent)
+        public static XamlSyntaxTree Parse(this XamlFileInfo xamlFileInfo, string xamlContent)
         {
             return new XamlParser().Parse(xamlFileInfo, xamlContent);
         }

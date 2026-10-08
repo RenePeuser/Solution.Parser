@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
@@ -56,9 +57,13 @@ namespace Solution.Parser.CSharp
             return attributes.Any(a => a.IsNamed(attributeName));
         }
 
-        public static Attribute? Named(this ImmutableList<Attribute> attributes, string attributeName)
+        /// <summary>
+        /// The attributes with this name, with or without the <c>Attribute</c> suffix, see
+        /// <see cref="Attribute.IsNamed"/>. For a single one, <c>declaration.Attribute(name)</c>.
+        /// </summary>
+        public static ImmutableList<Attribute> Named(this IEnumerable<Attribute> attributes, string attributeName)
         {
-            return attributes.FirstOrDefault(a => a.IsNamed(attributeName));
+            return attributes.Where(a => a.IsNamed(attributeName)).ToImmutableList();
         }
     }
 }

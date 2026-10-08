@@ -11,7 +11,7 @@ namespace Solution.Parser.CSharp
     /// </summary>
     internal static class QualifiedNameExtensions
     {
-        internal static string BuildFullQualifiedName(this SyntaxNode declaration, string name)
+        internal static string BuildFullyQualifiedName(this SyntaxNode declaration, string name)
         {
             var qualifiers = EnclosingQualifiers(declaration).Reverse().ToList();
             qualifiers.Add(name);
@@ -23,7 +23,7 @@ namespace Solution.Parser.CSharp
         /// The namespace the declaration lives in, or an empty namespace when it lives in none.
         /// Resolved per declaration rather than per file, because a file may hold several namespaces.
         /// </summary>
-        internal static NameSpace NamespaceOf(this SyntaxNode declaration)
+        internal static Namespace NamespaceOf(this SyntaxNode declaration)
         {
             var names = new List<string>();
 
@@ -37,7 +37,7 @@ namespace Solution.Parser.CSharp
 
             names.Reverse();
 
-            return new NameSpace(string.Join(".", names));
+            return new Namespace(string.Join(".", names));
         }
 
         /// <summary>

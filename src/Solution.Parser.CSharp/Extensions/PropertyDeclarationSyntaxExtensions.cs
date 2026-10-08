@@ -16,7 +16,7 @@ namespace Solution.Parser.CSharp
             return new Property
             {
                 Name = name,
-                FullQualifiedName = propertyDeclarationSyntax.BuildFullQualifiedName(name),
+                FullyQualifiedName = propertyDeclarationSyntax.BuildFullyQualifiedName(name),
                 Type = propertyDeclarationSyntax.Type.ToString(),
                 Modifiers = propertyDeclarationSyntax.Modifiers.ToModifiers(),
                 Accessibility = propertyDeclarationSyntax.Modifiers.ToAccessibility(propertyDeclarationSyntax),
@@ -28,7 +28,7 @@ namespace Solution.Parser.CSharp
                 IsExpressionBodied = propertyDeclarationSyntax.ExpressionBody is not null,
                 ExplicitInterfaceSpecifier = propertyDeclarationSyntax.ExplicitInterfaceSpecifier?.Name.ToString(),
                 IsNullable = propertyDeclarationSyntax.Type is NullableTypeSyntax,
-                SyntaxTree = propertyDeclarationSyntax.ToString(),
+                SourceCode = propertyDeclarationSyntax.ToString(),
                 FilePath = filePath,
                 Location = propertyDeclarationSyntax.ToCodeLocation(filePath)
             };

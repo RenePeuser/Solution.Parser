@@ -28,11 +28,7 @@ namespace SampleApp.Wpf.Test
 
         private static Parsed Load()
         {
-            var solution = new SolutionFileName("Solution.Parser.sln")
-                           .FindSolutionFileReverseFrom(new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory))
-                           .Parse();
-
-            var sampleApp = solution.Projects.Single(p => p.ProjectFileInfo.FileNameWithoutExtenion == "SampleApp.Wpf");
+            var sampleApp = SolutionFile.Find("Solution.Parser.sln").Project("SampleApp.Wpf");
 
             return new Parsed(sampleApp.SourceFiles.GetXamlFiles().Select(x => x.Parse()).ToImmutableList(),
                               sampleApp.SourceFiles.GetCSharpFiles().Select(c => c.Parse()).AllTypes());

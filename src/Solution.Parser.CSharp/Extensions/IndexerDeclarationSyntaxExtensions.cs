@@ -13,7 +13,7 @@ namespace Solution.Parser.CSharp
             return new Indexer
             {
                 Name = Name,
-                FullQualifiedName = indexerDeclarationSyntax.BuildFullQualifiedName(Name),
+                FullyQualifiedName = indexerDeclarationSyntax.BuildFullyQualifiedName(Name),
                 Type = indexerDeclarationSyntax.Type.ToString(),
                 Parameters = indexerDeclarationSyntax.ParameterList.ToParameters(filePath),
                 Modifiers = indexerDeclarationSyntax.Modifiers.ToModifiers(),
@@ -23,7 +23,7 @@ namespace Solution.Parser.CSharp
                 Accessors = indexerDeclarationSyntax.AccessorList.ToAccessors(indexerDeclarationSyntax.ExpressionBody, filePath),
                 IsExpressionBodied = indexerDeclarationSyntax.ExpressionBody is not null,
                 ExplicitInterfaceSpecifier = indexerDeclarationSyntax.ExplicitInterfaceSpecifier?.Name.ToString(),
-                SyntaxTree = indexerDeclarationSyntax.ToString(),
+                SourceCode = indexerDeclarationSyntax.ToString(),
                 FilePath = filePath,
                 Location = indexerDeclarationSyntax.ToCodeLocation(filePath)
             };

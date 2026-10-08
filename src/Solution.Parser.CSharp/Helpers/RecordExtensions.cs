@@ -43,7 +43,7 @@ namespace Solution.Parser.CSharp
 
             foreach (var recordParameter in record.Properties)
             {
-                stringBuilder.AppendLine(recordParameter.SyntaxTree);
+                stringBuilder.AppendLine(recordParameter.SourceCode);
             }
             stringBuilder.AppendLine("}");
             var rawSyntaxTree = stringBuilder.ToString();

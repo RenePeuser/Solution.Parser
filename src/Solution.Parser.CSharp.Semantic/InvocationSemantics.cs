@@ -6,12 +6,12 @@ namespace Solution.Parser.CSharp
     /// <summary>
     /// What the compiler knows about the records of the syntax model. These members only answer for
     /// a solution parsed with <c>Parse(ParseMode.WithSymbols)</c> or code in memory opened with
-    /// <c>CodeBase.FromSources(...).WithSymbols()</c>; anywhere else they throw rather than guess.
+    /// <c>CodeBase.FromSource(code).WithSymbols()</c>; anywhere else they throw rather than guess.
     /// </summary>
     /// <example>
     /// <code>
     /// from call in tree.AllInvocations().Named("AssertPostAsync")
-    /// where call.Argument("writeResponse")?.Is(true) == true
+    /// where call.Passes("writeResponse", true)
     /// select $"{call.Location}: writeResponse is true";
     /// </code>
     /// </example>
@@ -39,9 +39,24 @@ namespace Solution.Parser.CSharp
             /// What the call passes for the named parameter, by position or by name alike; null when the
             /// call is not resolved or the method has no such parameter.
             /// </summary>
-            public BoundArgument? Argument(string parameterName)
+            /// <remarks>
+            /// Unlike <c>call.NamedArgument(name)</c>, which only sees what is written as <c>name: value</c>,
+            /// this asks the compiler and therefore needs symbols.
+            /// </remarks>
+            public BoundArgument? ArgumentFor(string parameterName)
             {
-                return InvocationResolver.Resolve(call, "call.Argument(name)").Arguments.FirstOrDefault(a => a.Parameter.Name == parameterName);
+                return InvocationResolver.Resolve(call, "call.ArgumentFor(name)").Arguments.FirstOrDefault(a => a.Parameter.Name == parameterName);
+            }
+
+            /// <summary>
+            /// True when the call passes <paramref name="value"/> for the named parameter, by position, by
+            /// name or by leaving it out and relying on the default; see <see cref="BoundArgument.Is"/>.
+            /// False when the call is not resolved, the method has no such parameter or the value is not a
+            /// constant the compiler knows.
+            /// </summary>
+            public bool Passes(string parameterName, object? value)
+            {
+                return call.ArgumentFor(parameterName)?.Is(value) == true;
             }
         }
     }

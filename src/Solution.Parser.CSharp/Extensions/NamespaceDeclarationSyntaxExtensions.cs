@@ -5,12 +5,12 @@ namespace Solution.Parser.CSharp
 {
     internal static class NamespaceDeclarationSyntaxExtensions
     {
-        internal static NameSpace ToNamespace(this NamespaceDeclarationSyntax namespaceDeclarationSyntax)
+        internal static Namespace ToNamespace(this NamespaceDeclarationSyntax namespaceDeclarationSyntax)
         {
             Throw.IfNull(namespaceDeclarationSyntax);
 
             var fullqualifiedName = namespaceDeclarationSyntax.Name.ToString();
-            return new NameSpace(fullqualifiedName);
+            return new Namespace(fullqualifiedName);
         }
     }
 }

@@ -25,7 +25,7 @@ namespace Solution.Parser.CSharp
             return declaration.Variables.Select(variable => new Field
                               {
                                   Name = variable.Identifier.Text,
-                                  FullQualifiedName = fieldDeclarationSyntax.BuildFullQualifiedName(variable.Identifier.Text),
+                                  FullyQualifiedName = fieldDeclarationSyntax.BuildFullyQualifiedName(variable.Identifier.Text),
                                   Type = type,
                                   Modifiers = modifiers,
                                   Accessibility = accessibility,
@@ -34,7 +34,7 @@ namespace Solution.Parser.CSharp
                                   Initializer = variable.Initializer?.ToInitializer(),
                                   IsNullable = declaration.Type is NullableTypeSyntax,
                                   IsPartOfMultiVariableDeclaration = isMultiVariable,
-                                  SyntaxTree = fieldDeclarationSyntax.ToString(),
+                                  SourceCode = fieldDeclarationSyntax.ToString(),
                                   FilePath = filePath,
                                   Location = variable.ToCodeLocation(filePath)
                               })

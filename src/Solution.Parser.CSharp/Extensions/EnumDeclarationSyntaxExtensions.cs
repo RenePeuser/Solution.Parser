@@ -17,8 +17,8 @@ namespace Solution.Parser.CSharp
             return new Enum
             {
                 Name = name,
-                FullQualifiedName = enumDeclarationSyntax.BuildFullQualifiedName(name),
-                NameSpace = enumDeclarationSyntax.NamespaceOf(),
+                FullyQualifiedName = enumDeclarationSyntax.BuildFullyQualifiedName(name),
+                Namespace = enumDeclarationSyntax.NamespaceOf(),
                 Modifiers = enumDeclarationSyntax.Modifiers.ToModifiers(),
                 Accessibility = enumDeclarationSyntax.Modifiers.ToAccessibility(enumDeclarationSyntax),
                 Attributes = enumDeclarationSyntax.AttributeLists.ToAttributes(filePath),
@@ -28,7 +28,7 @@ namespace Solution.Parser.CSharp
                 // An enum has at most one base type, and it is the underlying integral type.
                 UnderlyingType = baseTypes.FirstOrDefault()?.TypeName,
                 EnumFields = enumDeclarationSyntax.Members.Select(m => m.ToEnumField(filePath)).ToImmutableList(),
-                SyntaxTree = enumDeclarationSyntax.ToString(),
+                SourceCode = enumDeclarationSyntax.ToString(),
                 FilePath = filePath,
                 Location = enumDeclarationSyntax.ToCodeLocation(filePath)
             };
@@ -41,11 +41,11 @@ namespace Solution.Parser.CSharp
             return new EnumField
             {
                 Name = name,
-                FullQualifiedName = member.BuildFullQualifiedName(name),
+                FullyQualifiedName = member.BuildFullyQualifiedName(name),
                 Attributes = member.AttributeLists.ToAttributes(filePath),
                 Documentation = member.ToDocumentation(),
                 Value = member.EqualsValue?.Value.ToString(),
-                SyntaxTree = member.ToString(),
+                SourceCode = member.ToString(),
                 FilePath = filePath,
                 Location = member.ToCodeLocation(filePath)
             };

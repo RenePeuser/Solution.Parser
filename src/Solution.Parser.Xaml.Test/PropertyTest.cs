@@ -56,9 +56,9 @@ namespace Solution.Parser.Xaml.Test
                                  fix: "Check XamlPropertyParser");
 
             Assert.That.AreEqual("Grid.Row",
-                                 attached.FullQualifiedName,
+                                 attached.FullyQualifiedName,
                                  because: "the full qualified name must read like the attribute is written",
-                                 fix: "Check AttachedProperty.FullQualifiedName");
+                                 fix: "Check AttachedProperty.FullyQualifiedName");
 
             Assert.That.AreEqual("RowProperty",
                                  attached.DependencyPropertyName,
@@ -129,7 +129,7 @@ namespace Solution.Parser.Xaml.Test
             var tree = ParseFragment("""<Grid DataContext="{x:Type local:MainViewModel}" />""");
 
             Assert.That.AreEqual("MainViewModel",
-                                 tree.OfTypeName("Grid").Single().DataContext?.FullQualifiedName,
+                                 tree.OfTypeName("Grid").Single().DataContext?.FullyQualifiedName,
                                  because: "a rule pairing a view with its view model reads the type from here",
                                  fix: "Check ElementBuilder.ToDataContext");
         }

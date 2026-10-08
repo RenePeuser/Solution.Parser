@@ -10,7 +10,7 @@ namespace Solution.Parser.CSharp
         public PropertyAccessors Accessors { get; init; } = PropertyAccessors.None;
 
         /// <summary>The value after <c>=</c>, for example in <c>public int X { get; } = 3;</c>.</summary>
-        public Initializer? Initializer { get; init; }
+        public string? Initializer { get; init; }
 
         /// <summary>True when every accessor is a semicolon, so the compiler supplies the backing field.</summary>
         public bool IsAutoProperty { get; init; }

@@ -3,5 +3,5 @@
 namespace Solution.Parser.CSharp
 {
     [DebuggerDisplay("{Name}")]
-    public record NameSpace(string Name);
+    public record Namespace(string Name);
 }

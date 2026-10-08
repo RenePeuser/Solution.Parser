@@ -91,6 +91,12 @@ namespace Solution.Parser.Project
 
         public ProjectFileInfo ProjectFileInfo { get; }
 
+        /// <summary>The project name, the file name of the csproj without extension.</summary>
+        public string Name => ProjectFileInfo.FileNameWithoutExtension;
+
+        /// <summary>The full path of the csproj.</summary>
+        public string Path => ProjectFileInfo.FullName;
+
         public Guid Guid { get; }
 
         public XDocument Document { get; }

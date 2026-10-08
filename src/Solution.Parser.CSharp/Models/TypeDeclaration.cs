@@ -18,7 +18,7 @@ namespace Solution.Parser.CSharp
     [DebuggerDisplay("{Kind} {Name}")]
     public abstract record TypeDeclaration : DeclarationWithModifiers
     {
-        public required NameSpace NameSpace { get; init; }
+        public required Namespace Namespace { get; init; }
 
         /// <summary>Distinguishes class, struct, record, record struct, interface and enum.</summary>
         public abstract TypeKind Kind { get; }

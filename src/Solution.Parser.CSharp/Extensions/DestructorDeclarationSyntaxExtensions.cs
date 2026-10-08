@@ -14,7 +14,7 @@ namespace Solution.Parser.CSharp
             return new Finalizer
             {
                 Name = name,
-                FullQualifiedName = destructorSyntax.BuildFullQualifiedName($"~{name}"),
+                FullyQualifiedName = destructorSyntax.BuildFullyQualifiedName($"~{name}"),
                 Modifiers = destructorSyntax.Modifiers.ToModifiers(),
                 Accessibility = Accessibility.NotApplicable,
                 Attributes = destructorSyntax.AttributeLists.ToAttributes(filePath),
@@ -25,7 +25,7 @@ namespace Solution.Parser.CSharp
                 LocalFunctions = body.LocalFunctions,
                 Invocations = body.Invocations,
                 IsExpressionBodied = body.IsExpressionBodied,
-                SyntaxTree = destructorSyntax.ToString(),
+                SourceCode = destructorSyntax.ToString(),
                 FilePath = filePath,
                 Location = destructorSyntax.ToCodeLocation(filePath)
             };

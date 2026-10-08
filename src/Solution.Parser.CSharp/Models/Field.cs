@@ -7,7 +7,7 @@ namespace Solution.Parser.CSharp
     {
         public required string Type { get; init; }
 
-        public Initializer? Initializer { get; init; }
+        public string? Initializer { get; init; }
 
         public bool IsReadOnly => Modifiers.Contains(Modifier.ReadOnly);
 

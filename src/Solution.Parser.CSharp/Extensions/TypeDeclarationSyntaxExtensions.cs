@@ -85,7 +85,7 @@ namespace Solution.Parser.CSharp
         /// </summary>
         private static TypeDeclaration ToSeed(this TypeDeclarationSyntax syntax, string name, string filePath)
         {
-            var fullQualifiedName = syntax.BuildFullQualifiedName(name);
+            var fullQualifiedName = syntax.BuildFullyQualifiedName(name);
             var nameSpace = syntax.NamespaceOf();
             var syntaxTree = syntax.ToString();
             var location = syntax.ToCodeLocation(filePath);
@@ -95,37 +95,37 @@ namespace Solution.Parser.CSharp
                 RecordDeclarationSyntax record => new Record
                                                   {
                                                       Name = name,
-                                                      FullQualifiedName = fullQualifiedName,
-                                                      NameSpace = nameSpace,
+                                                      FullyQualifiedName = fullQualifiedName,
+                                                      Namespace = nameSpace,
                                                       IsRecordStruct = record.ClassOrStructKeyword.IsKind(SyntaxKind.StructKeyword),
-                                                      SyntaxTree = syntaxTree,
+                                                      SourceCode = syntaxTree,
                                                       FilePath = filePath,
                                                       Location = location
                                                   },
                 StructDeclarationSyntax => new Struct
                                            {
                                                Name = name,
-                                               FullQualifiedName = fullQualifiedName,
-                                               NameSpace = nameSpace,
-                                               SyntaxTree = syntaxTree,
+                                               FullyQualifiedName = fullQualifiedName,
+                                               Namespace = nameSpace,
+                                               SourceCode = syntaxTree,
                                                FilePath = filePath,
                                                Location = location
                                            },
                 InterfaceDeclarationSyntax => new Interface
                                               {
                                                   Name = name,
-                                                  FullQualifiedName = fullQualifiedName,
-                                                  NameSpace = nameSpace,
-                                                  SyntaxTree = syntaxTree,
+                                                  FullyQualifiedName = fullQualifiedName,
+                                                  Namespace = nameSpace,
+                                                  SourceCode = syntaxTree,
                                                   FilePath = filePath,
                                                   Location = location
                                               },
                 _ => new Class
                      {
                          Name = name,
-                         FullQualifiedName = fullQualifiedName,
-                         NameSpace = nameSpace,
-                         SyntaxTree = syntaxTree,
+                         FullyQualifiedName = fullQualifiedName,
+                         Namespace = nameSpace,
+                         SourceCode = syntaxTree,
                          FilePath = filePath,
                          Location = location
                      }

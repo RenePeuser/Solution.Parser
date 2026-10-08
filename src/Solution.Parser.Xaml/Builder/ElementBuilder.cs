@@ -39,7 +39,7 @@ namespace Solution.Parser.Xaml
 
             var withRootParts = root with
             {
-                FullQualifiedName = declaredClass.IsNullOrWhiteSpace() ? fallbackName : declaredClass!,
+                FullyQualifiedName = declaredClass.IsNullOrWhiteSpace() ? fallbackName : declaredClass!,
                 XmlnsDeclarations = xmlnsDeclarations
             };
 
@@ -141,7 +141,7 @@ namespace Solution.Parser.Xaml
                 _ => value.ValueText
             };
 
-            return new DataContext { FullQualifiedName = name, Value = value };
+            return new DataContext { FullyQualifiedName = name, Value = value };
         }
 
         /// <summary>

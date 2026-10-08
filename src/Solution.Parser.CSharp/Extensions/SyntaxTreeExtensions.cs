@@ -17,12 +17,12 @@ namespace Solution.Parser.CSharp
         }
 
         /// <summary>Every namespace declared in the file, in source order.</summary>
-        internal static ImmutableList<NameSpace> GetNamespaces(this SyntaxTree syntaxTree)
+        internal static ImmutableList<Namespace> GetNamespaces(this SyntaxTree syntaxTree)
         {
             Throw.IfNull(syntaxTree);
 
             return syntaxTree.AllOfType<BaseNamespaceDeclarationSyntax>()
-                             .Select(ns => new NameSpace(ns.Name.ToString()))
+                             .Select(ns => new Namespace(ns.Name.ToString()))
                              .ToImmutableList();
         }
 
@@ -30,9 +30,9 @@ namespace Solution.Parser.CSharp
         /// The first namespace of the file, or an empty one when the file declares none. Prefer the
         /// namespace reported on each declaration, which is correct even when a file holds several.
         /// </summary>
-        internal static NameSpace GetNamespaceOrDefault(this SyntaxTree syntaxTree)
+        internal static Namespace GetNamespaceOrDefault(this SyntaxTree syntaxTree)
         {
-            return syntaxTree.GetNamespaces().FirstOrDefault() ?? new NameSpace(string.Empty);
+            return syntaxTree.GetNamespaces().FirstOrDefault() ?? new Namespace(string.Empty);
         }
 
         internal static ImmutableList<ParseDiagnostic> ToParseDiagnostics(this SyntaxTree syntaxTree, string filePath)

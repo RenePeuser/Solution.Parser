@@ -14,21 +14,21 @@ namespace Solution.Parser.Xaml
         /// <summary>
         ///     This method reads the content out of the file, access to file system !
         /// </summary>
-        public XamlSyntaxTree Parse(IXamlFileInfo xamlFileInfo)
+        public XamlSyntaxTree Parse(XamlFileInfo xamlFileInfo)
         {
             Throw.IfNull(xamlFileInfo);
 
-            return Parse(xamlFileInfo, xamlFileInfo.Value.ReadAllText());
+            return Parse(xamlFileInfo, File.ReadAllText(xamlFileInfo.FullName));
         }
 
         /// <summary>
         ///     This methods parse the given content and use the file info only as a meta info !
         /// </summary>
-        public XamlSyntaxTree Parse(IXamlFileInfo xamlFileInfo, string xamlContent)
+        public XamlSyntaxTree Parse(XamlFileInfo xamlFileInfo, string xamlContent)
         {
             Throw.IfNull(xamlFileInfo);
 
-            return ParseContent(xamlContent, xamlFileInfo.Value.FullName) with { FileInfo = xamlFileInfo };
+            return ParseContent(xamlContent, xamlFileInfo.FullName) with { FileInfo = xamlFileInfo };
         }
 
         /// <summary>

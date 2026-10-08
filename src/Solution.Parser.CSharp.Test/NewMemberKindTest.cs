@@ -30,7 +30,7 @@ namespace Solution.Parser.CSharp.Test
             var transform = parsed.Delegates.Single();
 
             Assert.That.AreEqual("My.Sample.Transform",
-                                 transform.FullQualifiedName,
+                                 transform.FullyQualifiedName,
                                  because: "a delegate is a type of its own and used to be skipped by the parser altogether",
                                  fix: "Include DelegateDeclarationSyntax in the top level walk and convert it");
 

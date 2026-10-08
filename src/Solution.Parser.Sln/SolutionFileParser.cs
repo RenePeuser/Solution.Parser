@@ -18,7 +18,7 @@ namespace Solution.Parser.Sln
             Throw.IfNull(solutionFileInfo);
 
             // var nuspecFiles = NuGetFolderParser.Parse(NugetFolderFinder.GetUserNuGetFolder()).ToImmutableList();
-            var solutionFile = Microsoft.Build.Construction.SolutionFile.Parse(solutionFileInfo.Value.FullName);
+            var solutionFile = Microsoft.Build.Construction.SolutionFile.Parse(solutionFileInfo.FullName);
 
             var tempProjects = solutionFile.ProjectsInOrder
                                            .Where(item => Path.GetExtension(item.RelativePath).EqualsTo(PROJECT_FILE_EXTENSION))

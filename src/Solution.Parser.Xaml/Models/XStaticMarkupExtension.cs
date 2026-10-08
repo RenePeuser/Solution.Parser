@@ -7,7 +7,7 @@ namespace Solution.Parser.Xaml
     /// An <c>{x:Static SomeType.Member}</c>. The old parser produced an
     /// <see cref="XTypeMarkupExtension"/> here, which made this type unreachable.
     /// </summary>
-    [DebuggerDisplay("{FullQualifiedName}")]
+    [DebuggerDisplay("{FullyQualifiedName}")]
     public record XStaticMarkupExtension : MarkupExtension
     {
         internal XStaticMarkupExtension(string rawValue) : base(rawValue)
@@ -20,6 +20,6 @@ namespace Solution.Parser.Xaml
         /// <summary>The member being read.</summary>
         public required string Member { get; init; }
 
-        public string FullQualifiedName => Type.IsNullOrEmpty() ? Member : $"{Type}.{Member}";
+        public string FullyQualifiedName => Type.IsNullOrEmpty() ? Member : $"{Type}.{Member}";
     }
 }

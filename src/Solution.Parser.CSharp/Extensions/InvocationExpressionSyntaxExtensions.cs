@@ -32,12 +32,12 @@ namespace Solution.Parser.CSharp
             return new Invocation
             {
                 Name = name,
-                FullQualifiedName = target is null ? name : $"{target}.{name}",
+                FullyQualifiedName = target is null ? name : $"{target}.{name}",
                 Target = target,
                 TypeArguments = typeArguments,
                 IsConditional = isConditional,
                 Arguments = invocation.ArgumentList.Arguments.Select((a, i) => a.ToInvocationArgument(i, filePath)).ToImmutableList(),
-                SyntaxTree = invocation.ToString(),
+                SourceCode = invocation.ToString(),
                 FilePath = filePath,
                 Location = invocation.ToCodeLocation(filePath)
             };

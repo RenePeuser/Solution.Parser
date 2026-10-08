@@ -8,7 +8,7 @@ namespace Solution.Parser.CSharp
     {
         public required string Type { get; init; }
 
-        public Initializer? Initializer { get; init; }
+        public string? Initializer { get; init; }
 
         /// <summary>See <see cref="Field.IsPartOfMultiVariableDeclaration"/>.</summary>
         public bool IsPartOfMultiVariableDeclaration { get; init; }

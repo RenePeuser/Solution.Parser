@@ -25,13 +25,13 @@ namespace Solution.Parser.AspNet
             var allNugetPackagesInSolution = solutionFile.Projects.SelectMany(p => p.PackageReferences).Select(p => new
             {
                 Package = p,
-                NugetVersion = NuGet.Versioning.NuGetVersion.Parse(p.PackageVersion.Value)
+                NugetVersion = NuGet.Versioning.NuGetVersion.Parse(p.Version)
 
             }).ToImmutableList();
 
 
             // 2. Read csproj first, we do not want write continuously the same file, just once if needed
-            var csprojContent = await File.ReadAllTextAsync(project.ProjectFileInfo.Value.FullName).ConfigureAwait(false);
+            var csprojContent = await File.ReadAllTextAsync(project.ProjectFileInfo.FullName).ConfigureAwait(false);
             var newCsprojContent = csprojContent;
 
             // 3. Iterate all packages and check if an package is already used in parent solution
@@ -45,7 +45,7 @@ namespace Solution.Parser.AspNet
                 }
 
                 // Find the highest version in the solution
-                var packageClientNugetVersion = NuGet.Versioning.NuGetVersion.Parse(package.PackageVersion.Value);
+                var packageClientNugetVersion = NuGet.Versioning.NuGetVersion.Parse(package.Version);
 
                 // Detect highest nuget version
                 var maxVersion = otherPackages.MaxBy(p => p.NugetVersion.Version);
@@ -58,7 +58,7 @@ namespace Solution.Parser.AspNet
                 if (maxVersion.NugetVersion.Version > packageClientNugetVersion.Version)
                 {
                     // Important unique reference is Include + Version. Do not just replace a version can go wrong
-                    newCsprojContent = newCsprojContent.Replace($@"Include=""{package.Include}"" Version=""{package.PackageVersion.Value}""",
+                    newCsprojContent = newCsprojContent.Replace($@"Include=""{package.Include}"" Version=""{package.Version}""",
                                                                 $@"Include=""{package.Include}"" Version=""{maxVersion.NugetVersion.OriginalVersion}""");
                 }
             }
@@ -66,7 +66,7 @@ namespace Solution.Parser.AspNet
             // If we detect changes to the org csproj we update the csproj file
             if (csprojContent.NotEqualsTo(newCsprojContent))
             {
-                await File.WriteAllTextAsync(project.ProjectFileInfo.Value.FullName, newCsprojContent).ConfigureAwait(false);
+                await File.WriteAllTextAsync(project.ProjectFileInfo.FullName, newCsprojContent).ConfigureAwait(false);
             }
         }
     }

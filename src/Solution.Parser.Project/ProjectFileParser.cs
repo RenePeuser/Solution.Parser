@@ -9,7 +9,7 @@ namespace Solution.Parser.Project
     {
         public static ProjectFile Parse(ProjectFileInfo projectFileInfo)
         {
-            var document = XDocument.Load(projectFileInfo.Value.FullName);
+            var document = XDocument.Load(projectFileInfo.FullName);
             var documentRoot = document.Root;
 
             Throw.IfNull(documentRoot);

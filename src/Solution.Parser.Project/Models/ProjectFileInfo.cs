@@ -1,7 +1,6 @@
-﻿using System.Diagnostics;
+using Solution.Parser.Core;
 
 namespace Solution.Parser.Project
 {
-    [DebuggerDisplay("{Value.FullName}")]
-    public class ProjectFileInfo(string path) : SpecificFileInfoBase(path, ".csproj");
+    public class ProjectFileInfo(string path) : SpecificFileInfo(path, ".csproj");
 }

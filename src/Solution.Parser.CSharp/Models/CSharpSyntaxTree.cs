@@ -11,7 +11,7 @@ namespace Solution.Parser.CSharp
     [DebuggerDisplay("{FileName}")]
     public record CSharpSyntaxTree
     {
-        public required NameSpace NameSpace { get; init; }
+        public required Namespace Namespace { get; init; }
 
         public required string FileName { get; init; }
 
@@ -32,10 +32,10 @@ namespace Solution.Parser.CSharp
         public ImmutableList<ParseDiagnostic> Diagnostics { get; init; } = ImmutableList<ParseDiagnostic>.Empty;
 
         /// <summary>The source of the whole file.</summary>
-        public required string SyntaxTree { get; init; }
+        public required string SourceCode { get; init; }
 
         /// <summary>Every namespace declared in the file. A file may hold more than one.</summary>
-        public ImmutableList<NameSpace> NameSpaces { get; init; } = ImmutableList<NameSpace>.Empty;
+        public ImmutableList<Namespace> Namespaces { get; init; } = ImmutableList<Namespace>.Empty;
 
         public ImmutableList<Class> Classes => Types.OfType<Class>().ToImmutableList();
 

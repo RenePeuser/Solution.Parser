@@ -5,14 +5,14 @@ namespace Solution.Parser.CSharp
 {
     internal static class EqualsClauseSyntaxExtensions
     {
-        internal static Initializer? ToInitializer(this EqualsValueClauseSyntax equalsValueClauseSyntax)
+        internal static string? ToInitializer(this EqualsValueClauseSyntax equalsValueClauseSyntax)
         {
             if (equalsValueClauseSyntax.IsNull())
             {
                 return null;
             }
 
-            return new Initializer(equalsValueClauseSyntax.Value.ToString());
+            return equalsValueClauseSyntax.Value.ToString();
         }
     }
 }

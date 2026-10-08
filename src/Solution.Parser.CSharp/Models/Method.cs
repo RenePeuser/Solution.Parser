@@ -21,8 +21,8 @@ namespace Solution.Parser.CSharp
 
         public bool IsExplicitInterfaceImplementation => ExplicitInterfaceSpecifier is not null;
 
-        /// <summary>The source of the whole method. Kept as the previous name for <see cref="DeclarationBase.SyntaxTree"/>.</summary>
-        public string MethodValue => SyntaxTree;
+        /// <summary>The source of the whole method. Kept as the previous name for <see cref="DeclarationBase.SourceCode"/>.</summary>
+        public string MethodValue => SourceCode;
 
         /// <summary>Kept as the previous name for <see cref="MemberWithBody.Body"/>.</summary>
         public string MethodBody => Body;

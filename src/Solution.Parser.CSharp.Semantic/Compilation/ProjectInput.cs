@@ -49,7 +49,7 @@ namespace Solution.Parser.CSharp
 
         internal static ProjectInput From(ProjectFile project)
         {
-            var projectPath = project.ProjectFileInfo.Value.FullName;
+            var projectPath = project.ProjectFileInfo.FullName;
             var projectDirectory = Path.GetDirectoryName(projectPath)!;
             var document = project.Document;
             var assets = AssetsFile.TryRead(projectDirectory);
@@ -69,7 +69,7 @@ namespace Solution.Parser.CSharp
 
             return new ProjectInput(projectPath,
                                     project.AssemblyName,
-                                    project.SourceFiles.GetCSharpFiles().Select(f => f.Value.FullName).ToImmutableList(),
+                                    project.SourceFiles.GetCSharpFiles().Select(f => f.FullName).ToImmutableList(),
                                     generatedFiles,
                                     !generatedFiles.Any(f => f.EndsWith(".GlobalUsings.g.cs", StringComparison.OrdinalIgnoreCase)) && HasImplicitUsings(document),
                                     projectReferences,

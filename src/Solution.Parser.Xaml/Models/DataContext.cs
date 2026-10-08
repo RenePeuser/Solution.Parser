@@ -7,7 +7,7 @@ namespace Solution.Parser.Xaml
     /// null <see cref="ElementBase.DataContext"/> means "inherits from the parent" rather than "set to
     /// an empty string", which is what the old parser reported for every element in the file.
     /// </summary>
-    [DebuggerDisplay("{FullQualifiedName}")]
+    [DebuggerDisplay("{FullyQualifiedName}")]
     public record DataContext
     {
         /// <summary>
@@ -15,7 +15,7 @@ namespace Solution.Parser.Xaml
         /// <c>{x:Type ...}</c> or the resource key behind <c>{StaticResource ...}</c>. Empty when the
         /// value names no type, for example a plain <c>{Binding}</c>.
         /// </summary>
-        public required string FullQualifiedName { get; init; }
+        public required string FullyQualifiedName { get; init; }
 
         /// <summary>The value exactly as it was parsed, for anything the name alone does not cover.</summary>
         public required PropertyValue Value { get; init; }

@@ -13,7 +13,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="FileSystem.Abstraction" Version="0.1.2" />
     </ItemGroup>
 
 </Project>

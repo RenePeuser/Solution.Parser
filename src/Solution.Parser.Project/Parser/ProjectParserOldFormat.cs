@@ -45,9 +45,9 @@ namespace Solution.Parser.Project
 
         private static Package ParseElement(XElement element)
         {
-            var id = new PackageId(element.Attribute("id")?.Value ?? string.Empty);
-            var version = new PackageVersion(element.Attribute("version")?.Value ?? string.Empty);
-            var targetFramework = new PackageTargetFrameworkVersion(element.Attribute("targetFramework")?.Value ?? string.Empty);
+            var id = element.Attribute("id")?.Value ?? string.Empty;
+            var version = element.Attribute("version")?.Value ?? string.Empty;
+            var targetFramework = element.Attribute("targetFramework")?.Value ?? string.Empty;
             return new Package(id, version, targetFramework);
         }
 
@@ -90,7 +90,7 @@ namespace Solution.Parser.Project
         /// </remarks>
         private static ImmutableList<FileInfo> GetSourceFiles(XDocument document, ProjectFileInfo projectFileInfo)
         {
-            var projectDirectory = projectFileInfo.Value.Directory!;
+            var projectDirectory = projectFileInfo.Directory!;
 
             var itemTypes = new[]
             {
@@ -109,7 +109,7 @@ namespace Solution.Parser.Project
 
         private static ImmutableList<ProjectContentItem> GetContentItems(XDocument document, ProjectFileInfo projectFileInfo)
         {
-            var projectFileDirectoryPath = projectFileInfo.Value.Directory!.FullName;
+            var projectFileDirectoryPath = projectFileInfo.Directory!.FullName;
             var result = document.ElementsBy(ParserHelper.Content);
             var contentItems = result.Select(item =>
             {
@@ -133,7 +133,7 @@ namespace Solution.Parser.Project
                 return ImmutableList<Package>.Empty;
             }
 
-            var path = new FileInfo(Path.Combine(projectFileInfo.Value.Directory!.FullName, packagesConfig));
+            var path = new FileInfo(Path.Combine(projectFileInfo.Directory!.FullName, packagesConfig));
             if (path.Exists)
             {
                 var packageDocument = XDocument.Load(path.FullName);
@@ -151,7 +151,7 @@ namespace Solution.Parser.Project
                 var include = p.AttributeBy("Include")?.Value ?? string.Empty;
                 var versionAttribute = p.AttributeBy("Version");
                 var version = versionAttribute?.Value ?? p.ElementBy("Version")?.Value ?? string.Empty;
-                return new PackageReference(include, new PackageVersion(version));
+                return new PackageReference(include, version);
             }).ToImmutableList();
         }
     }

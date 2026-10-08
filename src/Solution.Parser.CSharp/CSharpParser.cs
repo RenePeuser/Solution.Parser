@@ -16,7 +16,7 @@ public static class CSharpParser
 
         var root = syntaxTree.GetRoot();
         var nameSpaces = syntaxTree.GetNamespaces();
-        var nameSpace = nameSpaces.FirstOrDefault() ?? new NameSpace(string.Empty);
+        var nameSpace = nameSpaces.FirstOrDefault() ?? new Namespace(string.Empty);
         var fixedFilePath = filePath.IsNullOrWhiteSpace() ? nameSpace.Name : filePath;
 
         // Descends through namespaces but not into types, so a nested type is reported by its
@@ -36,8 +36,8 @@ public static class CSharpParser
 
         return new CSharpSyntaxTree
         {
-            NameSpace = nameSpace,
-            NameSpaces = nameSpaces,
+            Namespace = nameSpace,
+            Namespaces = nameSpaces,
             FileName = fixedFilePath,
             Usings = root.ToUsings(fixedFilePath),
             Types = types,
@@ -45,7 +45,7 @@ public static class CSharpParser
             Statements = compilationUnit?.ToTopLevelStatements(fixedFilePath) ?? ImmutableList<Statement>.Empty,
             AssemblyAttributes = compilationUnit?.AttributeLists.ToAttributes(fixedFilePath) ?? ImmutableList<Attribute>.Empty,
             Diagnostics = syntaxTree.ToParseDiagnostics(fixedFilePath),
-            SyntaxTree = syntaxTree.ToString()
+            SourceCode = syntaxTree.ToString()
         };
     }
 
@@ -53,9 +53,9 @@ public static class CSharpParser
     {
         Throw.IfNull(csharpFileInfo);
 
-        var code = File.ReadAllText(csharpFileInfo.Value.FullName);
+        var code = File.ReadAllText(csharpFileInfo.FullName);
         var syntaxTree = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(code);
 
-        return Parse(syntaxTree, csharpFileInfo.Value.FullName);
+        return Parse(syntaxTree, csharpFileInfo.FullName);
     }
 }
