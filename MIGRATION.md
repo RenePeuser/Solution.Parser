@@ -24,7 +24,6 @@ below. Coming from 4.x or older, do the 5.0 migration further down first.
 | `solution.ProductiveTrees` | `solution.ProductionTrees` |
 | `call.Argument("name")` | `call.ArgumentFor("name")` |
 | `using.Value` | `using.Name` |
-| `solutionFileName.Value` | `solutionFileName.Name` |
 
 `SyntaxTree` became `SourceCode` because the string was easily mistaken for Roslyn's `SyntaxTree`,
 which `call.Roslyn` hands out for real. `Method.MethodValue` and `Method.MethodBody` keep working.
@@ -51,13 +50,27 @@ package types are plain strings.
 
 `CSharpFileInfo` is a class now instead of a record. Two infos of the same file are still equal.
 
-## 6.3 `Named` returns a list everywhere
+## 6.3 Finding a solution: `SolutionFile.Find`
+
+`SolutionFileName` and `FindSolutionFileReverseFrom` are internal now; `SolutionFile.Find` does both
+steps and parses the result.
+
+| 5.x | 6.0 |
+|---|---|
+| `new SolutionFileName("X.sln").FindSolutionFileReverseFrom(dir).Parse()` | `SolutionFile.Find("X.sln", dir)` |
+| `SolutionFileName.WithAnySolutionFormat("X").FindSolutionFileReverseFrom(dir).Parse()` | `SolutionFile.Find("X", dir)` |
+| `...FindSolutionFileReverseFrom(dir).Parse(ParseMode.WithSymbols)` | `SolutionFile.Find("X.sln", ParseMode.WithSymbols, dir)` |
+| `new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory)` as start | leave `dir` out, that is the default |
+
+For a solution whose path is already known, `new SolutionFileInfo(path).Parse()` stays.
+
+## 6.4 `Named` returns a list everywhere
 
 `attributes.Named("Obsolete")` returned the first match; it now returns every match, like `Named` on
 any other list. For a single attribute use `declaration.Attribute("Obsolete")`. `Named` works on every
 declaration list now, `tree.AllMethods().Named("Dispose")` included.
 
-## 6.4 New shortcuts
+## 6.5 New shortcuts
 
 ```csharp
 var solution = SolutionFile.Find("MySolution.sln");                          // was: new SolutionFileName(..).FindSolutionFileReverseFrom(new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory)).Parse()

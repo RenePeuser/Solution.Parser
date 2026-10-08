@@ -7,7 +7,7 @@ using Extensions.Pack;
 namespace Solution.Parser.Sln
 {
     [DebuggerDisplay("{Name}")]
-    public class SolutionFileName
+    internal sealed class SolutionFileName
     {
         public SolutionFileName(string value)
             : this(value, true)

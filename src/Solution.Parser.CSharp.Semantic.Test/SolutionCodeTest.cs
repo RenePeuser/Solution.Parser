@@ -17,9 +17,12 @@ namespace Solution.Parser.CSharp.Semantic.Test
     {
         private const string SolutionCodeFix = "Check SolutionCode, the code hangs on the SolutionFile instance";
 
+        // These tests are about Parse(mode) on a file info, so they start from the path rather than from Find.
+        private static readonly string SolutionPath = SolutionFile.Find("Solution.Parser.sln").SolutionFileInfo.FullName;
+
         private static SolutionFileInfo SolutionFileInfo()
         {
-            return new SolutionFileName("Solution.Parser.sln").FindSolutionFileReverseFrom(new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory));
+            return new SolutionFileInfo(SolutionPath);
         }
 
         [TestMethod]

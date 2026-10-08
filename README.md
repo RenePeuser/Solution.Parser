@@ -336,6 +336,7 @@ The short version for 6.0, all of it caught by the compiler:
 | `call.Argument("x")` | `call.ArgumentFor("x")`, or `call.Passes("x", value)` |
 | `fileInfo.Value.FullName`, `package.PackageId.Value` | `fileInfo.FullName`, `package.Id` |
 | `project.ProjectFileInfo.Value.FullName` | `project.Path` |
+| `new SolutionFileName(x).FindSolutionFileReverseFrom(dir).Parse()` | `SolutionFile.Find(x)`, with `dir` as optional start |
 | `attributes.Named(x)` returned the first match | it returns all of them; `declaration.Attribute(x)` for one |
 
 And for 5.0:

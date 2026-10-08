@@ -63,9 +63,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
         [TestMethod]
         public void Dump_The_Calls_Of_A_Project()
         {
-            var solutionFile = new SolutionFileName("Solution.Parser.sln").FindSolutionFileReverseFrom(new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory));
-            var solution = solutionFile.Parse(ParseMode.WithSymbols);
-            var project = solution.Projects.Single(p => p.ProjectFileInfo.FileNameWithoutExtension == ProjectName);
+            var project = SolutionFile.Find("Solution.Parser.sln", ParseMode.WithSymbols).Project(ProjectName);
 
             foreach (var diagnostic in project.CompilationDiagnostics().Where(d => d.IsError))
             {

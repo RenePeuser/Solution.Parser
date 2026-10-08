@@ -7,9 +7,9 @@ using Extensions.Pack;
 
 namespace Solution.Parser.Sln
 {
-    public static class SolutionFileHelper
+    internal static class SolutionFileHelper
     {
-        public static SolutionFileInfo FindSolutionFileReverseFrom(this SolutionFileName solutionFileName, DirectoryInfo startUpDirectory)
+        internal static SolutionFileInfo FindSolutionFileReverseFrom(this SolutionFileName solutionFileName, DirectoryInfo startUpDirectory)
         {
             Throw.IfNull(solutionFileName);
             Throw.IfNull(startUpDirectory);

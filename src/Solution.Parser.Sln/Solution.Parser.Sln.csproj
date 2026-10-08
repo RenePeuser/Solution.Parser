@@ -18,4 +18,9 @@
         <ProjectReference Include="..\Solution.Parser.Project\Solution.Parser.Project.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- The finder behind SolutionFile.Find is internal; its tests check the search itself. -->
+        <InternalsVisibleTo Include="Solution.Parser.Sln.Test" />
+    </ItemGroup>
+
 </Project>
