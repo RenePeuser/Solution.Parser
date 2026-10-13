@@ -30,15 +30,15 @@ which `call.Roslyn` hands out for real. `Method.MethodValue` and `Method.MethodB
 
 ## 6.2 No more `.Value`
 
-The `ImmutableSemanticType` wrappers are gone. A file info now answers for its file directly, and the
-package types are plain strings.
+The `ImmutableSemanticType` wrappers are gone. A file is a plain `System.IO.FileInfo` (see 6.6), and
+the package types are plain strings.
 
 | 5.x | 6.0 |
 |---|---|
 | `fileInfo.Value.FullName` | `fileInfo.FullName` |
 | `fileInfo.Value.Name` | `fileInfo.Name` |
 | `fileInfo.Value.Directory` | `fileInfo.Directory` |
-| `fileInfo.Value` (the `FileInfo`) | `fileInfo.File` |
+| `fileInfo.Value` (the `FileInfo`) | `fileInfo`, it is the `FileInfo` now |
 | `project.ProjectFileInfo.Value.FullName` | `project.Path` |
 | `project.ProjectFileInfo.FileNameWithoutExtenion` | `project.Name` |
 | `package.PackageId.Value` | `package.Id` |
@@ -46,9 +46,7 @@ package types are plain strings.
 | `package.PackageTargetFrameworkVersion.Value` | `package.TargetFramework` |
 | `packageReference.PackageVersion.Value` | `packageReference.Version` |
 | `field.Initializer?.Value` (also on properties and event fields) | `field.Initializer`, a `string?` |
-| `IXamlFileInfo`, `ISpecificFileInfo` | `XamlFileInfo`, `SpecificFileInfo` |
-
-`CSharpFileInfo` is a class now instead of a record. Two infos of the same file are still equal.
+| `IXamlFileInfo`, `ISpecificFileInfo` | `FileInfo` |
 
 ## 6.3 Finding a solution: `SolutionFile.Find`
 
@@ -62,7 +60,7 @@ steps and parses the result.
 | `...FindSolutionFileReverseFrom(dir).Parse(ParseMode.WithSymbols)` | `SolutionFile.Find("X.sln", ParseMode.WithSymbols, dir)` |
 | `new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory)` as start | leave `dir` out, that is the default |
 
-For a solution whose path is already known, `new SolutionFileInfo(path).Parse()` stays.
+For a solution whose path is already known, `SolutionFile.Parse(path)`, see 6.6.
 
 ## 6.4 `Named` returns a list everywhere
 
@@ -80,6 +78,34 @@ where call.Passes("writeResponse", true)                                     // 
 var code     = CodeBase.FromSource(code).WithSymbols();                      // one file in memory
 findings.ShouldBeEmpty("Properties must be immutable");                      // using Solution.Parser.Core
 ```
+
+## 6.6 Plain `FileInfo`, parsed by the type you get
+
+The typed file infos are gone: `CSharpFileInfo`, `XamlFileInfo`, `ProjectFileInfo`, `SolutionFileInfo`,
+`NuspecFileInfo`, their base `SpecificFileInfo`, as well as `AssemblyFileInfo`, `StyleCopSettingsFileInfo`
+and `ClassCreator`. A file is a `System.IO.FileInfo`; what kind of file it is shows in the type parsing
+it returns, so `Parse` is a static method of that type and takes a path or a `FileInfo`. This also
+applies when you already moved to 6.0.0.
+
+| Before | Now |
+|---|---|
+| `new SolutionFileInfo(path).Parse()` | `SolutionFile.Parse(path)` |
+| `new SolutionFileInfo(path).Parse(ParseMode.WithSymbols)` | `SolutionFile.Parse(path, ParseMode.WithSymbols)` |
+| `ProjectFileParser.Parse(new ProjectFileInfo(path))` | `ProjectFile.Parse(path)` |
+| `new CSharpFileInfo(path).Parse()` | `CSharpSyntaxTree.Parse(path)` |
+| `files.GetCSharpFiles().Select(c => c.Parse())` | `files.GetCSharpFiles().Select(CSharpSyntaxTree.Parse)` |
+| `new XamlFileInfo(path).Parse()`, `.Parse(content)` | `XamlSyntaxTree.Parse(path)`, `XamlSyntaxTree.Parse(fileInfo, content)` |
+| `NuSpecParser.Parse(new NuspecFileInfo(path))` | `NuspecFile.Parse(path)` |
+| `solution.SolutionFileInfo` | `solution.FileInfo`, or `solution.Name` and `solution.Path` |
+| `project.ProjectFileInfo` | `project.FileInfo`, or `project.Name` and `project.Path` |
+| `nuspec.NuspecFileInfo` | `nuspec.FileInfo` |
+| `solution.SolutionFileInfo.IsSlnx` | `solution.FileInfo.Extension == ".slnx"` |
+| `fileInfo.FileNameWithoutExtension` | `Path.GetFileNameWithoutExtension(fileInfo.Name)` |
+| `fileInfo.File` | `fileInfo` |
+
+`GetCSharpFiles()` and `GetXamlFiles()` return `ImmutableList<FileInfo>`. `XamlSyntaxTree.FileInfo` is a
+`FileInfo?`. A `FileInfo` compares by instance, not by path: compare `FullName` where two infos of the
+same file used to be equal.
 
 ---
 

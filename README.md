@@ -73,7 +73,8 @@ SolutionFile.Find("MySolution")        // either of both, '.slnx' wins when both
 SolutionFile.Find("MySolution.sln", startDirectory: new DirectoryInfo(@"D:\repo"))   // search from elsewhere
 ```
 
-`solution.SolutionFileInfo.IsSlnx` tells which format was found. Everything behind it is format agnostic.
+`solution.FileInfo.Extension` tells which format was found. Everything behind it is format agnostic.
+A solution whose path is already known is parsed with `SolutionFile.Parse(path)`.
 
 ## Solution, projects and code
 
@@ -93,9 +94,10 @@ project.Path                            // D:\repo\src\My.Sample\My.Sample.cspro
 project.PackageReferences               // Include and Version
 ```
 
-A file is a `CSharpFileInfo`, `XamlFileInfo`, `ProjectFileInfo` or `SolutionFileInfo` and answers
-`FullName`, `Name`, `FileNameWithoutExtension`, `Directory` and `File` directly. Two infos of the same
-file are equal.
+A file is a plain `FileInfo`: `solution.FileInfo`, `project.FileInfo`, `project.SourceFiles`. What kind
+of file it is shows in the type parsing it returns, so each of them parses with a static `Parse` that
+takes a path or a `FileInfo`: `SolutionFile.Parse`, `ProjectFile.Parse`, `CSharpSyntaxTree.Parse`,
+`XamlSyntaxTree.Parse`, `NuspecFile.Parse`.
 
 ## A base class for a rule suite
 
@@ -236,7 +238,7 @@ gives the same API for code in memory, which is handy for trying a rule out;
 `.xaml` files parse into the same shape of model, so a rule can reach across markup and code behind:
 
 ```csharp
-var tree = new XamlFileInfo(@"D:\repo\src\MainWindow.xaml").Parse();
+var tree = XamlSyntaxTree.Parse(@"D:\repo\src\MainWindow.xaml");
 
 tree.FullyQualifiedName          // "My.Sample.MainWindow", the x:Class
 tree.Root                       // a Window, UserControl, Page, Application,
@@ -337,6 +339,8 @@ The short version for 6.0, all of it caught by the compiler:
 | `fileInfo.Value.FullName`, `package.PackageId.Value` | `fileInfo.FullName`, `package.Id` |
 | `project.ProjectFileInfo.Value.FullName` | `project.Path` |
 | `new SolutionFileName(x).FindSolutionFileReverseFrom(dir).Parse()` | `SolutionFile.Find(x)`, with `dir` as optional start |
+| `new SolutionFileInfo(path).Parse()`, `csharpFileInfo.Parse()` | `SolutionFile.Parse(path)`, `CSharpSyntaxTree.Parse(path)` |
+| `solution.SolutionFileInfo`, `project.ProjectFileInfo` | `solution.FileInfo`, `project.FileInfo`, a plain `FileInfo` |
 | `attributes.Named(x)` returned the first match | it returns all of them; `declaration.Attribute(x)` for one |
 
 And for 5.0:
