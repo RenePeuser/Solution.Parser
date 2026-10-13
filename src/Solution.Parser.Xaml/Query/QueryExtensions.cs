@@ -131,18 +131,34 @@ namespace Solution.Parser.Xaml
             return syntaxTree.AllElements().Where(e => e.TypeName.EqualsTo(typeName)).ToImmutableList();
         }
 
+        /// <summary>
+        /// Depth first in document order, with one stack instead of a nested iterator per level, which
+        /// made every element cost as much as its depth.
+        /// </summary>
         private static IEnumerable<ElementBase> Descendants(this ElementBase element)
         {
-            var children = element.Children.Concat(element.PropertyElements.SelectMany(p => p.Children));
+            var pending = new Stack<ElementBase>();
+            PushChildren(element, pending);
 
-            foreach (var child in children)
+            while (pending.Count > 0)
             {
-                yield return child;
+                var next = pending.Pop();
 
-                foreach (var descendant in child.Descendants())
-                {
-                    yield return descendant;
-                }
+                yield return next;
+
+                PushChildren(next, pending);
+            }
+        }
+
+        private static void PushChildren(ElementBase element, Stack<ElementBase> pending)
+        {
+            var children = element.Children
+                                  .Concat(element.Properties.OfType<PropertyElement>().SelectMany(p => p.Children))
+                                  .ToList();
+
+            for (var i = children.Count - 1; i >= 0; i--)
+            {
+                pending.Push(children[i]);
             }
         }
 

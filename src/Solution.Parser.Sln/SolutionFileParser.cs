@@ -2,6 +2,7 @@
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using Argument.Check;
 using Extensions.Pack;
 using Microsoft.Build.Construction;
@@ -20,14 +21,29 @@ namespace Solution.Parser.Sln
             // var nuspecFiles = NuGetFolderParser.Parse(NugetFolderFinder.GetUserNuGetFolder()).ToImmutableList();
             var solutionFile = Microsoft.Build.Construction.SolutionFile.Parse(solutionFileInfo.FullName);
 
-            var tempProjects = solutionFile.ProjectsInOrder
+            // Every project is read and its directory walked on its own, so they are parsed in parallel,
+            // in order. A failure surfaces as it would without the parallelism.
+            ImmutableList<ProjectToProjectSolutionItem> tempProjects;
+
+            try
+            {
+                tempProjects = solutionFile.ProjectsInOrder
                                            .Where(item => Path.GetExtension(item.RelativePath).EqualsTo(PROJECT_FILE_EXTENSION))
+                                           .AsParallel()
+                                           .AsOrdered()
                                            .Select(item => new
                                                            {
                                                                project = item,
                                                                projectFileInfo = new ProjectFileInfo(item.AbsolutePath)
                                                            })
                                            .Select(item => new ProjectToProjectSolutionItem(item.project, ProjectFileParser.Parse(item.projectFileInfo))).ToImmutableList();
+            }
+            catch (AggregateException e) when (e.InnerExceptions.Count >= 1)
+            {
+                ExceptionDispatchInfo.Throw(e.InnerExceptions[0]);
+
+                throw;
+            }
 
             var projects = tempProjects.Select(item => PrepareWithBuildDependencies(item, tempProjects)).ToImmutableList();
 

@@ -71,10 +71,7 @@ namespace Solution.Parser.CSharp
         /// </summary>
         internal ImmutableList<CSharpSyntaxTree> Models(System.Collections.Generic.IEnumerable<string> paths)
         {
-            return paths.AsParallel()
-                        .AsOrdered()
-                        .Select(Model)
-                        .ToImmutableList();
+            return paths.SelectInOrder(Model);
         }
 
         internal CSharpSyntaxTree Model(string path)
@@ -179,9 +176,7 @@ namespace Solution.Parser.CSharp
             var trees = project.SourceFiles
                                .Concat(inputs.GeneratedFiles)
                                .Distinct(PathComparer)
-                               .AsParallel()
-                               .AsOrdered()
-                               .Select(path => SyntaxTree(path))
+                               .SelectInOrder(path => SyntaxTree(path))
                                .Select(tree => tree.WithRootAndOptions(tree.GetRoot(), inputs.ParseOptions))
                                .ToList();
 

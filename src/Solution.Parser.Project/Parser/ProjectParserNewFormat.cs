@@ -97,9 +97,7 @@ namespace Solution.Parser.Project
         {
             var projectDirectory = projectFileInfo.Directory!;
 
-            return projectDirectory.EnumerateFiles("*.*", SearchOption.AllDirectories)
-                                   .Where(file => SourceFileFilter.IsSourceFile(file, projectDirectory))
-                                   .ToImmutableList();
+            return SourceFileFilter.SourceFilesBelow(projectDirectory);
         }
 
         private static ImmutableList<Package> GetPackagesFrom(ProjectFileInfo projectFileInfo)

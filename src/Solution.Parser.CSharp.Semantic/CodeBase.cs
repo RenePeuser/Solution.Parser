@@ -160,9 +160,8 @@ namespace Solution.Parser.CSharp
             }
 
             return _workspace.Projects
-                             .AsParallel()
-                             .AsOrdered()
-                             .SelectMany(p => Diagnostics(p.Key))
+                             .SelectInOrder(p => Diagnostics(p.Key))
+                             .SelectMany(d => d)
                              .ToImmutableList();
         }
 

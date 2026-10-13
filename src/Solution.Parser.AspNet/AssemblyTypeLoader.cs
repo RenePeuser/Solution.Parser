@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Extensions.Pack;
 using Microsoft.Extensions.DependencyInjection;
 using NuGet.Configuration;
@@ -21,6 +23,15 @@ namespace Solution.Parser.AspNet
 
     internal sealed class AssemblyTypeLoader
     {
+        private static readonly Lazy<string[]> RuntimeAssemblies = new(() => Directory.GetFiles(RuntimeEnvironment.GetRuntimeDirectory(), "*.dll"));
+
+        private static readonly Lazy<string> GlobalPackagesFolder = new(() => SettingsUtility.GetGlobalPackagesFolder(Settings.LoadDefaultSettings(null)));
+
+        // A name that could not be found is asked for again and again; the search behind it walks the whole package folder.
+        private static readonly ConcurrentDictionary<string, bool> NotFound = new(StringComparer.OrdinalIgnoreCase);
+
+        private static int _resolverSubscribed;
+
         internal ImmutableList<Type> GetAllTypesFrom(FileInfo assemblyFile)
         {
             var types = GetAllTypes(assemblyFile);
@@ -39,7 +50,13 @@ namespace Solution.Parser.AspNet
         private ImmutableList<Type> GetAllTypes(FileInfo assemblyFile)
         {
             Directory.SetCurrentDirectory(assemblyFile.Directory!.FullName);
-            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+
+            // Once per process: every subscription runs on every miss, and the resolver is static anyway.
+            if (Interlocked.Exchange(ref _resolverSubscribed, 1) == 0)
+            {
+                AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+            }
+
             var assembly = Assembly.LoadFrom(assemblyFile.FullName);
             var types = assembly.GetTypes().ToImmutableList();
             return types;
@@ -82,14 +99,14 @@ namespace Solution.Parser.AspNet
             }
         }
 
-        private Assembly? CurrentDomain_AssemblyResolve(object? sender, ResolveEventArgs args)
+        private static Assembly? CurrentDomain_AssemblyResolve(object? sender, ResolveEventArgs args)
         {
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             var strings = args.Name.Split(',');
-            var searchPattern = $"{strings.First()}.dll";
+            var assemblyName = strings.First();
+            var searchPattern = $"{assemblyName}.dll";
 
             // 1. Check first if it is already loaded in current app domain
-            var alreadyLoaded = assemblies.FirstOrDefault(a => a.GetName()!.Name.EqualsTo(strings.First()));
+            var alreadyLoaded = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName()!.Name.EqualsTo(assemblyName));
             if (alreadyLoaded.IsNotNull())
             {
                 return alreadyLoaded;
@@ -103,26 +120,29 @@ namespace Solution.Parser.AspNet
                 return Assembly.LoadFrom(dll.FullName);
             }
 
-            // 3. Search in Net 7 runtimes
-            var runtimeAssemblies = Directory.GetFiles(RuntimeEnvironment.GetRuntimeDirectory(), "*.dll");
-            var foundInRuntimeFolder = runtimeAssemblies.FirstOrDefault(file => file.Contains(searchPattern));
+            if (NotFound.ContainsKey(assemblyName))
+            {
+                return null;
+            }
+
+            // 3. Search in the runtime folder
+            var foundInRuntimeFolder = RuntimeAssemblies.Value.FirstOrDefault(file => file.Contains(searchPattern));
             if (foundInRuntimeFolder.IsNotNullOrWhiteSpace())
             {
-                Assembly.LoadFrom(foundInRuntimeFolder);
+                return Assembly.LoadFrom(foundInRuntimeFolder);
             }
 
             // 4. If not found search in nuget packages
             //    Very tricky here
-            var settings = Settings.LoadDefaultSettings(null);
-            var nugetGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
-            var nugetDirectory = new DirectoryInfo(nugetGlobalPackagesFolder);
-            var missingPackage = nugetDirectory.EnumerateFiles(searchPattern, SearchOption.AllDirectories).Where(file => file.Directory!.FullName.Contains(strings.First(), StringComparison.OrdinalIgnoreCase)).ToList();
+            var missingPackage = FindInPackages(assemblyName, searchPattern);
             if (missingPackage.IsEmpty())
             {
+                NotFound.TryAdd(assemblyName, true);
+
                 return null;
             }
-            var containsNet7 = missingPackage.Last();
-            var fileToLoad = containsNet7?.FullName ?? missingPackage.Last().FullName;
+
+            var fileToLoad = missingPackage.Last().FullName;
 
             try
             {
@@ -131,8 +151,40 @@ namespace Solution.Parser.AspNet
             catch (Exception e)
             {
                 Console.WriteLine(e);
+                NotFound.TryAdd(assemblyName, true);
+
                 return null;
             }
+        }
+
+        /// <summary>
+        /// The package of the same name first, which is where an assembly almost always lives; the whole
+        /// package folder, often a hundred thousand files, only when that has nothing.
+        /// </summary>
+        private static List<FileInfo> FindInPackages(string assemblyName, string searchPattern)
+        {
+            var nugetDirectory = new DirectoryInfo(GlobalPackagesFolder.Value);
+
+            if (!nugetDirectory.Exists)
+            {
+                return [];
+            }
+
+            var packageDirectory = new DirectoryInfo(Path.Combine(nugetDirectory.FullName, assemblyName.ToLowerInvariant()));
+
+            if (packageDirectory.Exists)
+            {
+                var inPackage = packageDirectory.EnumerateFiles(searchPattern, SearchOption.AllDirectories).ToList();
+
+                if (inPackage.Count > 0)
+                {
+                    return inPackage;
+                }
+            }
+
+            return nugetDirectory.EnumerateFiles(searchPattern, SearchOption.AllDirectories)
+                                 .Where(file => file.Directory!.FullName.Contains(assemblyName, StringComparison.OrdinalIgnoreCase))
+                                 .ToList();
         }
     }
 
