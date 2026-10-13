@@ -10,6 +10,16 @@ namespace Solution.Parser.CSharp
     internal static class SyntaxNodeExtensions
     {
         /// <summary>
+        /// What <c>node.ToString()</c> gives, sliced out of the text the tree was parsed from. One string,
+        /// where <c>ToString()</c> writes every token through a fresh StringBuilder; the models keep a lot
+        /// of source text, so this is most of what parsing a file allocates.
+        /// </summary>
+        internal static string ToSourceCode(this SyntaxNode node)
+        {
+            return node.SyntaxTree.TryGetText(out var text) ? text.ToString(node.Span) : node.ToString();
+        }
+
+        /// <summary>
         /// Every descendant of the given type, crossing type boundaries. Only use it where recursion is
         /// actually wanted; member lists are built from <see cref="DirectMembers{T}"/> instead.
         /// </summary>

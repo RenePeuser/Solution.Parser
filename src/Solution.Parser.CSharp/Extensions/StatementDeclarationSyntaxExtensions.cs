@@ -14,7 +14,7 @@ namespace Solution.Parser.CSharp
         {
             return root.Members
                        .OfType<GlobalStatementSyntax>()
-                       .Select(g => new Statement(g.Statement.ToString(), filePath, g.ToCodeLocation(filePath)))
+                       .Select(g => new Statement(g.Statement.ToSourceCode(), filePath, g.ToCodeLocation(filePath)))
                        .ToImmutableList();
         }
     }

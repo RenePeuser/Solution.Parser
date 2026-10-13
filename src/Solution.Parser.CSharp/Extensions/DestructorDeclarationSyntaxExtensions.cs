@@ -25,7 +25,7 @@ namespace Solution.Parser.CSharp
                 LocalFunctions = body.LocalFunctions,
                 Invocations = body.Invocations,
                 IsExpressionBodied = body.IsExpressionBodied,
-                SourceCode = destructorSyntax.ToString(),
+                SourceCode = destructorSyntax.ToSourceCode(),
                 FilePath = filePath,
                 Location = destructorSyntax.ToCodeLocation(filePath)
             };

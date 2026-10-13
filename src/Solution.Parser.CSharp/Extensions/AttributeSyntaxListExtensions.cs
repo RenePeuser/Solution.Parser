@@ -15,28 +15,28 @@ namespace Solution.Parser.CSharp
         private static Attribute ToAttribute(this AttributeSyntax attribute, AttributeListSyntax list, string filePath)
         {
             var arguments = attribute.ArgumentList?.Arguments ?? default;
-            var name = attribute.Name.ToString();
+            var name = attribute.Name.ToSourceCode();
 
             var positional = arguments.Where(a => a.NameEquals is null && a.NameColon is null)
-                                      .Select(a => a.Expression.ToString())
+                                      .Select(a => a.Expression.ToSourceCode())
                                       .ToImmutableList();
 
             var named = arguments.Where(a => a.NameEquals is not null || a.NameColon is not null)
                                  .Select(a => new AttributeArgument(a.NameEquals?.Name.Identifier.ValueText ??
                                                                     a.NameColon?.Name.Identifier.ValueText ??
                                                                     string.Empty,
-                                                                    a.Expression.ToString()))
+                                                                    a.Expression.ToSourceCode()))
                                  .ToImmutableList();
 
             return new Attribute
             {
                 Name = name,
                 FullyQualifiedName = attribute.BuildFullyQualifiedName(name),
-                Arguments = arguments.Select(a => a.ToString()).ToImmutableList(),
+                Arguments = arguments.Select(a => a.ToSourceCode()).ToImmutableList(),
                 PositionalArguments = positional,
                 NamedArguments = named,
                 Target = list.Target?.Identifier.ValueText,
-                SourceCode = attribute.ToString(),
+                SourceCode = attribute.ToSourceCode(),
                 FilePath = filePath,
                 Location = attribute.ToCodeLocation(filePath)
             };

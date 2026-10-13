@@ -17,7 +17,7 @@ namespace Solution.Parser.CSharp
             {
                 Name = name,
                 FullyQualifiedName = propertyDeclarationSyntax.BuildFullyQualifiedName(name),
-                Type = propertyDeclarationSyntax.Type.ToString(),
+                Type = propertyDeclarationSyntax.Type.ToSourceCode(),
                 Modifiers = propertyDeclarationSyntax.Modifiers.ToModifiers(),
                 Accessibility = propertyDeclarationSyntax.Modifiers.ToAccessibility(propertyDeclarationSyntax),
                 Attributes = propertyDeclarationSyntax.AttributeLists.ToAttributes(filePath),
@@ -26,9 +26,9 @@ namespace Solution.Parser.CSharp
                 Initializer = propertyDeclarationSyntax.Initializer?.ToInitializer(),
                 IsAutoProperty = propertyDeclarationSyntax.AccessorList.IsAutoImplemented(),
                 IsExpressionBodied = propertyDeclarationSyntax.ExpressionBody is not null,
-                ExplicitInterfaceSpecifier = propertyDeclarationSyntax.ExplicitInterfaceSpecifier?.Name.ToString(),
+                ExplicitInterfaceSpecifier = propertyDeclarationSyntax.ExplicitInterfaceSpecifier?.Name.ToSourceCode(),
                 IsNullable = propertyDeclarationSyntax.Type is NullableTypeSyntax,
-                SourceCode = propertyDeclarationSyntax.ToString(),
+                SourceCode = propertyDeclarationSyntax.ToSourceCode(),
                 FilePath = filePath,
                 Location = propertyDeclarationSyntax.ToCodeLocation(filePath)
             };

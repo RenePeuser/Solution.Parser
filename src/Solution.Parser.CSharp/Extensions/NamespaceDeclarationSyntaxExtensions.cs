@@ -9,7 +9,7 @@ namespace Solution.Parser.CSharp
         {
             Throw.IfNull(namespaceDeclarationSyntax);
 
-            var fullqualifiedName = namespaceDeclarationSyntax.Name.ToString();
+            var fullqualifiedName = namespaceDeclarationSyntax.Name.ToSourceCode();
             return new Namespace(fullqualifiedName);
         }
     }

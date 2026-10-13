@@ -18,14 +18,14 @@ namespace Solution.Parser.CSharp
                 Name = name,
                 FullyQualifiedName = delegateSyntax.BuildFullyQualifiedName(name),
                 Namespace = delegateSyntax.NamespaceOf(),
-                ReturnParameter = delegateSyntax.ReturnType.ToString(),
+                ReturnParameter = delegateSyntax.ReturnType.ToSourceCode(),
                 Parameters = delegateSyntax.ParameterList.ToParameters(filePath),
                 TypeParameters = delegateSyntax.TypeParameterList.ToTypeParameters(delegateSyntax.ConstraintClauses, filePath),
                 Modifiers = delegateSyntax.Modifiers.ToModifiers(),
                 Accessibility = delegateSyntax.Modifiers.ToAccessibility(delegateSyntax),
                 Attributes = delegateSyntax.AttributeLists.ToAttributes(filePath),
                 Documentation = delegateSyntax.ToDocumentation(),
-                SourceCode = delegateSyntax.ToString(),
+                SourceCode = delegateSyntax.ToSourceCode(),
                 FilePath = filePath,
                 Location = delegateSyntax.ToCodeLocation(filePath)
             };

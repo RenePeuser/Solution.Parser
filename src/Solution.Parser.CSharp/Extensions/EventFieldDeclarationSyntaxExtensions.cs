@@ -15,7 +15,7 @@ namespace Solution.Parser.CSharp
             Throw.IfNull(eventFieldSyntax);
 
             var declaration = eventFieldSyntax.Declaration;
-            var type = declaration.Type.ToString();
+            var type = declaration.Type.ToSourceCode();
             var modifiers = eventFieldSyntax.Modifiers.ToModifiers();
             var accessibility = eventFieldSyntax.Modifiers.ToAccessibility(eventFieldSyntax);
             var attributes = eventFieldSyntax.AttributeLists.ToAttributes(filePath);
@@ -33,7 +33,7 @@ namespace Solution.Parser.CSharp
                                   Documentation = documentation,
                                   Initializer = variable.Initializer?.ToInitializer(),
                                   IsPartOfMultiVariableDeclaration = isMultiVariable,
-                                  SourceCode = eventFieldSyntax.ToString(),
+                                  SourceCode = eventFieldSyntax.ToSourceCode(),
                                   FilePath = filePath,
                                   Location = variable.ToCodeLocation(filePath)
                               })

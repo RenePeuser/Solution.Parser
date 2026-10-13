@@ -48,12 +48,17 @@ namespace Solution.Parser.CSharp
             var definition = (symbol.ReducedFrom ?? symbol).OriginalDefinition;
             definition = definition.PartialImplementationPart ?? definition;
 
-            var origin = OriginOf(definition, workspace, compilation);
-            var method = (origin.IsSource ? FindDeclared(definition, workspace) : null) ?? FromSymbol(definition, origin);
+            // A method is called many times; translating it once per call would build the same record
+            // again and again, with several display strings each.
+            return workspace.Methods.GetOrAdd(definition, d =>
+                                              {
+                                                  var origin = OriginOf(d, workspace, compilation);
+                                                  var method = (origin.IsSource ? FindDeclared(d, workspace) : null) ?? FromSymbol(d, origin);
 
-            Origins.AddOrUpdate(method, origin);
+                                                  Origins.AddOrUpdate(method, origin);
 
-            return method;
+                                                  return method;
+                                              });
         }
 
         internal static Parameter ToParameter(IParameterSymbol parameter, string filePath)
@@ -111,11 +116,7 @@ namespace Solution.Parser.CSharp
                 return null;
             }
 
-            var tree = workspace.Model(declaration.SyntaxTree.FilePath);
-
-            return tree.AllTypes()
-                       .SelectMany(t => t.Methods)
-                       .FirstOrDefault(m => m.Location.SpanStart == declaration.Span.Start);
+            return workspace.DeclaredMethod(declaration.SyntaxTree.FilePath, declaration.Span.Start);
         }
 
         /// <summary>

@@ -147,7 +147,23 @@ namespace Solution.Parser.CSharp
         /// <summary>What the compiler reports for every project.</summary>
         public ImmutableList<ParseDiagnostic> CompilationDiagnostics()
         {
-            return _workspace.Projects.SelectMany(p => Diagnostics(p.Key)).ToImmutableList();
+            if (!HasSymbols)
+            {
+                throw SymbolsNotLoaded.Exception("CompilationDiagnostics()");
+            }
+
+            // Building is cheap and one project waits for the ones it references, so that stays in
+            // order; binding every method body is what costs, and the compilations share nothing there.
+            foreach (var project in _workspace.Projects)
+            {
+                _workspace.Compilation(project.Key);
+            }
+
+            return _workspace.Projects
+                             .AsParallel()
+                             .AsOrdered()
+                             .SelectMany(p => Diagnostics(p.Key))
+                             .ToImmutableList();
         }
 
         private ImmutableList<ParseDiagnostic> Diagnostics(string projectKey)
@@ -167,10 +183,7 @@ namespace Solution.Parser.CSharp
 
         private ImmutableList<CSharpSyntaxTree> TreesOf(System.Collections.Generic.IEnumerable<ProjectInput> projects)
         {
-            return projects.SelectMany(p => p.SourceFiles)
-                           .Distinct(Workspace.PathComparer)
-                           .Select(_workspace.Model)
-                           .ToImmutableList();
+            return _workspace.Models(projects.SelectMany(p => p.SourceFiles).Distinct(Workspace.PathComparer));
         }
 
         private static ParseDiagnostic ToParseDiagnostic(Diagnostic diagnostic)

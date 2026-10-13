@@ -18,7 +18,7 @@ namespace Solution.Parser.CSharp
             {
                 Name = name,
                 FullyQualifiedName = operatorSyntax.BuildFullyQualifiedName(name),
-                ReturnParameter = operatorSyntax.ReturnType.ToString(),
+                ReturnParameter = operatorSyntax.ReturnType.ToSourceCode(),
                 Symbol = symbol,
                 OperatorKind = OperatorKind.Operator,
                 IsCheckedOperator = operatorSyntax.CheckedKeyword.IsKind(SyntaxKind.CheckedKeyword),
@@ -34,7 +34,7 @@ namespace Solution.Parser.CSharp
                 Invocations = body.Invocations,
                 IsExpressionBodied = body.IsExpressionBodied,
                 IsIterator = body.IsIterator,
-                SourceCode = operatorSyntax.ToString(),
+                SourceCode = operatorSyntax.ToSourceCode(),
                 FilePath = filePath,
                 Location = operatorSyntax.ToCodeLocation(filePath)
             };
@@ -43,7 +43,7 @@ namespace Solution.Parser.CSharp
         internal static Operator ToOperator(this ConversionOperatorDeclarationSyntax conversionSyntax, string filePath)
         {
             var isImplicit = conversionSyntax.ImplicitOrExplicitKeyword.IsKind(SyntaxKind.ImplicitKeyword);
-            var target = conversionSyntax.Type.ToString();
+            var target = conversionSyntax.Type.ToSourceCode();
             var name = $"{(isImplicit ? "implicit" : "explicit")} operator {target}";
             var body = conversionSyntax.Body.ToMemberBody(conversionSyntax.ExpressionBody, filePath);
 
@@ -67,7 +67,7 @@ namespace Solution.Parser.CSharp
                 Invocations = body.Invocations,
                 IsExpressionBodied = body.IsExpressionBodied,
                 IsIterator = body.IsIterator,
-                SourceCode = conversionSyntax.ToString(),
+                SourceCode = conversionSyntax.ToSourceCode(),
                 FilePath = filePath,
                 Location = conversionSyntax.ToCodeLocation(filePath)
             };

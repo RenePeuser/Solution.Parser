@@ -20,7 +20,7 @@ namespace Solution.Parser.CSharp
             {
                 Name = name,
                 FullyQualifiedName = methodDeclarationSyntax.BuildFullyQualifiedName(name),
-                ReturnParameter = methodDeclarationSyntax.ReturnType.ToString(),
+                ReturnParameter = methodDeclarationSyntax.ReturnType.ToSourceCode(),
                 Parameters = methodDeclarationSyntax.ParameterList.ToParameters(filePath),
                 TypeParameters = methodDeclarationSyntax.TypeParameterList.ToTypeParameters(methodDeclarationSyntax.ConstraintClauses, filePath),
                 Modifiers = modifiers,
@@ -34,9 +34,9 @@ namespace Solution.Parser.CSharp
                 Invocations = body.Invocations,
                 IsExpressionBodied = body.IsExpressionBodied,
                 IsIterator = body.IsIterator,
-                ExplicitInterfaceSpecifier = methodDeclarationSyntax.ExplicitInterfaceSpecifier?.Name.ToString(),
+                ExplicitInterfaceSpecifier = methodDeclarationSyntax.ExplicitInterfaceSpecifier?.Name.ToSourceCode(),
                 IsPartialDefinition = modifiers.Contains(Modifier.Partial) && hasNoBody,
-                SourceCode = methodDeclarationSyntax.ToString(),
+                SourceCode = methodDeclarationSyntax.ToSourceCode(),
                 FilePath = filePath,
                 Location = methodDeclarationSyntax.ToCodeLocation(filePath)
             };

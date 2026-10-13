@@ -9,7 +9,7 @@ namespace Solution.Parser.CSharp
         {
             Throw.IfNull(fileScopedNamespaceDeclarationSyntax);
 
-            var fullqualifiedName = fileScopedNamespaceDeclarationSyntax.Name.ToString();
+            var fullqualifiedName = fileScopedNamespaceDeclarationSyntax.Name.ToSourceCode();
             return new Namespace(fullqualifiedName);
         }
     }

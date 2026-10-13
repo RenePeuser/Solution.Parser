@@ -18,7 +18,7 @@ namespace Solution.Parser.CSharp
             {
                 Name = name,
                 FullyQualifiedName = localFunctionSyntax.BuildFullyQualifiedName(name),
-                ReturnParameter = localFunctionSyntax.ReturnType.ToString(),
+                ReturnParameter = localFunctionSyntax.ReturnType.ToSourceCode(),
                 Parameters = localFunctionSyntax.ParameterList.ToParameters(filePath),
                 TypeParameters = localFunctionSyntax.TypeParameterList.ToTypeParameters(localFunctionSyntax.ConstraintClauses, filePath),
                 Modifiers = localFunctionSyntax.Modifiers.ToModifiers(),
@@ -34,7 +34,7 @@ namespace Solution.Parser.CSharp
                 Invocations = body.Invocations,
                 IsExpressionBodied = body.IsExpressionBodied,
                 IsIterator = body.IsIterator,
-                SourceCode = localFunctionSyntax.ToString(),
+                SourceCode = localFunctionSyntax.ToSourceCode(),
                 FilePath = filePath,
                 Location = localFunctionSyntax.ToCodeLocation(filePath)
             };

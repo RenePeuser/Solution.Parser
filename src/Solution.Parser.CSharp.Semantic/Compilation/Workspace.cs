@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
@@ -29,6 +30,7 @@ namespace Solution.Parser.CSharp
         private readonly ConcurrentDictionary<string, Lazy<ProjectCompilation>> _compilations = new(PathComparer);
         private readonly ConcurrentDictionary<SyntaxTree, SemanticModel> _semanticModels = new();
         private readonly ConcurrentDictionary<string, PackageAssembly> _packagesByPath = new(PathComparer);
+        private readonly ConcurrentDictionary<string, Lazy<FrozenDictionary<int, Method>>> _methodsBySpan = new(PathComparer);
         private readonly ImmutableHashSet<string> _sourceFiles;
         private readonly ImmutableDictionary<string, string> _projectKeyByFile;
         private int _compilationCount;
@@ -62,6 +64,18 @@ namespace Solution.Parser.CSharp
 
         /// <summary>True once <see cref="EnableSymbols"/> ran; the calls of every tree are then known to the registry.</summary>
         internal bool HasSymbols => _hasSymbols;
+
+        /// <summary>
+        /// The trees of the files, in the order given. Every file stands alone and the caches are safe
+        /// to share, so the ones not parsed yet are parsed in parallel.
+        /// </summary>
+        internal ImmutableList<CSharpSyntaxTree> Models(System.Collections.Generic.IEnumerable<string> paths)
+        {
+            return paths.AsParallel()
+                        .AsOrdered()
+                        .Select(Model)
+                        .ToImmutableList();
+        }
 
         internal CSharpSyntaxTree Model(string path)
         {
@@ -111,6 +125,21 @@ namespace Solution.Parser.CSharp
             return _semanticModels.GetOrAdd(tree, t => compilation.GetSemanticModel(t));
         }
 
+        /// <summary>The methods resolved so far, by their declaration; see <c>SymbolToModel.ToMethod</c>.</summary>
+        internal ConcurrentDictionary<IMethodSymbol, Method> Methods { get; } = new(SymbolEqualityComparer.Default);
+
+        /// <summary>The method the fast mode built for the declaration starting at the position, if the file declares one there.</summary>
+        internal Method? DeclaredMethod(string path, int spanStart)
+        {
+            var methods = _methodsBySpan.GetOrAdd(path,
+                                                  p => new Lazy<FrozenDictionary<int, Method>>(() => Model(p).AllTypes()
+                                                                                                             .SelectMany(t => t.Methods)
+                                                                                                             .DistinctBy(m => m.Location.SpanStart)
+                                                                                                             .ToFrozenDictionary(m => m.Location.SpanStart)));
+
+            return methods.Value.TryGetValue(spanStart, out var method) ? method : null;
+        }
+
         internal PackageAssembly? PackageOf(string assemblyPath)
         {
             return _packagesByPath.TryGetValue(assemblyPath, out var package) ? package : null;
@@ -143,35 +172,40 @@ namespace Solution.Parser.CSharp
         {
             Interlocked.Increment(ref _compilationCount);
 
-            // The roots are shared with the fast mode trees, only the options change. No second parse.
+            var inputs = project.Compile.Value;
+
+            // The roots are shared with the fast mode trees, only the options change. No second parse of
+            // a file the fast mode already has; the ones it has not are parsed in parallel, in order.
             var trees = project.SourceFiles
-                               .Concat(project.GeneratedFiles)
+                               .Concat(inputs.GeneratedFiles)
                                .Distinct(PathComparer)
+                               .AsParallel()
+                               .AsOrdered()
                                .Select(path => SyntaxTree(path))
-                               .Select(tree => tree.WithRootAndOptions(tree.GetRoot(), project.ParseOptions))
+                               .Select(tree => tree.WithRootAndOptions(tree.GetRoot(), inputs.ParseOptions))
                                .ToList();
 
-            if (project.NeedsDefaultImplicitUsings)
+            if (inputs.NeedsDefaultImplicitUsings)
             {
                 trees.Add(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(ProjectInput.DefaultImplicitUsings,
-                                                                                   project.ParseOptions,
+                                                                                   inputs.ParseOptions,
                                                                                    project.Key + ".ImplicitUsings.g.cs"));
             }
 
-            foreach (var package in project.Packages)
+            foreach (var package in inputs.Packages)
             {
                 _packagesByPath.TryAdd(package.Path, package);
             }
 
-            var references = project.FrameworkAssemblies
-                                    .Concat(project.Packages.Select(p => p.Path))
-                                    .Distinct(PathComparer)
-                                    .Select(path => MetadataReferences.GetOrAdd(path, p => MetadataReference.CreateFromFile(p)))
-                                    .Concat(TransitiveProjectReferences(project).Select(key => Compilation(key).Compilation.ToMetadataReference()));
+            var references = inputs.FrameworkAssemblies
+                                   .Concat(inputs.Packages.Select(p => p.Path))
+                                   .Distinct(PathComparer)
+                                   .Select(path => MetadataReferences.GetOrAdd(path, p => MetadataReference.CreateFromFile(p)))
+                                   .Concat(TransitiveProjectReferences(project).Select(key => Compilation(key).Compilation.ToMetadataReference()));
 
-            var compilation = SourceGenerators.Run(CSharpCompilation.Create(project.AssemblyName, trees, references, project.CompilationOptions),
-                                                   project.Analyzers,
-                                                   project.ParseOptions);
+            var compilation = SourceGenerators.Run(CSharpCompilation.Create(project.AssemblyName, trees, references, inputs.CompilationOptions),
+                                                   inputs.Analyzers,
+                                                   inputs.ParseOptions);
 
             return new ProjectCompilation(compilation, trees.ToImmutableDictionary(t => t.FilePath, PathComparer));
         }

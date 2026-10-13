@@ -28,7 +28,7 @@ namespace Solution.Parser.CSharp
                                           Accessibility.NotApplicable,
                                           IsAutoImplemented: false,
                                           IsExpressionBodied: true,
-                                          expressionBody.Expression.ToString(),
+                                          expressionBody.Expression.ToSourceCode(),
                                           expressionBody.ToCodeLocation(filePath));
 
                 return new PropertyAccessors(getter, null, null);
@@ -56,7 +56,7 @@ namespace Solution.Parser.CSharp
                 return null;
             }
 
-            var body = accessor.Body?.ToString() ?? accessor.ExpressionBody?.Expression.ToString() ?? string.Empty;
+            var body = accessor.Body?.ToSourceCode() ?? accessor.ExpressionBody?.Expression.ToSourceCode() ?? string.Empty;
 
             return new Accessor(accessorKind,
                                 accessor.Modifiers.ToAccessibility(accessor),

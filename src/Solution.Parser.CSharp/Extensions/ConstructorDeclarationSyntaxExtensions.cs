@@ -22,7 +22,7 @@ namespace Solution.Parser.CSharp
                 Name = name,
                 FullyQualifiedName = constructorDeclarationSyntax.BuildFullyQualifiedName(name),
                 Parameters = constructorDeclarationSyntax.ParameterList.ToParameters(filePath),
-                Arguments = initializer?.ArgumentList.Arguments.Select(a => a.ToString()).ToImmutableList() ?? ImmutableList<string>.Empty,
+                Arguments = initializer?.ArgumentList.Arguments.Select(a => a.ToSourceCode()).ToImmutableList() ?? ImmutableList<string>.Empty,
                 InitializerKind = initializer.ToInitializerKind(),
                 Modifiers = constructorDeclarationSyntax.Modifiers.ToModifiers(),
                 Accessibility = constructorDeclarationSyntax.Modifiers.ToAccessibility(constructorDeclarationSyntax),
@@ -36,7 +36,7 @@ namespace Solution.Parser.CSharp
                 IsExpressionBodied = body.IsExpressionBodied,
                 IsIterator = body.IsIterator,
                 IsPrimary = false,
-                SourceCode = constructorDeclarationSyntax.ToString(),
+                SourceCode = constructorDeclarationSyntax.ToSourceCode(),
                 FilePath = filePath,
                 Location = constructorDeclarationSyntax.ToCodeLocation(filePath)
             };
@@ -57,7 +57,7 @@ namespace Solution.Parser.CSharp
             // The arguments a primary constructor passes on sit on the base list, as in ": Base(a, b)".
             var arguments = typeDeclarationSyntax.BaseList?.Types
                                                  .OfType<PrimaryConstructorBaseTypeSyntax>()
-                                                 .SelectMany(b => b.ArgumentList.Arguments.Select(a => a.ToString()))
+                                                 .SelectMany(b => b.ArgumentList.Arguments.Select(a => a.ToSourceCode()))
                                                  .ToImmutableList() ?? ImmutableList<string>.Empty;
 
             return new Constructor
@@ -69,7 +69,7 @@ namespace Solution.Parser.CSharp
                 InitializerKind = arguments.IsEmpty ? ConstructorInitializerKind.None : ConstructorInitializerKind.Base,
                 Accessibility = typeDeclarationSyntax.Modifiers.ToAccessibility(typeDeclarationSyntax),
                 IsPrimary = true,
-                SourceCode = parameterList?.ToString() ?? string.Empty,
+                SourceCode = parameterList?.ToSourceCode() ?? string.Empty,
                 FilePath = filePath,
                 Location = locationNode.ToCodeLocation(filePath)
             };

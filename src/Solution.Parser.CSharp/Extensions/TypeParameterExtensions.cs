@@ -28,7 +28,7 @@ namespace Solution.Parser.CSharp
 
             var constraints = constraintClauses.Where(c => c.Name.Identifier.ValueText == name)
                                                .SelectMany(c => c.Constraints)
-                                               .Select(c => c.ToString())
+                                               .Select(c => c.ToSourceCode())
                                                .ToImmutableList();
 
             var variance = parameter.VarianceKeyword.Kind() switch

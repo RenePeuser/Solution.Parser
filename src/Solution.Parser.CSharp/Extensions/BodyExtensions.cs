@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -24,10 +26,10 @@ namespace Solution.Parser.CSharp
         {
             if (block is not null)
             {
-                var text = block.ToString();
+                var text = block.ToSourceCode();
 
                 return new MemberBody(text,
-                                      block.Statements.Select(s => s.ToString()).ToImmutableList(),
+                                      block.Statements.Select(s => s.ToSourceCode()).ToImmutableList(),
                                       ToLineStatements(text),
                                       block.ToLocalFunctions(filePath),
                                       block.ToInvocations(filePath),
@@ -37,7 +39,7 @@ namespace Solution.Parser.CSharp
 
             if (expressionBody is not null)
             {
-                var text = expressionBody.Expression.ToString();
+                var text = expressionBody.Expression.ToSourceCode();
 
                 return new MemberBody(text,
                                       ImmutableList.Create(text),
@@ -85,19 +87,39 @@ namespace Solution.Parser.CSharp
         /// </summary>
         private static ImmutableList<string> ToLineStatements(string body)
         {
-            var lines = body.SplitLines().ToList();
+            // Lines as ranges first, so only the lines that are kept become strings.
+            var lines = new List<Range>();
+            var start = 0;
 
-            if (lines.Count > 0 && lines[0].Trim() == "{")
+            while (true)
             {
-                lines.RemoveAt(0);
+                var end = body.AsSpan(start).IndexOfAny('\r', '\n');
+
+                if (end < 0)
+                {
+                    lines.Add(start..body.Length);
+
+                    break;
+                }
+
+                lines.Add(start..(start + end));
+                start += end + (body[start + end] == '\r' && start + end + 1 < body.Length && body[start + end + 1] == '\n' ? 2 : 1);
             }
 
-            if (lines.Count > 0 && lines[^1].Trim() == "}")
+            var first = lines.Count > 0 && body.AsSpan()[lines[0]].Trim().SequenceEqual("{") ? 1 : 0;
+            var last = lines.Count > first && body.AsSpan()[lines[^1]].Trim().SequenceEqual("}") ? lines.Count - 1 : lines.Count;
+
+            var result = ImmutableList.CreateBuilder<string>();
+
+            for (var i = first; i < last; i++)
             {
-                lines.RemoveAt(lines.Count - 1);
+                if (!body.AsSpan()[lines[i]].IsWhiteSpace())
+                {
+                    result.Add(body[lines[i]]);
+                }
             }
 
-            return lines.Where(line => !string.IsNullOrWhiteSpace(line)).ToImmutableList();
+            return result.ToImmutable();
         }
     }
 }

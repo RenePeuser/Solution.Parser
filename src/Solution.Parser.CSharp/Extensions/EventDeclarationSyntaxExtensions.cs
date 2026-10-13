@@ -20,15 +20,15 @@ namespace Solution.Parser.CSharp
             {
                 Name = name,
                 FullyQualifiedName = eventDeclarationSyntax.BuildFullyQualifiedName(name),
-                Type = eventDeclarationSyntax.Type.ToString(),
+                Type = eventDeclarationSyntax.Type.ToSourceCode(),
                 Modifiers = eventDeclarationSyntax.Modifiers.ToModifiers(),
                 Accessibility = eventDeclarationSyntax.Modifiers.ToAccessibility(eventDeclarationSyntax),
                 Attributes = eventDeclarationSyntax.AttributeLists.ToAttributes(filePath),
                 Documentation = eventDeclarationSyntax.ToDocumentation(),
-                ExplicitInterfaceSpecifier = eventDeclarationSyntax.ExplicitInterfaceSpecifier?.Name.ToString(),
+                ExplicitInterfaceSpecifier = eventDeclarationSyntax.ExplicitInterfaceSpecifier?.Name.ToSourceCode(),
                 HasAdd = accessors.Any(a => a.IsKind(SyntaxKind.AddAccessorDeclaration)),
                 HasRemove = accessors.Any(a => a.IsKind(SyntaxKind.RemoveAccessorDeclaration)),
-                SourceCode = eventDeclarationSyntax.ToString(),
+                SourceCode = eventDeclarationSyntax.ToSourceCode(),
                 FilePath = filePath,
                 Location = eventDeclarationSyntax.ToCodeLocation(filePath)
             };

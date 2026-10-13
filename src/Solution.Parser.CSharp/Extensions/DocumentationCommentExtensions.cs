@@ -22,7 +22,7 @@ namespace Solution.Parser.CSharp
                 return DocumentationComment.None;
             }
 
-            var raw = StripCommentMarkers(trivia.ToString());
+            var raw = StripCommentMarkers(trivia.ToSourceCode());
 
             // The fragment has several roots, so it needs a wrapper to be well formed xml. Malformed
             // documentation must not take the whole parse down, hence the fallback below.

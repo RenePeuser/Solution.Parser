@@ -11,7 +11,7 @@ namespace Solution.Parser.CSharp
         {
             Throw.IfNull(baseListSyntax);
 
-            return baseListSyntax.Types.Select(type => new BaseType(type.Type.ToString())).ToImmutableList();
+            return baseListSyntax.Types.Select(type => new BaseType(type.Type.ToSourceCode())).ToImmutableList();
         }
     }
 }

@@ -10,31 +10,23 @@ using Solution.Parser.Project;
 namespace Solution.Parser.CSharp
 {
     /// <summary>
-    /// Everything a compilation of one project is made of, read up front so that building it later is
-    /// nothing but handing it to Roslyn.
+    /// One project of a code base: what the fast mode needs right away, and everything a compilation of
+    /// it is made of, read the first time the project is compiled.
     /// </summary>
+    /// <remarks>
+    /// Opening a solution must not pay for restore output, reference packs and analyzers of projects
+    /// that are never compiled; <see cref="ParseMode.SyntaxOnly"/> compiles none.
+    /// </remarks>
     /// <param name="Key">The full path of the csproj, or a made up name for code given in memory.</param>
     /// <param name="AssemblyName">The name of the compiled assembly.</param>
     /// <param name="SourceFiles">The files the user sees as the project's code, the ones a rule walks.</param>
-    /// <param name="GeneratedFiles">Files the build wrote to obj, like the implicit global usings; compiled, never reported.</param>
-    /// <param name="NeedsDefaultImplicitUsings">The csproj enables implicit usings but no build wrote them yet.</param>
     /// <param name="ProjectReferenceKeys">The full paths of the referenced csproj files.</param>
-    /// <param name="Packages">The package assemblies restore resolved, transitive ones included.</param>
-    /// <param name="FrameworkAssemblies">The reference assemblies of the shared frameworks.</param>
-    /// <param name="Analyzers">The analyzer assemblies of frameworks and packages, run for their source generators.</param>
-    /// <param name="ParseOptions">The language version to bind with.</param>
-    /// <param name="CompilationOptions">Nullable context and unsafe code as the csproj sets them.</param>
+    /// <param name="Compile">Read on first access, at most once.</param>
     internal sealed record ProjectInput(string Key,
                                         string AssemblyName,
                                         ImmutableList<string> SourceFiles,
-                                        ImmutableList<string> GeneratedFiles,
-                                        bool NeedsDefaultImplicitUsings,
                                         ImmutableList<string> ProjectReferenceKeys,
-                                        ImmutableList<PackageAssembly> Packages,
-                                        ImmutableList<string> FrameworkAssemblies,
-                                        ImmutableList<string> Analyzers,
-                                        CSharpParseOptions ParseOptions,
-                                        CSharpCompilationOptions CompilationOptions)
+                                        Lazy<CompileInputs> Compile)
     {
         /// <summary>The usings the SDK adds for <c>&lt;ImplicitUsings&gt;enable&lt;/ImplicitUsings&gt;</c>, for a project that was never built.</summary>
         internal const string DefaultImplicitUsings = """
@@ -51,34 +43,17 @@ namespace Solution.Parser.CSharp
         {
             var projectPath = project.ProjectFileInfo.FullName;
             var projectDirectory = Path.GetDirectoryName(projectPath)!;
-            var document = project.Document;
-            var assets = AssetsFile.TryRead(projectDirectory);
-
-            var targetFramework = assets?.TargetFramework ?? project.TargetFrameworkVersion.FirstOrDefault();
-            var frameworkReferences = assets?.FrameworkReferences ?? ImmutableList<string>.Empty;
 
             var projectReferences = project.ProjectReferences
                                            .Where(r => !string.IsNullOrWhiteSpace(r.Include))
                                            .Select(r => Path.GetFullPath(Path.Combine(projectDirectory, r.Include.Replace('\\', Path.DirectorySeparatorChar))))
                                            .ToImmutableList();
 
-            var nullable = Property(document, "Nullable");
-            var allowUnsafe = Property(document, "AllowUnsafeBlocks");
-
-            var generatedFiles = GeneratedFilesOf(projectDirectory);
-
             return new ProjectInput(projectPath,
                                     project.AssemblyName,
                                     project.SourceFiles.GetCSharpFiles().Select(f => f.FullName).ToImmutableList(),
-                                    generatedFiles,
-                                    !generatedFiles.Any(f => f.EndsWith(".GlobalUsings.g.cs", StringComparison.OrdinalIgnoreCase)) && HasImplicitUsings(document),
                                     projectReferences,
-                                    assets?.Packages ?? ImmutableList<PackageAssembly>.Empty,
-                                    ReferencePacks.For(targetFramework, frameworkReferences),
-                                    ReferencePacks.AnalyzersFor(targetFramework, frameworkReferences)
-                                                  .AddRange(assets?.Analyzers ?? ImmutableList<string>.Empty),
-                                    ParseOptionsFor(Property(document, "LangVersion")),
-                                    CompilationOptionsFor(nullable, allowUnsafe));
+                                    new Lazy<CompileInputs>(() => CompileInputsOf(project, projectDirectory)));
         }
 
         /// <summary>A single project of code given in memory, compiled against the running runtime.</summary>
@@ -87,14 +62,37 @@ namespace Solution.Parser.CSharp
             return new ProjectInput(key,
                                     key,
                                     sourceFiles,
-                                    generatedFiles,
-                                    NeedsDefaultImplicitUsings: false,
                                     ImmutableList<string>.Empty,
-                                    ImmutableList<PackageAssembly>.Empty,
-                                    ReferencePacks.RunningRuntime(),
-                                    ImmutableList<string>.Empty,
-                                    ParseOptionsFor(null),
-                                    CompilationOptionsFor("enable", null));
+                                    new Lazy<CompileInputs>(() => new CompileInputs(generatedFiles,
+                                                                                    NeedsDefaultImplicitUsings: false,
+                                                                                    ImmutableList<PackageAssembly>.Empty,
+                                                                                    ReferencePacks.RunningRuntime(),
+                                                                                    ImmutableList<string>.Empty,
+                                                                                    ParseOptionsFor(null),
+                                                                                    CompilationOptionsFor("enable", null))));
+        }
+
+        private static CompileInputs CompileInputsOf(ProjectFile project, string projectDirectory)
+        {
+            var document = project.Document;
+            var assets = AssetsFile.TryRead(projectDirectory);
+
+            var targetFramework = assets?.TargetFramework ?? project.TargetFrameworkVersion.FirstOrDefault();
+            var frameworkReferences = assets?.FrameworkReferences ?? ImmutableList<string>.Empty;
+
+            var nullable = Property(document, "Nullable");
+            var allowUnsafe = Property(document, "AllowUnsafeBlocks");
+
+            var generatedFiles = GeneratedFilesOf(projectDirectory);
+
+            return new CompileInputs(generatedFiles,
+                                     !generatedFiles.Any(f => f.EndsWith(".GlobalUsings.g.cs", StringComparison.OrdinalIgnoreCase)) && HasImplicitUsings(document),
+                                     assets?.Packages ?? ImmutableList<PackageAssembly>.Empty,
+                                     ReferencePacks.For(targetFramework, frameworkReferences),
+                                     ReferencePacks.AnalyzersFor(targetFramework, frameworkReferences)
+                                                   .AddRange(assets?.Analyzers ?? ImmutableList<string>.Empty),
+                                     ParseOptionsFor(Property(document, "LangVersion")),
+                                     CompilationOptionsFor(nullable, allowUnsafe));
         }
 
         /// <summary>
@@ -195,4 +193,20 @@ namespace Solution.Parser.CSharp
                            .LastOrDefault(v => v.Length > 0);
         }
     }
+
+    /// <summary>Everything a compilation of one project is made of besides its source files.</summary>
+    /// <param name="GeneratedFiles">Files the build wrote to obj, like the implicit global usings; compiled, never reported.</param>
+    /// <param name="NeedsDefaultImplicitUsings">The csproj enables implicit usings but no build wrote them yet.</param>
+    /// <param name="Packages">The package assemblies restore resolved, transitive ones included.</param>
+    /// <param name="FrameworkAssemblies">The reference assemblies of the shared frameworks.</param>
+    /// <param name="Analyzers">The analyzer assemblies of frameworks and packages, run for their source generators.</param>
+    /// <param name="ParseOptions">The language version to bind with.</param>
+    /// <param name="CompilationOptions">Nullable context and unsafe code as the csproj sets them.</param>
+    internal sealed record CompileInputs(ImmutableList<string> GeneratedFiles,
+                                         bool NeedsDefaultImplicitUsings,
+                                         ImmutableList<PackageAssembly> Packages,
+                                         ImmutableList<string> FrameworkAssemblies,
+                                         ImmutableList<string> Analyzers,
+                                         CSharpParseOptions ParseOptions,
+                                         CSharpCompilationOptions CompilationOptions);
 }

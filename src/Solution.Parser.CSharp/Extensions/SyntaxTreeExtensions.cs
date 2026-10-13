@@ -21,8 +21,11 @@ namespace Solution.Parser.CSharp
         {
             Throw.IfNull(syntaxTree);
 
-            return syntaxTree.AllOfType<BaseNamespaceDeclarationSyntax>()
-                             .Select(ns => new Namespace(ns.Name.ToString()))
+            // A namespace only sits in the file or in another namespace; no need to walk every method body.
+            return syntaxTree.GetRoot()
+                             .DescendantNodes(descendIntoChildren: n => n is CompilationUnitSyntax or BaseNamespaceDeclarationSyntax)
+                             .OfType<BaseNamespaceDeclarationSyntax>()
+                             .Select(ns => new Namespace(ns.Name.ToSourceCode()))
                              .ToImmutableList();
         }
 

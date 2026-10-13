@@ -87,7 +87,7 @@ namespace Solution.Parser.CSharp
         {
             var fullQualifiedName = syntax.BuildFullyQualifiedName(name);
             var nameSpace = syntax.NamespaceOf();
-            var syntaxTree = syntax.ToString();
+            var syntaxTree = syntax.ToSourceCode();
             var location = syntax.ToCodeLocation(filePath);
 
             return syntax switch

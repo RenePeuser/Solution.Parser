@@ -28,7 +28,7 @@ namespace Solution.Parser.CSharp
                 // An enum has at most one base type, and it is the underlying integral type.
                 UnderlyingType = baseTypes.FirstOrDefault()?.TypeName,
                 EnumFields = enumDeclarationSyntax.Members.Select(m => m.ToEnumField(filePath)).ToImmutableList(),
-                SourceCode = enumDeclarationSyntax.ToString(),
+                SourceCode = enumDeclarationSyntax.ToSourceCode(),
                 FilePath = filePath,
                 Location = enumDeclarationSyntax.ToCodeLocation(filePath)
             };
@@ -44,8 +44,8 @@ namespace Solution.Parser.CSharp
                 FullyQualifiedName = member.BuildFullyQualifiedName(name),
                 Attributes = member.AttributeLists.ToAttributes(filePath),
                 Documentation = member.ToDocumentation(),
-                Value = member.EqualsValue?.Value.ToString(),
-                SourceCode = member.ToString(),
+                Value = member.EqualsValue?.Value.ToSourceCode(),
+                SourceCode = member.ToSourceCode(),
                 FilePath = filePath,
                 Location = member.ToCodeLocation(filePath)
             };

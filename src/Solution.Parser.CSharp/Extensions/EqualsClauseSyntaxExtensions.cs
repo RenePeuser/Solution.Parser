@@ -12,7 +12,7 @@ namespace Solution.Parser.CSharp
                 return null;
             }
 
-            return equalsValueClauseSyntax.Value.ToString();
+            return equalsValueClauseSyntax.Value.ToSourceCode();
         }
     }
 }

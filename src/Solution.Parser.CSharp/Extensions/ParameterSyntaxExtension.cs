@@ -14,13 +14,13 @@ namespace Solution.Parser.CSharp
             Throw.IfNull(parameterSyntax);
 
             var name = parameterSyntax.Identifier.Text;
-            var defaultValue = parameterSyntax.Default?.Value.ToString();
+            var defaultValue = parameterSyntax.Default?.Value.ToSourceCode();
 
             return new Parameter
             {
                 Name = name,
                 FullyQualifiedName = name,
-                Type = parameterSyntax.Type?.ToString() ?? string.Empty,
+                Type = parameterSyntax.Type?.ToSourceCode() ?? string.Empty,
                 Attributes = parameterSyntax.AttributeLists.ToAttributes(filePath),
                 Modifiers = parameterSyntax.Modifiers.ToModifiers(),
                 IsOptional = defaultValue is not null,
@@ -28,7 +28,7 @@ namespace Solution.Parser.CSharp
                 IsParams = parameterSyntax.Modifiers.Any(SyntaxKind.ParamsKeyword),
                 IsNullable = parameterSyntax.Type is NullableTypeSyntax,
                 Ordinal = ordinal,
-                SourceCode = parameterSyntax.ToString(),
+                SourceCode = parameterSyntax.ToSourceCode(),
                 FilePath = filePath,
                 Location = parameterSyntax.ToCodeLocation(filePath)
             };

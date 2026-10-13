@@ -14,7 +14,7 @@ namespace Solution.Parser.CSharp
             {
                 Name = Name,
                 FullyQualifiedName = indexerDeclarationSyntax.BuildFullyQualifiedName(Name),
-                Type = indexerDeclarationSyntax.Type.ToString(),
+                Type = indexerDeclarationSyntax.Type.ToSourceCode(),
                 Parameters = indexerDeclarationSyntax.ParameterList.ToParameters(filePath),
                 Modifiers = indexerDeclarationSyntax.Modifiers.ToModifiers(),
                 Accessibility = indexerDeclarationSyntax.Modifiers.ToAccessibility(indexerDeclarationSyntax),
@@ -22,8 +22,8 @@ namespace Solution.Parser.CSharp
                 Documentation = indexerDeclarationSyntax.ToDocumentation(),
                 Accessors = indexerDeclarationSyntax.AccessorList.ToAccessors(indexerDeclarationSyntax.ExpressionBody, filePath),
                 IsExpressionBodied = indexerDeclarationSyntax.ExpressionBody is not null,
-                ExplicitInterfaceSpecifier = indexerDeclarationSyntax.ExplicitInterfaceSpecifier?.Name.ToString(),
-                SourceCode = indexerDeclarationSyntax.ToString(),
+                ExplicitInterfaceSpecifier = indexerDeclarationSyntax.ExplicitInterfaceSpecifier?.Name.ToSourceCode(),
+                SourceCode = indexerDeclarationSyntax.ToSourceCode(),
                 FilePath = filePath,
                 Location = indexerDeclarationSyntax.ToCodeLocation(filePath)
             };

@@ -37,7 +37,7 @@ namespace Solution.Parser.CSharp
                 TypeArguments = typeArguments,
                 IsConditional = isConditional,
                 Arguments = invocation.ArgumentList.Arguments.Select((a, i) => a.ToInvocationArgument(i, filePath)).ToImmutableList(),
-                SourceCode = invocation.ToString(),
+                SourceCode = invocation.ToSourceCode(),
                 FilePath = filePath,
                 Location = invocation.ToCodeLocation(filePath)
             };
@@ -48,27 +48,27 @@ namespace Solution.Parser.CSharp
             return expression switch
             {
                 MemberAccessExpressionSyntax memberAccess => (memberAccess.Name.Identifier.ValueText,
-                                                              memberAccess.Expression.ToString(),
+                                                              memberAccess.Expression.ToSourceCode(),
                                                               memberAccess.Name.ToTypeArguments(),
                                                               false),
 
                 // a?.Go(): the call is the WhenNotNull part, the receiver sits on the enclosing conditional access.
                 MemberBindingExpressionSyntax memberBinding => (memberBinding.Name.Identifier.ValueText,
-                                                                memberBinding.FirstAncestorOrSelf<ConditionalAccessExpressionSyntax>()?.Expression.ToString(),
+                                                                memberBinding.FirstAncestorOrSelf<ConditionalAccessExpressionSyntax>()?.Expression.ToSourceCode(),
                                                                 memberBinding.Name.ToTypeArguments(),
                                                                 true),
 
                 SimpleNameSyntax simpleName => (simpleName.Identifier.ValueText, null, simpleName.ToTypeArguments(), false),
 
                 // A delegate invocation like handlers[0]() or GetAction()() has no name of its own.
-                _ => (expression.ToString(), null, ImmutableList<string>.Empty, false)
+                _ => (expression.ToSourceCode(), null, ImmutableList<string>.Empty, false)
             };
         }
 
         private static ImmutableList<string> ToTypeArguments(this SimpleNameSyntax name)
         {
             return name is GenericNameSyntax generic
-                       ? generic.TypeArgumentList.Arguments.Select(t => t.ToString()).ToImmutableList()
+                       ? generic.TypeArgumentList.Arguments.Select(t => t.ToSourceCode()).ToImmutableList()
                        : ImmutableList<string>.Empty;
         }
 
@@ -78,7 +78,7 @@ namespace Solution.Parser.CSharp
             {
                 Ordinal = ordinal,
                 Name = argument.NameColon?.Name.Identifier.ValueText,
-                Expression = argument.Expression.ToString(),
+                Expression = argument.Expression.ToSourceCode(),
                 RefKind = argument.RefKindKeyword.Kind() switch
                 {
                     SyntaxKind.RefKeyword => ArgumentRefKind.Ref,

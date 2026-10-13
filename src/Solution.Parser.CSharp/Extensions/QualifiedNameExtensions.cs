@@ -31,7 +31,7 @@ namespace Solution.Parser.CSharp
             {
                 if (parent is BaseNamespaceDeclarationSyntax nameSpace)
                 {
-                    names.Add(nameSpace.Name.ToString());
+                    names.Add(nameSpace.Name.ToSourceCode());
                 }
             }
 
@@ -58,7 +58,7 @@ namespace Solution.Parser.CSharp
 
                     // Covers both the block scoped and the file scoped namespace.
                     case BaseNamespaceDeclarationSyntax nameSpace:
-                        yield return nameSpace.Name.ToString();
+                        yield return nameSpace.Name.ToSourceCode();
 
                         break;
 

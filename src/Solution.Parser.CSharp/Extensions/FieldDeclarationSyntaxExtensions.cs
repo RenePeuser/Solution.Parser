@@ -15,7 +15,7 @@ namespace Solution.Parser.CSharp
             Throw.IfNull(fieldDeclarationSyntax);
 
             var declaration = fieldDeclarationSyntax.Declaration;
-            var type = declaration.Type.ToString();
+            var type = declaration.Type.ToSourceCode();
             var modifiers = fieldDeclarationSyntax.Modifiers.ToModifiers();
             var accessibility = fieldDeclarationSyntax.Modifiers.ToAccessibility(fieldDeclarationSyntax);
             var attributes = fieldDeclarationSyntax.AttributeLists.ToAttributes(filePath);
@@ -34,7 +34,7 @@ namespace Solution.Parser.CSharp
                                   Initializer = variable.Initializer?.ToInitializer(),
                                   IsNullable = declaration.Type is NullableTypeSyntax,
                                   IsPartOfMultiVariableDeclaration = isMultiVariable,
-                                  SourceCode = fieldDeclarationSyntax.ToString(),
+                                  SourceCode = fieldDeclarationSyntax.ToSourceCode(),
                                   FilePath = filePath,
                                   Location = variable.ToCodeLocation(filePath)
                               })
