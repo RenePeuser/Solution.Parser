@@ -14,7 +14,7 @@ namespace Solution.Parser.Xaml
         /// <summary>
         ///     This method reads the content out of the file, access to file system !
         /// </summary>
-        public XamlSyntaxTree Parse(XamlFileInfo xamlFileInfo)
+        public XamlSyntaxTree Parse(FileInfo xamlFileInfo)
         {
             Throw.IfNull(xamlFileInfo);
 
@@ -24,7 +24,7 @@ namespace Solution.Parser.Xaml
         /// <summary>
         ///     This methods parse the given content and use the file info only as a meta info !
         /// </summary>
-        public XamlSyntaxTree Parse(XamlFileInfo xamlFileInfo, string xamlContent)
+        public XamlSyntaxTree Parse(FileInfo xamlFileInfo, string xamlContent)
         {
             Throw.IfNull(xamlFileInfo);
 

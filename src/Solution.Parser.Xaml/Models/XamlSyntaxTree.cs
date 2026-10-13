@@ -1,13 +1,35 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using Argument.Check;
 
 namespace Solution.Parser.Xaml
 {
     [DebuggerDisplay("{FilePath}")]
     public record XamlSyntaxTree
     {
+        /// <summary>Reads and parses the XAML file at <paramref name="path"/>.</summary>
+        public static XamlSyntaxTree Parse(string path)
+        {
+            Throw.IfNullOrWhiteSpace(path);
+
+            return Parse(new FileInfo(path));
+        }
+
+        /// <summary>Reads and parses the given XAML file.</summary>
+        public static XamlSyntaxTree Parse(FileInfo fileInfo)
+        {
+            return new XamlParser().Parse(fileInfo);
+        }
+
+        /// <summary>Parses <paramref name="xamlContent"/>; the file only names where it came from.</summary>
+        public static XamlSyntaxTree Parse(FileInfo fileInfo, string xamlContent)
+        {
+            return new XamlParser().Parse(fileInfo, xamlContent);
+        }
+
         public required string FilePath { get; init; }
 
         public required Root Root { get; init; }
@@ -22,7 +44,7 @@ namespace Solution.Parser.Xaml
         public ImmutableList<XamlDiagnostic> Diagnostics { get; init; } = ImmutableList<XamlDiagnostic>.Empty;
 
         /// <summary>The file this tree was read from, null when the content was parsed from memory.</summary>
-        public XamlFileInfo? FileInfo { get; init; }
+        public FileInfo? FileInfo { get; init; }
 
         public bool HasDiagnostics => !Diagnostics.IsEmpty;
 

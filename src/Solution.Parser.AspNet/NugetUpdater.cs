@@ -31,7 +31,7 @@ namespace Solution.Parser.AspNet
 
 
             // 2. Read csproj first, we do not want write continuously the same file, just once if needed
-            var csprojContent = await File.ReadAllTextAsync(project.ProjectFileInfo.FullName).ConfigureAwait(false);
+            var csprojContent = await File.ReadAllTextAsync(project.Path).ConfigureAwait(false);
             var newCsprojContent = csprojContent;
 
             // 3. Iterate all packages and check if an package is already used in parent solution
@@ -66,7 +66,7 @@ namespace Solution.Parser.AspNet
             // If we detect changes to the org csproj we update the csproj file
             if (csprojContent.NotEqualsTo(newCsprojContent))
             {
-                await File.WriteAllTextAsync(project.ProjectFileInfo.FullName, newCsprojContent).ConfigureAwait(false);
+                await File.WriteAllTextAsync(project.Path, newCsprojContent).ConfigureAwait(false);
             }
         }
     }

@@ -1,6 +1,8 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using Argument.Check;
 
 namespace Solution.Parser.CSharp
 {
@@ -11,6 +13,20 @@ namespace Solution.Parser.CSharp
     [DebuggerDisplay("{FileName}")]
     public record CSharpSyntaxTree
     {
+        /// <summary>Reads and parses the C# file at <paramref name="path"/>.</summary>
+        public static CSharpSyntaxTree Parse(string path)
+        {
+            Throw.IfNullOrWhiteSpace(path);
+
+            return Parse(new FileInfo(path));
+        }
+
+        /// <summary>Reads and parses the given C# file.</summary>
+        public static CSharpSyntaxTree Parse(FileInfo fileInfo)
+        {
+            return CSharpParser.Parse(fileInfo);
+        }
+
         public required Namespace Namespace { get; init; }
 
         public required string FileName { get; init; }

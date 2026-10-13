@@ -12,7 +12,7 @@ namespace Solution.Parser.Nuspec
 
             foreach (var nuspecFileInfo in directoryInfo.EnumerateFiles("*.nuspec", SearchOption.AllDirectories))
             {
-                yield return NuSpecParser.Parse(new NuspecFileInfo(nuspecFileInfo.FullName));
+                yield return NuspecFile.Parse(nuspecFileInfo);
             }
         }
     }

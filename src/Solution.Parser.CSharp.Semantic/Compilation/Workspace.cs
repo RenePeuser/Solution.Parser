@@ -151,7 +151,7 @@ namespace Solution.Parser.CSharp
         }
 
         /// <summary>
-        /// The tree a file was parsed into. Parsed the way <c>CSharpParser.Parse(CSharpFileInfo)</c>
+        /// The tree a file was parsed into. Parsed the way <c>CSharpSyntaxTree.Parse(path)</c>
         /// does, so both modes see the same spans, but with the path set so Roslyn can point back at it.
         /// </summary>
         private SyntaxTree SyntaxTree(string path)

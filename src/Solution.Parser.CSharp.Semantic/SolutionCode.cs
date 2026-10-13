@@ -7,7 +7,7 @@ using Solution.Parser.Sln;
 
 namespace Solution.Parser.CSharp
 {
-    /// <summary>How much of the C# code <see cref="SolutionCode.Parse(SolutionFileInfo, ParseMode)"/> makes available.</summary>
+    /// <summary>How much of the C# code <c>SolutionFile.Parse(path, mode)</c> makes available.</summary>
     public enum ParseMode
     {
         /// <summary>Syntax trees only, parsed once on first use and cached. A symbol access throws.</summary>
@@ -27,12 +27,12 @@ namespace Solution.Parser.CSharp
     /// <remarks>
     /// The code hangs on the <see cref="SolutionFile"/> instance, so the caches live as long as the
     /// solution does and two calls to <c>Parse</c> give two independent code bases. A solution parsed
-    /// without a mode gets the syntax only, on first use; <c>solutionFileInfo.Parse()</c> stays exactly
+    /// without a mode gets the syntax only, on first use; <c>SolutionFile.Parse(path)</c> stays exactly
     /// what it always was.
     /// </remarks>
     /// <example>
     /// <code>
-    /// var solution = solutionFileInfo.Parse(ParseMode.WithSymbols);
+    /// var solution = SolutionFile.Parse(path, ParseMode.WithSymbols);
     ///
     /// from call in solution.UnitTestTrees.AllInvocations().Named("AssertPostAsync")
     /// where call.Passes("writeResponse", true)
@@ -47,20 +47,27 @@ namespace Solution.Parser.CSharp
 
         private static readonly ConditionalWeakTable<ProjectFile, CodeBase> StandaloneProjects = new();
 
-        public static SolutionFile Parse(this SolutionFileInfo solutionFileInfo, ParseMode mode)
-        {
-            Throw.IfNull(solutionFileInfo);
-
-            var solution = solutionFileInfo.Parse();
-            var code = CodeBase.Open(solution);
-
-            Attach(solution, mode == ParseMode.WithSymbols ? code.WithSymbols() : code);
-
-            return solution;
-        }
-
         extension(SolutionFile solution)
         {
+            /// <summary>Parses the sln or slnx at <paramref name="path"/> with its C# code in the given mode.</summary>
+            public static SolutionFile Parse(string path, ParseMode mode)
+            {
+                Throw.IfNullOrWhiteSpace(path);
+
+                return SolutionFile.Parse(new FileInfo(path), mode);
+            }
+
+            /// <summary>Parses the given sln or slnx with its C# code in the given mode.</summary>
+            public static SolutionFile Parse(FileInfo fileInfo, ParseMode mode)
+            {
+                var parsed = SolutionFile.Parse(fileInfo);
+                var code = CodeBase.Open(parsed);
+
+                Attach(parsed, mode == ParseMode.WithSymbols ? code.WithSymbols() : code);
+
+                return parsed;
+            }
+
             /// <summary>
             /// Finds the solution from <paramref name="startDirectory"/> upwards and parses it with its C#
             /// code in the given mode, see <see cref="SolutionFile.Find(string, DirectoryInfo?)"/>.

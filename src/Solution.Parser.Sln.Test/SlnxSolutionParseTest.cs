@@ -10,7 +10,7 @@ namespace Solution.Parser.Sln.Test
     {
         private static DirectoryInfo _repositoryRoot = null!;
 
-        private static SolutionFileInfo _slnxFileInfo = null!;
+        private static FileInfo _slnxFileInfo = null!;
 
         [ClassInitialize]
         public static void ClassInit(TestContext _)
@@ -18,20 +18,22 @@ namespace Solution.Parser.Sln.Test
             var slnFileInfo = new SolutionFileName("Solution.Parser.sln").FindSolutionFileReverseFrom(new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory));
 
             _repositoryRoot = slnFileInfo.Directory!;
-            _slnxFileInfo = new SolutionFileInfo(Path.Combine(_repositoryRoot.FullName, "src", "Solution.Parser.Sln.Test", "TestData", "Solution.Parser.slnx"));
+            _slnxFileInfo = new FileInfo(Path.Combine(_repositoryRoot.FullName, "src", "Solution.Parser.Sln.Test", "TestData", "Solution.Parser.slnx"));
         }
 
         [TestMethod]
-        public void Assert_That_Slnx_File_Info_Is_Marked_As_Slnx()
+        public void Assert_That_A_Parsed_Slnx_Is_Named_Without_Extension()
         {
-            Assert.IsTrue(_slnxFileInfo.IsSlnx);
-            Assert.AreEqual("Solution.Parser", _slnxFileInfo.FileNameWithoutExtension);
+            var parsedSolutionFile = SolutionFile.Parse(_slnxFileInfo);
+
+            Assert.AreEqual(SolutionFileFormat.SLNX, parsedSolutionFile.FileInfo.Extension);
+            Assert.AreEqual("Solution.Parser", parsedSolutionFile.Name);
         }
 
         [TestMethod]
         public void Assert_That_Slnx_Solution_Could_Be_Parsed()
         {
-            var parsedSolutionFile = _slnxFileInfo.Parse();
+            var parsedSolutionFile = SolutionFile.Parse(_slnxFileInfo);
 
             Assert.IsNotNull(parsedSolutionFile);
             Assert.HasCount(2, parsedSolutionFile.Projects);
@@ -40,30 +42,30 @@ namespace Solution.Parser.Sln.Test
         [TestMethod]
         public void Assert_That_Correct_Test_Project_Will_Be_Detected_In_Slnx()
         {
-            var parsedSolutionFile = _slnxFileInfo.Parse();
+            var parsedSolutionFile = SolutionFile.Parse(_slnxFileInfo);
 
             Assert.HasCount(1, parsedSolutionFile.UnitTestProjects);
-            Assert.AreEqual("Solution.Parser.Xaml.Test", parsedSolutionFile.UnitTestProjects[0].ProjectFileInfo.FileNameWithoutExtension);
+            Assert.AreEqual("Solution.Parser.Xaml.Test", parsedSolutionFile.UnitTestProjects[0].Name);
         }
 
         [TestMethod]
         public void Assert_That_Correct_Productive_Project_Will_Be_Detected_In_Slnx()
         {
-            var parsedSolutionFile = _slnxFileInfo.Parse();
+            var parsedSolutionFile = SolutionFile.Parse(_slnxFileInfo);
 
             Assert.HasCount(1, parsedSolutionFile.ProductionProjects);
-            Assert.AreEqual("Solution.Parser.Xaml", parsedSolutionFile.ProductionProjects[0].ProjectFileInfo.FileNameWithoutExtension);
+            Assert.AreEqual("Solution.Parser.Xaml", parsedSolutionFile.ProductionProjects[0].Name);
         }
 
         [TestMethod]
         public void Assert_That_Build_Dependencies_Of_Slnx_Will_Be_Resolved()
         {
-            var parsedSolutionFile = _slnxFileInfo.Parse();
+            var parsedSolutionFile = SolutionFile.Parse(_slnxFileInfo);
 
             var unitTestProject = parsedSolutionFile.UnitTestProjects[0];
 
             Assert.HasCount(1, unitTestProject.BuildDependencies);
-            Assert.AreEqual("Solution.Parser.Xaml", unitTestProject.BuildDependencies[0].ProjectFileInfo.FileNameWithoutExtension);
+            Assert.AreEqual("Solution.Parser.Xaml", unitTestProject.BuildDependencies[0].Name);
         }
 
         [TestMethod]
@@ -112,7 +114,7 @@ namespace Solution.Parser.Sln.Test
 
                 var result = SolutionFileName.WithAnySolutionFormat("SideBySide").FindSolutionFileReverseFrom(temporaryDirectory);
 
-                Assert.IsTrue(result.IsSlnx);
+                Assert.AreEqual(SolutionFileFormat.SLNX, result.Extension);
             }
             finally
             {

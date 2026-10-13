@@ -11,13 +11,13 @@ namespace Solution.Parser.CSharp
     /// <summary>
     /// The code behind a solution, in two modes:
     /// <list type="bullet">
-    /// <item><see cref="ParseMode.SyntaxOnly"/>: syntax trees only, exactly what <c>CSharpFileInfo.Parse()</c> gives, but
+    /// <item><see cref="ParseMode.SyntaxOnly"/>: syntax trees only, exactly what <c>CSharpSyntaxTree.Parse(path)</c> gives, but
     /// parsed once and cached.</item>
     /// <item><c>.WithSymbols()</c> adds <see cref="ParseMode.WithSymbols"/> on top: <c>call.Method</c>,
     /// <c>call.ArgumentFor("writeResponse")</c> and the like answer from a Roslyn compilation per
     /// project, built the first time a symbol of that project is asked for.</item>
     /// </list>
-    /// For a solution there is nothing to open: <c>solutionFileInfo.Parse(ParseMode.WithSymbols)</c>
+    /// For a solution there is nothing to open: <c>SolutionFile.Parse(path, ParseMode.WithSymbols)</c>
     /// and the members of <see cref="SolutionCode"/> run on this. Opened directly it is only for code in
     /// memory, see <see cref="FromSources"/>.
     /// </summary>
@@ -127,7 +127,7 @@ namespace Solution.Parser.CSharp
         {
             Throw.IfNull(projects);
 
-            var keys = projects.Select(p => p.ProjectFileInfo.FullName).ToImmutableHashSet(Workspace.PathComparer);
+            var keys = projects.Select(p => p.Path).ToImmutableHashSet(Workspace.PathComparer);
 
             return TreesOf(_workspace.Projects.Where(p => keys.Contains(p.Key)));
         }
@@ -141,7 +141,7 @@ namespace Solution.Parser.CSharp
         {
             Throw.IfNull(project);
 
-            return Diagnostics(project.ProjectFileInfo.FullName);
+            return Diagnostics(project.Path);
         }
 
         /// <summary>What the compiler reports for every project.</summary>
@@ -209,7 +209,7 @@ namespace Solution.Parser.CSharp
         internal static InvalidOperationException Exception(string member)
         {
             return new InvalidOperationException($"Symbols are not loaded, so '{member}' cannot be answered. "
-                                                 + "Parse the solution with solutionFileInfo.Parse(ParseMode.WithSymbols), or use "
+                                                 + "Parse the solution with SolutionFile.Parse(path, ParseMode.WithSymbols), or use "
                                                  + "CodeBase.FromSource(code).WithSymbols() for code in memory, to resolve symbols; "
                                                  + "ParseMode.SyntaxOnly only knows the syntax.");
         }

@@ -33,7 +33,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
         {
             var solution = SolutionFile.Find("Solution.Parser.sln");
 
-            Assert.That.AreEqual("Solution.Parser.sln", solution.SolutionFileInfo.Name, because: "the search walks up from the test output into the repository", fix: ConsumerApiFix);
+            Assert.That.AreEqual("Solution.Parser.sln", solution.FileInfo.Name, because: "the search walks up from the test output into the repository", fix: ConsumerApiFix);
             Assert.That.IsFalse(solution.HasSymbols, because: "without a mode the syntax comes on first use, as with Parse()", fix: ConsumerApiFix);
         }
 
@@ -42,7 +42,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
         {
             var solution = SolutionFile.Find("Solution.Parser");
 
-            Assert.That.AreEqual("Solution.Parser", solution.SolutionFileInfo.FileNameWithoutExtension, because: "a name without extension means sln or slnx", fix: ConsumerApiFix);
+            Assert.That.AreEqual("Solution.Parser", solution.Name, because: "a name without extension means sln or slnx", fix: ConsumerApiFix);
         }
 
         [TestMethod]
@@ -59,7 +59,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
             var project = SolutionFile.Find("Solution.Parser.sln").Project("Solution.Parser.CSharp");
 
             Assert.That.AreEqual("Solution.Parser.CSharp", project.Name, because: "the name is the csproj file name without extension", fix: ConsumerApiFix);
-            Assert.That.AreEqual(project.ProjectFileInfo.FullName, project.Path, because: "Path is the full path of the csproj", fix: ConsumerApiFix);
+            Assert.That.AreEqual(project.FileInfo.FullName, project.Path, because: "Path is the full path of the csproj", fix: ConsumerApiFix);
             Assert.That.IsTrue(project.Trees.Count > 0, because: "the project hands out its code right away", fix: ConsumerApiFix);
         }
 
@@ -76,14 +76,14 @@ namespace Solution.Parser.CSharp.Semantic.Test
         }
 
         [TestMethod]
-        public void Two_Infos_Of_The_Same_File_Are_Equal()
+        public void Parse_Reads_A_Solution_From_Its_Path()
         {
-            var solution = SolutionFile.Find("Solution.Parser.sln");
+            var found = SolutionFile.Find("Solution.Parser.sln");
 
-            var again = new SolutionFileInfo(solution.SolutionFileInfo.FullName);
+            var parsed = SolutionFile.Parse(found.Path);
 
-            Assert.That.AreEqual(solution.SolutionFileInfo, again, because: "a file info stands for its file, not for the instance", fix: ConsumerApiFix);
-            Assert.That.AreEqual(solution.SolutionFileInfo.FullName, again.ToString(), because: "ToString renders the path", fix: ConsumerApiFix);
+            Assert.That.AreEqual(found.Path, parsed.Path, because: "Parse takes the path Find walked to", fix: ConsumerApiFix);
+            Assert.That.AreEqual(found.Projects.Count, parsed.Projects.Count, because: "both read the same file", fix: ConsumerApiFix);
         }
 
         [TestMethod]

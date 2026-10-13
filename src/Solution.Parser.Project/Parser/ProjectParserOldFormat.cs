@@ -9,7 +9,7 @@ namespace Solution.Parser.Project
 {
     internal static class ProjectParserOldFormat
     {
-        internal static ProjectFile Parse(ProjectFileInfo projectFileInfo, XDocument document)
+        internal static ProjectFile Parse(FileInfo projectFileInfo, XDocument document)
         {
             var guid = new Guid(document.ElementBy(ParserHelper.ProjectGuid)?.ValueOrDefault() ?? string.Empty);
             var projectReferences = GetReferences(document, ParserHelper.ProjectReference, ProjectReferenceParser.Parse);
@@ -88,7 +88,7 @@ namespace Solution.Parser.Project
         /// Only files that exist are reported. A stale include used to reach the typed file info
         /// constructor, which throws for a missing path, and took the whole parse with it.
         /// </remarks>
-        private static ImmutableList<FileInfo> GetSourceFiles(XDocument document, ProjectFileInfo projectFileInfo)
+        private static ImmutableList<FileInfo> GetSourceFiles(XDocument document, FileInfo projectFileInfo)
         {
             var projectDirectory = projectFileInfo.Directory!;
 
@@ -107,7 +107,7 @@ namespace Solution.Parser.Project
                             .ToImmutableList();
         }
 
-        private static ImmutableList<ProjectContentItem> GetContentItems(XDocument document, ProjectFileInfo projectFileInfo)
+        private static ImmutableList<ProjectContentItem> GetContentItems(XDocument document, FileInfo projectFileInfo)
         {
             var projectFileDirectoryPath = projectFileInfo.Directory!.FullName;
             var result = document.ElementsBy(ParserHelper.Content);
@@ -122,7 +122,7 @@ namespace Solution.Parser.Project
             return contentItems.ToImmutableList();
         }
 
-        private static ImmutableList<Package> GetPackagesFrom(ProjectFileInfo projectFileInfo, XDocument document)
+        private static ImmutableList<Package> GetPackagesFrom(FileInfo projectFileInfo, XDocument document)
         {
             var packagesConfig = "packages.config";
 

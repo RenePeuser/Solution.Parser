@@ -9,7 +9,7 @@ namespace Solution.Parser.Sln
 {
     internal static class SolutionFileHelper
     {
-        internal static SolutionFileInfo FindSolutionFileReverseFrom(this SolutionFileName solutionFileName, DirectoryInfo startUpDirectory)
+        internal static FileInfo FindSolutionFileReverseFrom(this SolutionFileName solutionFileName, DirectoryInfo startUpDirectory)
         {
             Throw.IfNull(solutionFileName);
             Throw.IfNull(startUpDirectory);
@@ -40,7 +40,7 @@ namespace Solution.Parser.Sln
             return SolutionFileFormat.All.Select(extension => $"{solutionFileName.Name}{extension}").ToImmutableList();
         }
 
-        private static SolutionFileInfo? FindSolutionFileFrom(ImmutableList<string> candidateFileNames, DirectoryInfo? startUpDirectory)
+        private static FileInfo? FindSolutionFileFrom(ImmutableList<string> candidateFileNames, DirectoryInfo? startUpDirectory)
         {
             while (startUpDirectory != null)
             {
@@ -51,7 +51,7 @@ namespace Solution.Parser.Sln
 
                 if (solutionFile.IsNotNull())
                 {
-                    return new SolutionFileInfo(solutionFile!.FullName);
+                    return solutionFile;
                 }
 
                 startUpDirectory = startUpDirectory.Parent;

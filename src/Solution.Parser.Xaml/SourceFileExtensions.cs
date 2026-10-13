@@ -17,13 +17,11 @@ namespace Solution.Parser.Xaml
     /// </remarks>
     public static class SourceFileExtensions
     {
-        public static ImmutableList<XamlFileInfo> GetXamlFiles(this IEnumerable<FileInfo> sourceFiles)
+        public static ImmutableList<FileInfo> GetXamlFiles(this IEnumerable<FileInfo> sourceFiles)
         {
             Throw.IfNull(sourceFiles);
 
-            return sourceFiles.Where(IsXamlFile)
-                              .Select(file => new XamlFileInfo(file.FullName))
-                              .ToImmutableList();
+            return sourceFiles.Where(IsXamlFile).ToImmutableList();
         }
 
         /// <summary>Generated files carry a <c>.g.</c> in their name and are not source a rule should judge.</summary>

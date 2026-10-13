@@ -1,14 +1,18 @@
 ﻿using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using Argument.Check;
 using Extensions.Pack;
 
 namespace Solution.Parser.Nuspec
 {
-    public static class NuSpecParser
+    internal static class NuSpecParser
     {
-        public static NuspecFile Parse(NuspecFileInfo nuspecFileInfo)
+        internal static NuspecFile Parse(FileInfo nuspecFileInfo)
         {
+            Throw.IfNull(nuspecFileInfo);
+
             var document = XDocument.Load(nuspecFileInfo.FullName);
 
 

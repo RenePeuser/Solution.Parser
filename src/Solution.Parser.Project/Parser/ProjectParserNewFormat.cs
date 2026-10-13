@@ -15,7 +15,7 @@ namespace Solution.Parser.Project
             "MSTest.", "Microsoft.NET.Test.Sdk", "NUnit", "XUnit"
         };
 
-        internal static ProjectFile Parse(ProjectFileInfo projectFileInfo, XDocument document)
+        internal static ProjectFile Parse(FileInfo projectFileInfo, XDocument document)
         {
             var projectReferences = GetReferences(document, ParserHelper.ProjectReference, ProjectReferenceParser.Parse);
 
@@ -30,7 +30,7 @@ namespace Solution.Parser.Project
             var contentItems = ImmutableList<ProjectContentItem>.Empty;
             var assemblyReferences = ImmutableList<AssemblyReference>.Empty;
 
-            var assemblyName = document.ElementBy(ParserHelper.AssemblyName)?.ValueOrDefault() ?? projectFileInfo.FileNameWithoutExtension;
+            var assemblyName = document.ElementBy(ParserHelper.AssemblyName)?.ValueOrDefault() ?? Path.GetFileNameWithoutExtension(projectFileInfo.Name);
 
             var imports = GetAllImports(document);
             var targetFrameworkVersion = document.ElementBy(ParserHelper.TargetFrameworkNewFormat)?.ValueOrDefault();
@@ -93,14 +93,14 @@ namespace Solution.Parser.Project
         /// once; it used to be walked once per file type, and the typed lists it produced forced this
         /// package to depend on both language packages.
         /// </summary>
-        private static ImmutableList<FileInfo> GetSourceFiles(ProjectFileInfo projectFileInfo)
+        private static ImmutableList<FileInfo> GetSourceFiles(FileInfo projectFileInfo)
         {
             var projectDirectory = projectFileInfo.Directory!;
 
             return SourceFileFilter.SourceFilesBelow(projectDirectory);
         }
 
-        private static ImmutableList<Package> GetPackagesFrom(ProjectFileInfo projectFileInfo)
+        private static ImmutableList<Package> GetPackagesFrom(FileInfo projectFileInfo)
         {
             var packagesConfigFileInfo = new FileInfo(Path.Combine(projectFileInfo.Directory!.FullName, "packages.config"));
             if (packagesConfigFileInfo.Exists.IsFalse())

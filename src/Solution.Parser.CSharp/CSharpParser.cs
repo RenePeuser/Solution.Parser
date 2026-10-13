@@ -49,7 +49,7 @@ public static class CSharpParser
         };
     }
 
-    public static CSharpSyntaxTree Parse(this CSharpFileInfo csharpFileInfo)
+    internal static CSharpSyntaxTree Parse(FileInfo csharpFileInfo)
     {
         Throw.IfNull(csharpFileInfo);
 

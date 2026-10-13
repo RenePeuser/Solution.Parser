@@ -8,27 +8,47 @@ using Solution.Parser.Project;
 
 namespace Solution.Parser.Sln
 {
-    [DebuggerDisplay("{SolutionFileInfo.Name}")]
+    [DebuggerDisplay("{FileInfo.Name}")]
     public class SolutionFile
     {
-        internal SolutionFile(SolutionFileInfo solutionFileInfo,
+        internal SolutionFile(FileInfo fileInfo,
             ImmutableList<ProjectFile> projectFiles,
             ImmutableList<ProjectFile> productiveProjectFiles,
             ImmutableList<ProjectFile> unitTestProjectFiles)
         {
-            SolutionFileInfo = solutionFileInfo;
+            FileInfo = fileInfo;
             Projects = projectFiles;
             ProductionProjects = productiveProjectFiles;
             UnitTestProjects = unitTestProjectFiles;
         }
 
-        public SolutionFileInfo SolutionFileInfo { get; }
+        public FileInfo FileInfo { get; }
+
+        /// <summary>The solution name, the file name of the sln or slnx without extension.</summary>
+        public string Name => System.IO.Path.GetFileNameWithoutExtension(FileInfo.Name);
+
+        /// <summary>The full path of the sln or slnx.</summary>
+        public string Path => FileInfo.FullName;
 
         public ImmutableList<ProjectFile> Projects { get; }
 
         public ImmutableList<ProjectFile> ProductionProjects { get; }
 
         public ImmutableList<ProjectFile> UnitTestProjects { get; }
+
+        /// <summary>Parses the sln or slnx at <paramref name="path"/>.</summary>
+        public static SolutionFile Parse(string path)
+        {
+            Throw.IfNullOrWhiteSpace(path);
+
+            return Parse(new FileInfo(path));
+        }
+
+        /// <summary>Parses the given sln or slnx.</summary>
+        public static SolutionFile Parse(FileInfo fileInfo)
+        {
+            return SolutionFileParser.Parse(fileInfo);
+        }
 
         /// <summary>
         /// Finds the solution from <paramref name="startDirectory"/> upwards and parses it. Without a start
@@ -48,7 +68,7 @@ namespace Solution.Parser.Sln
                            ? new SolutionFileName(solutionName)
                            : SolutionFileName.WithAnySolutionFormat(solutionName);
 
-            return name.FindSolutionFileReverseFrom(startDirectory ?? new DirectoryInfo(AppContext.BaseDirectory)).Parse();
+            return Parse(name.FindSolutionFileReverseFrom(startDirectory ?? new DirectoryInfo(AppContext.BaseDirectory)));
         }
 
         /// <summary>The project with this name, the file name of its csproj without extension.</summary>
@@ -58,7 +78,7 @@ namespace Solution.Parser.Sln
             Throw.IfNullOrWhiteSpace(projectName);
 
             return Projects.FirstOrDefault(p => p.Name.Equals(projectName, StringComparison.OrdinalIgnoreCase))
-                   ?? throw new ArgumentException($"The solution '{SolutionFileInfo.Name}' has no project '{projectName}'. "
+                   ?? throw new ArgumentException($"The solution '{FileInfo.Name}' has no project '{projectName}'. "
                                                   + $"Its projects are: {string.Join(", ", Projects.Select(p => p.Name).Order(StringComparer.Ordinal))}.",
                                                   nameof(projectName));
         }

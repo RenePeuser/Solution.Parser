@@ -1,12 +1,13 @@
-﻿using System.Xml.Linq;
+﻿using System.IO;
+using System.Xml.Linq;
 
 namespace Solution.Parser.Xaml
 {
     public interface IXamlParser
     {
-        XamlSyntaxTree Parse(XamlFileInfo xamlFileInfo);
+        XamlSyntaxTree Parse(FileInfo xamlFileInfo);
 
-        XamlSyntaxTree Parse(XamlFileInfo xamlFileInfo, string xamlContent);
+        XamlSyntaxTree Parse(FileInfo xamlFileInfo, string xamlContent);
 
         XamlSyntaxTree ParseContent(string xamlContent, string filePath);
 

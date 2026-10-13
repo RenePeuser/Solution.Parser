@@ -12,7 +12,7 @@ namespace Solution.Parser.Project
     {
         internal ProjectFile(Guid guid,
                              XDocument document,
-                             ProjectFileInfo projectFileInfo,
+                             FileInfo fileInfo,
                              string assemblyName,
                              ImmutableList<AssemblyReference> assemblyReferences,
                              ImmutableList<ProjectReference> projectReferences,
@@ -28,7 +28,7 @@ namespace Solution.Parser.Project
                              string documentationFile)
         {
             Throw.IfNull(document);
-            Throw.IfNull(projectFileInfo);
+            Throw.IfNull(fileInfo);
             Throw.IfNull(assemblyReferences);
             Throw.IfNull(projectReferences);
             Throw.IfNull(projectTypes);
@@ -40,7 +40,7 @@ namespace Solution.Parser.Project
 
             Guid = guid;
             Document = document;
-            ProjectFileInfo = projectFileInfo;
+            FileInfo = fileInfo;
             AssemblyName = assemblyName;
             AssemblyReferences = assemblyReferences;
             ProjectReferences = projectReferences;
@@ -56,6 +56,20 @@ namespace Solution.Parser.Project
             PackageReferences = packageReferences;
         }
 
+        /// <summary>Parses the csproj at <paramref name="path"/>, on its own, without its solution.</summary>
+        public static ProjectFile Parse(string path)
+        {
+            Throw.IfNullOrWhiteSpace(path);
+
+            return Parse(new FileInfo(path));
+        }
+
+        /// <summary>Parses the given csproj, on its own, without its solution.</summary>
+        public static ProjectFile Parse(FileInfo fileInfo)
+        {
+            return ProjectFileParser.Parse(fileInfo);
+        }
+
         /// <summary>
         /// The same project with its build dependencies filled in. Resolving those needs the whole
         /// solution, so the solution package asks for this copy rather than reaching for the
@@ -67,7 +81,7 @@ namespace Solution.Parser.Project
 
             return new ProjectFile(Guid,
                                    Document,
-                                   ProjectFileInfo,
+                                   FileInfo,
                                    AssemblyName,
                                    AssemblyReferences,
                                    ProjectReferences,
@@ -89,13 +103,13 @@ namespace Solution.Parser.Project
 
         public ImmutableList<ProjectType> ProjectTypes { get; }
 
-        public ProjectFileInfo ProjectFileInfo { get; }
+        public FileInfo FileInfo { get; }
 
         /// <summary>The project name, the file name of the csproj without extension.</summary>
-        public string Name => ProjectFileInfo.FileNameWithoutExtension;
+        public string Name => System.IO.Path.GetFileNameWithoutExtension(FileInfo.Name);
 
         /// <summary>The full path of the csproj.</summary>
-        public string Path => ProjectFileInfo.FullName;
+        public string Path => FileInfo.FullName;
 
         public Guid Guid { get; }
 

@@ -17,18 +17,13 @@ namespace Solution.Parser.CSharp.Semantic.Test
     {
         private const string SolutionCodeFix = "Check SolutionCode, the code hangs on the SolutionFile instance";
 
-        // These tests are about Parse(mode) on a file info, so they start from the path rather than from Find.
-        private static readonly string SolutionPath = SolutionFile.Find("Solution.Parser.sln").SolutionFileInfo.FullName;
-
-        private static SolutionFileInfo SolutionFileInfo()
-        {
-            return new SolutionFileInfo(SolutionPath);
-        }
+        // These tests are about Parse(path, mode), so they start from the path rather than from Find.
+        private static readonly string SolutionPath = SolutionFile.Find("Solution.Parser.sln").Path;
 
         [TestMethod]
         public void A_Solution_Parsed_Without_A_Mode_Gets_The_Syntax_On_First_Use()
         {
-            var solution = SolutionFileInfo().Parse();
+            var solution = SolutionFile.Parse(SolutionPath);
 
             Assert.That.IsTrue(solution.ProductionTrees.Count > 0, because: "the syntax costs nothing until it is asked for", fix: SolutionCodeFix);
             Assert.That.IsFalse(solution.HasSymbols, because: "symbols are only there when asked for at parse time", fix: SolutionCodeFix);
@@ -37,15 +32,15 @@ namespace Solution.Parser.CSharp.Semantic.Test
         [TestMethod]
         public void The_Mode_Decides_Whether_There_Are_Symbols()
         {
-            Assert.That.IsFalse(SolutionFileInfo().Parse(ParseMode.SyntaxOnly).HasSymbols, because: "SyntaxOnly is the fast mode", fix: SolutionCodeFix);
-            Assert.That.IsTrue(SolutionFileInfo().Parse(ParseMode.WithSymbols).HasSymbols, because: "WithSymbols is the full mode", fix: SolutionCodeFix);
+            Assert.That.IsFalse(SolutionFile.Parse(SolutionPath, ParseMode.SyntaxOnly).HasSymbols, because: "SyntaxOnly is the fast mode", fix: SolutionCodeFix);
+            Assert.That.IsTrue(SolutionFile.Parse(SolutionPath, ParseMode.WithSymbols).HasSymbols, because: "WithSymbols is the full mode", fix: SolutionCodeFix);
         }
 
         [TestMethod]
         public void A_Project_Has_Its_Own_Trees_Out_Of_The_Solution_Cache()
         {
-            var solution = SolutionFileInfo().Parse(ParseMode.SyntaxOnly);
-            var project = solution.Projects.Single(p => p.ProjectFileInfo.FileNameWithoutExtension == "Solution.Parser.CSharp");
+            var solution = SolutionFile.Parse(SolutionPath, ParseMode.SyntaxOnly);
+            var project = solution.Projects.Single(p => p.Name == "Solution.Parser.CSharp");
 
             var trees = project.Trees;
 
@@ -60,8 +55,8 @@ namespace Solution.Parser.CSharp.Semantic.Test
         [TestMethod]
         public void A_Project_Of_A_Solution_Parsed_Without_A_Mode_Has_Its_Trees()
         {
-            var solution = SolutionFileInfo().Parse();
-            var project = solution.Projects.Single(p => p.ProjectFileInfo.FileNameWithoutExtension == "Solution.Parser.CSharp");
+            var solution = SolutionFile.Parse(SolutionPath);
+            var project = solution.Projects.Single(p => p.Name == "Solution.Parser.CSharp");
 
             Assert.That.IsTrue(project.Trees.Count > 0, because: "Parse() stays compatible and the code comes on first use, also per project", fix: SolutionCodeFix);
         }
@@ -69,9 +64,9 @@ namespace Solution.Parser.CSharp.Semantic.Test
         [TestMethod]
         public void A_Project_Parsed_On_Its_Own_Has_Its_Trees()
         {
-            var projectFileInfo = SolutionFileInfo().Parse().Projects.Single(p => p.ProjectFileInfo.FileNameWithoutExtension == "Solution.Parser.CSharp").ProjectFileInfo;
+            var projectPath = SolutionFile.Parse(SolutionPath).Project("Solution.Parser.CSharp").Path;
 
-            var project = ProjectFileParser.Parse(projectFileInfo);
+            var project = ProjectFile.Parse(projectPath);
 
             Assert.That.IsTrue(project.Trees.Any(t => t.FileName.EndsWith("CSharpParser.cs", StringComparison.OrdinalIgnoreCase)),
                                because: "a project needs no solution to know its own files",
@@ -81,7 +76,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
         [TestMethod]
         public void Compilation_Diagnostics_Need_Symbols()
         {
-            var solution = SolutionFileInfo().Parse(ParseMode.SyntaxOnly);
+            var solution = SolutionFile.Parse(SolutionPath, ParseMode.SyntaxOnly);
 
             var exception = Assert.ThrowsExactly<InvalidOperationException>(() => solution.CompilationDiagnostics());
 

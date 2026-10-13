@@ -17,13 +17,11 @@ namespace Solution.Parser.CSharp
     /// </remarks>
     public static class SourceFileExtensions
     {
-        public static ImmutableList<CSharpFileInfo> GetCSharpFiles(this IEnumerable<FileInfo> sourceFiles)
+        public static ImmutableList<FileInfo> GetCSharpFiles(this IEnumerable<FileInfo> sourceFiles)
         {
             Throw.IfNull(sourceFiles);
 
-            return sourceFiles.Where(IsCSharpFile)
-                              .Select(file => new CSharpFileInfo(file.FullName))
-                              .ToImmutableList();
+            return sourceFiles.Where(IsCSharpFile).ToImmutableList();
         }
 
         /// <summary>Generated files carry a <c>.g.</c> in their name and are not source a rule should judge.</summary>

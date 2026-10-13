@@ -13,7 +13,7 @@ namespace Solution.Parser.Sln.Test
     [TestClass]
     public class SolutionParseTest
     {
-        private static SolutionFileInfo _solutionFileInfo = null!;
+        private static FileInfo _solutionFileInfo = null!;
 
         [ClassInitialize]
         public static void ClassInit(TestContext _)
@@ -28,11 +28,11 @@ namespace Solution.Parser.Sln.Test
         [TestMethod]
         public void Count_CSharp_Files()
         {
-            var parsedSolutionFile = _solutionFileInfo.Parse();
+            var parsedSolutionFile = SolutionFile.Parse(_solutionFileInfo);
 
             var csharpFiles = parsedSolutionFile.Projects.SelectMany(p => p.SourceFiles.GetCSharpFiles()).ToList();
             var projects = parsedSolutionFile.Projects.Count;
-            var parsedCSharpFiles = csharpFiles.Select(c => c.Parse());
+            var parsedCSharpFiles = csharpFiles.Select(CSharpSyntaxTree.Parse);
             var classes = parsedCSharpFiles.SelectMany(c => c.Classes);
             var maxLineOfSyntaxTree = classes.Max(c => c.SourceCode.Split(Environment.NewLine).Length);
             var maxMethodLineCount = classes.SelectMany(c => c.Methods).Max(m => m.MethodBody.Split(Environment.NewLine).Length);
@@ -64,7 +64,7 @@ namespace Solution.Parser.Sln.Test
                 TestMethodAttributes = testMethods
             };
 
-            Assert.Fail($"{Environment.NewLine}{Environment.NewLine}{_solutionFileInfo.FileNameWithoutExtension}:{Environment.NewLine}{ConsoleTables.ConsoleTable.From([record])}{Environment.NewLine}{Environment.NewLine}{ConsoleTables.ConsoleTable.From([tests])}");
+            Assert.Fail($"{Environment.NewLine}{Environment.NewLine}{Path.GetFileNameWithoutExtension(_solutionFileInfo.Name)}:{Environment.NewLine}{ConsoleTables.ConsoleTable.From([record])}{Environment.NewLine}{Environment.NewLine}{ConsoleTables.ConsoleTable.From([tests])}");
 
         }
 
@@ -80,7 +80,7 @@ namespace Solution.Parser.Sln.Test
         [TestMethod]
         public void Assert_That_Solution_Could_Be_Parsed()
         {
-            var parsedSolutionFile = _solutionFileInfo.Parse();
+            var parsedSolutionFile = SolutionFile.Parse(_solutionFileInfo);
 
             Assert.IsNotNull(parsedSolutionFile);
         }
@@ -88,10 +88,10 @@ namespace Solution.Parser.Sln.Test
         [TestMethod]
         public void Assert_That_Correct_Test_Project_Will_Be_Detected()
         {
-            var parsedSolutionFile = _solutionFileInfo.Parse();
+            var parsedSolutionFile = SolutionFile.Parse(_solutionFileInfo);
 
             var testProjects = parsedSolutionFile.UnitTestProjects
-                                                 .Select(p => p.ProjectFileInfo.FileNameWithoutExtension)
+                                                 .Select(p => p.Name)
                                                  .ToImmutableList();
 
             // One test project per package since the split, so a fixed count would only record how
@@ -104,10 +104,10 @@ namespace Solution.Parser.Sln.Test
         [TestMethod]
         public void Assert_That_Correct_Productive_Project_Will_Be_Detected()
         {
-            var parsedSolutionFile = _solutionFileInfo.Parse();
+            var parsedSolutionFile = SolutionFile.Parse(_solutionFileInfo);
 
             var productiveProjects = parsedSolutionFile.ProductionProjects
-                                                       .Select(p => p.ProjectFileInfo.FileNameWithoutExtension)
+                                                       .Select(p => p.Name)
                                                        .ToImmutableList();
 
             // Asserting the exact count would break every time the solution gains a project, which
@@ -121,9 +121,9 @@ namespace Solution.Parser.Sln.Test
         [TestMethod]
         public void Assert_That_A_CSharp_File_Can_Be_Parsed()
         {
-            var tcSolutionFile = _solutionFileInfo.Parse();
+            var tcSolutionFile = SolutionFile.Parse(_solutionFileInfo);
 
-            var csharpSyntaxTrees = tcSolutionFile.Projects.SelectMany(p => p.SourceFiles.GetCSharpFiles()).Select(c => c.Parse()).ToList();
+            var csharpSyntaxTrees = tcSolutionFile.Projects.SelectMany(p => p.SourceFiles.GetCSharpFiles()).Select(CSharpSyntaxTree.Parse).ToList();
 
             Assert.IsTrue(csharpSyntaxTrees.Any());
         }
@@ -131,9 +131,9 @@ namespace Solution.Parser.Sln.Test
         [TestMethod]
         public void File_Scoped_Namespaces_Should_Be_Parseable_Too()
         {
-            var tcSolutionFile = _solutionFileInfo.Parse();
+            var tcSolutionFile = SolutionFile.Parse(_solutionFileInfo);
 
-            var csharpSyntaxTrees = tcSolutionFile.Projects.SelectMany(p => p.SourceFiles.GetCSharpFiles()).Select(c => c.Parse()).ToList();
+            var csharpSyntaxTrees = tcSolutionFile.Projects.SelectMany(p => p.SourceFiles.GetCSharpFiles()).Select(CSharpSyntaxTree.Parse).ToList();
 
             var csharpParser = csharpSyntaxTrees.SelectMany(csharp => csharp.Classes).Where(c => c.Name == "CSharpParser").ToImmutableList();
 

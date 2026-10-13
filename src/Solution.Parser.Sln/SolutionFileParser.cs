@@ -10,13 +10,18 @@ using Solution.Parser.Project;
 
 namespace Solution.Parser.Sln
 {
-    public static class SolutionFileParser
+    internal static class SolutionFileParser
     {
         private const string PROJECT_FILE_EXTENSION = ".csproj";
 
-        public static SolutionFile Parse(this SolutionFileInfo solutionFileInfo)
+        internal static SolutionFile Parse(FileInfo solutionFileInfo)
         {
             Throw.IfNull(solutionFileInfo);
+
+            if (!SolutionFileFormat.All.Any(format => solutionFileInfo.Name.EndsWith(format, StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ArgumentException($"The given path '{solutionFileInfo.FullName}' has not one of the expected file extensions '{string.Join("', '", SolutionFileFormat.All)}'");
+            }
 
             // var nuspecFiles = NuGetFolderParser.Parse(NugetFolderFinder.GetUserNuGetFolder()).ToImmutableList();
             var solutionFile = Microsoft.Build.Construction.SolutionFile.Parse(solutionFileInfo.FullName);
@@ -31,12 +36,8 @@ namespace Solution.Parser.Sln
                                            .Where(item => Path.GetExtension(item.RelativePath).EqualsTo(PROJECT_FILE_EXTENSION))
                                            .AsParallel()
                                            .AsOrdered()
-                                           .Select(item => new
-                                                           {
-                                                               project = item,
-                                                               projectFileInfo = new ProjectFileInfo(item.AbsolutePath)
-                                                           })
-                                           .Select(item => new ProjectToProjectSolutionItem(item.project, ProjectFileParser.Parse(item.projectFileInfo))).ToImmutableList();
+                                           .Select(item => new ProjectToProjectSolutionItem(item, ProjectFile.Parse(item.AbsolutePath)))
+                                           .ToImmutableList();
             }
             catch (AggregateException e) when (e.InnerExceptions.Count >= 1)
             {

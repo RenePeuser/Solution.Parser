@@ -41,7 +41,7 @@ namespace Solution.Parser.CSharp
 
         internal static ProjectInput From(ProjectFile project)
         {
-            var projectPath = project.ProjectFileInfo.FullName;
+            var projectPath = project.Path;
             var projectDirectory = Path.GetDirectoryName(projectPath)!;
 
             var projectReferences = project.ProjectReferences

@@ -30,8 +30,8 @@ namespace SampleApp.Wpf.Test
         {
             var sampleApp = SolutionFile.Find("Solution.Parser.sln").Project("SampleApp.Wpf");
 
-            return new Parsed(sampleApp.SourceFiles.GetXamlFiles().Select(x => x.Parse()).ToImmutableList(),
-                              sampleApp.SourceFiles.GetCSharpFiles().Select(c => c.Parse()).AllTypes());
+            return new Parsed(sampleApp.SourceFiles.GetXamlFiles().Select(XamlSyntaxTree.Parse).ToImmutableList(),
+                              sampleApp.SourceFiles.GetCSharpFiles().Select(CSharpSyntaxTree.Parse).AllTypes());
         }
 
         private sealed record Parsed(ImmutableList<XamlSyntaxTree> Views, ImmutableList<TypeDeclaration> Types);
