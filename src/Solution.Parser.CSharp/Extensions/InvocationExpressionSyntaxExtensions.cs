@@ -20,14 +20,19 @@ namespace Solution.Parser.CSharp
                 return ImmutableList<Invocation>.Empty;
             }
 
+            return node.DescendantNodesAndSelf(descendIntoChildren: child => child == node || child is not LocalFunctionStatementSyntax)
+                       .OfType<InvocationExpressionSyntax>()
+                       .ToInvocations(filePath);
+        }
+
+        /// <summary>The given calls, in the given order, with their receivers linked.</summary>
+        internal static ImmutableList<Invocation> ToInvocations(this IEnumerable<InvocationExpressionSyntax> invocations, string filePath)
+        {
             // The receiver of a call is built before the call and then shared, so call.Receiver is the
             // very instance the list holds, and a chain can be followed by reference.
             var built = new Dictionary<InvocationExpressionSyntax, Invocation>();
 
-            return node.DescendantNodesAndSelf(descendIntoChildren: child => child == node || child is not LocalFunctionStatementSyntax)
-                       .OfType<InvocationExpressionSyntax>()
-                       .Select(i => i.ToInvocation(filePath, built))
-                       .ToImmutableList();
+            return invocations.Select(i => i.ToInvocation(filePath, built)).ToImmutableList();
         }
 
         private static Invocation ToInvocation(this InvocationExpressionSyntax invocation, string filePath, Dictionary<InvocationExpressionSyntax, Invocation> built)
@@ -116,12 +121,15 @@ namespace Solution.Parser.CSharp
 
         internal static InvocationArgument ToInvocationArgument(this ArgumentSyntax argument, int ordinal, string filePath)
         {
+            // One string for both: the text of an argument, a lambda say, can be long.
+            var value = argument.Expression.ToExpression(filePath);
+
             return new InvocationArgument
             {
                 Ordinal = ordinal,
                 Name = argument.NameColon?.Name.Identifier.ValueText,
-                Expression = argument.Expression.ToSourceCode(),
-                ValueExpression = argument.Expression.ToExpression(filePath),
+                Expression = value.SourceCode,
+                ValueExpression = value,
                 RefKind = argument.RefKindKeyword.Kind() switch
                 {
                     SyntaxKind.RefKeyword => ArgumentRefKind.Ref,
@@ -129,7 +137,7 @@ namespace Solution.Parser.CSharp
                     SyntaxKind.InKeyword => ArgumentRefKind.In,
                     _ => ArgumentRefKind.None
                 },
-                Location = argument.ToCodeLocation(filePath)
+                Location = argument.Span == argument.Expression.Span ? value.Location : argument.ToCodeLocation(filePath)
             };
         }
     }

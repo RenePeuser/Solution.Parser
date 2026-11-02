@@ -33,7 +33,21 @@ namespace Solution.Parser.CSharp
         /// <summary>The parts of an interpolated string; empty for a plain one.</summary>
         public ImmutableList<InterpolatedStringPart> Parts { get; init; } = ImmutableList<InterpolatedStringPart>.Empty;
 
-        /// <summary>The source of the statement the string is written in, for quoting it in a finding.</summary>
-        public string? EnclosingStatement { get; init; }
+        private string? _enclosingStatement;
+
+        private readonly SourceSlice? _enclosingStatementSlice;
+
+        /// <summary>The source of the statement the string is written in, for quoting it in a finding; null outside a statement.</summary>
+        public string? EnclosingStatement
+        {
+            get => _enclosingStatement ??= _enclosingStatementSlice?.ToString();
+            init => _enclosingStatement = value;
+        }
+
+        /// <summary>Sets <see cref="EnclosingStatement"/> by its node, cut out on first use.</summary>
+        internal Microsoft.CodeAnalysis.SyntaxNode? EnclosingStatementNode
+        {
+            init => _enclosingStatementSlice = value is null ? null : SourceSlice.Of(value);
+        }
     }
 }

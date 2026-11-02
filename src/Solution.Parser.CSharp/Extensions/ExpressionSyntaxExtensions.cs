@@ -16,7 +16,6 @@ namespace Solution.Parser.CSharp
 
         internal static Expression ToExpression(this ExpressionSyntax expression, string filePath)
         {
-            var source = expression.ToSourceCode();
             var location = expression.ToCodeLocation(filePath);
 
             // (x) and x! mean x; the kind is that of what is inside.
@@ -40,12 +39,41 @@ namespace Solution.Parser.CSharp
                 }
             }
 
-            var classified = inner.Classify(filePath);
+            var shape = inner.Classify(filePath);
 
-            return classified with { SourceCode = source, FilePath = filePath, Location = location, HasNullForgiving = hasNullForgiving };
+            return new Expression
+            {
+                Kind = shape.Kind,
+                LiteralValue = shape.LiteralValue,
+                InterpolatedParts = shape.InterpolatedParts ?? ImmutableList<InterpolatedStringPart>.Empty,
+                TypeReference = shape.TypeReference,
+                Operand = shape.Operand,
+                Name = shape.Name,
+                HasNullForgiving = hasNullForgiving,
+                SourceNode = expression,
+                FilePath = filePath,
+                Location = location
+            };
         }
 
-        private static Expression Classify(this ExpressionSyntax expression, string filePath)
+        /// <summary>
+        /// What <see cref="Classify"/> found out, gathered on the stack, so every expression costs one
+        /// allocation rather than one per <c>with</c>.
+        /// </summary>
+        private readonly record struct Shape(ExpressionKind Kind)
+        {
+            public object? LiteralValue { get; init; }
+
+            public ImmutableList<InterpolatedStringPart>? InterpolatedParts { get; init; }
+
+            public TypeReference? TypeReference { get; init; }
+
+            public Expression? Operand { get; init; }
+
+            public string? Name { get; init; }
+        }
+
+        private static Shape Classify(this ExpressionSyntax expression, string filePath)
         {
             return expression switch
             {
@@ -193,10 +221,9 @@ namespace Solution.Parser.CSharp
             };
         }
 
-        /// <summary>The source and location are set by the caller, which knows the outer, unwrapped node.</summary>
-        private static Expression Of(ExpressionKind kind)
+        private static Shape Of(ExpressionKind kind)
         {
-            return new Expression { Kind = kind, SourceCode = string.Empty, FilePath = string.Empty };
+            return new Shape(kind);
         }
     }
 }

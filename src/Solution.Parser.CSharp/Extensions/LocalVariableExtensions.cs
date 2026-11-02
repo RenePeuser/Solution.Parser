@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -20,20 +21,27 @@ namespace Solution.Parser.CSharp
                 return ImmutableList<LocalVariable>.Empty;
             }
 
-            return node.DescendantNodesAndSelf(descendIntoChildren: child => child == node || child is not LocalFunctionStatementSyntax)
-                       .Select(n => n switch
-                       {
-                           VariableDeclaratorSyntax { Parent: VariableDeclarationSyntax declaration } declarator => declarator.ToLocalVariable(declaration, filePath),
-                           ForEachStatementSyntax forEach => forEach.ToLocalVariable(filePath),
-                           CatchDeclarationSyntax { Identifier.ValueText.Length: > 0 } catchDeclaration => catchDeclaration.ToLocalVariable(filePath),
-                           SingleVariableDesignationSyntax designation => designation.ToLocalVariable(filePath),
-                           _ => null
-                       })
-                       .OfType<LocalVariable>()
-                       .ToImmutableList();
+            return node.BodyNodes().Select(n => n.ToLocalVariableOrNull(filePath)).OfType<LocalVariable>().ToImmutableList();
         }
 
-        private static LocalVariable ToLocalVariable(this VariableDeclaratorSyntax declarator, VariableDeclarationSyntax declaration, string filePath)
+        /// <summary>
+        /// The variable the node declares; null for a node that declares none. With
+        /// <paramref name="memberInvocations"/>, the calls of an initializer are taken from those
+        /// rather than collected again.
+        /// </summary>
+        internal static LocalVariable? ToLocalVariableOrNull(this SyntaxNode node, string filePath, IReadOnlyList<Invocation>? memberInvocations = null)
+        {
+            return node switch
+            {
+                VariableDeclaratorSyntax { Parent: VariableDeclarationSyntax declaration } declarator => declarator.ToLocalVariable(declaration, filePath, memberInvocations),
+                ForEachStatementSyntax forEach => forEach.ToLocalVariable(filePath),
+                CatchDeclarationSyntax { Identifier.ValueText.Length: > 0 } catchDeclaration => catchDeclaration.ToLocalVariable(filePath),
+                SingleVariableDesignationSyntax designation => designation.ToLocalVariable(filePath),
+                _ => null
+            };
+        }
+
+        private static LocalVariable ToLocalVariable(this VariableDeclaratorSyntax declarator, VariableDeclarationSyntax declaration, string filePath, IReadOnlyList<Invocation>? memberInvocations)
         {
             var (kind, isUsing, isAwaitUsing, isConst, source) = declaration.Parent switch
             {
@@ -63,7 +71,11 @@ namespace Solution.Parser.CSharp
             {
                 Initializer = initializer?.ToSourceCode(),
                 InitializerExpression = initializer.ToExpressionOrNull(filePath),
-                Invocations = initializer.ToInvocations(filePath),
+                Invocations = initializer is null
+                                  ? ImmutableList<Invocation>.Empty
+                                  : memberInvocations is null
+                                      ? initializer.ToInvocations(filePath)
+                                      : SpanSearch.InSpan(memberInvocations, i => i.Location.SpanStart, initializer.SpanStart, initializer.Span.End),
                 IsUsing = isUsing,
                 IsAwaitUsing = isAwaitUsing,
                 IsConst = isConst,

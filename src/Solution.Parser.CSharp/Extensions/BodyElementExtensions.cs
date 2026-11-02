@@ -43,22 +43,39 @@ namespace Solution.Parser.CSharp
         internal static ImmutableList<MemberAccess> ToMemberAccesses(this SyntaxNode? node, string filePath)
         {
             return node.BodyNodes()
-                       .Select(n => n switch
-                       {
-                           MemberAccessExpressionSyntax access when access.IsKind(SyntaxKind.SimpleMemberAccessExpression) => new MemberAccess
-                           {
-                               Target = access.Expression.ToSourceCode(),
-                               Name = access.Name.Identifier.ValueText,
-                               IsInvoked = access.Parent is InvocationExpressionSyntax invocation && invocation.Expression == access,
-                               SourceCode = access.ToSourceCode(),
-                               FilePath = filePath,
-                               Location = access.ToCodeLocation(filePath)
-                           },
-                           MemberBindingExpressionSyntax binding => binding.ToMemberAccess(filePath),
-                           _ => null
-                       })
-                       .OfType<MemberAccess>()
+                       .OfType<ExpressionSyntax>()
+                       .Where(n => n.IsKind(SyntaxKind.SimpleMemberAccessExpression) || n is MemberBindingExpressionSyntax)
+                       .Select(n => n.ToMemberAccess(filePath))
                        .ToImmutableList();
+        }
+
+        /// <summary>A string literal or an interpolated string, as the scan collects them.</summary>
+        internal static StringLiteral ToStringLiteral(this ExpressionSyntax node, string filePath)
+        {
+            return node is InterpolatedStringExpressionSyntax interpolated
+                       ? interpolated.ToStringLiteral(filePath)
+                       : ((LiteralExpressionSyntax)node).ToStringLiteral(filePath);
+        }
+
+        /// <summary>A simple member access or a member binding, as the scan collects them.</summary>
+        internal static MemberAccess ToMemberAccess(this ExpressionSyntax node, string filePath)
+        {
+            return node is MemberBindingExpressionSyntax binding
+                       ? binding.ToMemberAccess(filePath)
+                       : ((MemberAccessExpressionSyntax)node).ToSimpleMemberAccess(filePath);
+        }
+
+        private static MemberAccess ToSimpleMemberAccess(this MemberAccessExpressionSyntax access, string filePath)
+        {
+            return new MemberAccess
+            {
+                TargetNode = access.Expression,
+                Name = access.Name.Identifier.ValueText,
+                IsInvoked = access.Parent is InvocationExpressionSyntax invocation && invocation.Expression == access,
+                SourceNode = access,
+                FilePath = filePath,
+                Location = access.ToCodeLocation(filePath)
+            };
         }
 
         /// <summary><c>user?.Name</c>: the name is bound here, the target sits on the enclosing conditional access.</summary>
@@ -78,7 +95,7 @@ namespace Solution.Parser.CSharp
             };
         }
 
-        private static ObjectCreation ToObjectCreation(this BaseObjectCreationExpressionSyntax creation, string filePath)
+        internal static ObjectCreation ToObjectCreation(this BaseObjectCreationExpressionSyntax creation, string filePath)
         {
             var type = creation is ObjectCreationExpressionSyntax explicitCreation
                            ? explicitCreation.Type.ToTypeReference(filePath)
@@ -97,7 +114,7 @@ namespace Solution.Parser.CSharp
                                                       .Select(a => new InitializedMember(a.Left.ToSourceCode(), a.Right.ToExpression(filePath)))
                                                       .ToImmutableList()
                                          : ImmutableList<InitializedMember>.Empty,
-                SourceCode = creation.ToSourceCode(),
+                SourceNode = creation,
                 FilePath = filePath,
                 Location = creation.ToCodeLocation(filePath)
             };
@@ -124,7 +141,7 @@ namespace Solution.Parser.CSharp
             return type.IsVar ? TypeReference.None : type;
         }
 
-        private static StringLiteral ToStringLiteral(this LiteralExpressionSyntax literal, string filePath)
+        internal static StringLiteral ToStringLiteral(this LiteralExpressionSyntax literal, string filePath)
         {
             return new StringLiteral
             {
@@ -132,14 +149,14 @@ namespace Solution.Parser.CSharp
                 IsVerbatim = literal.Token.IsVerbatimStringLiteral(),
                 IsRaw = literal.Token.Kind() is SyntaxKind.SingleLineRawStringLiteralToken or SyntaxKind.MultiLineRawStringLiteralToken
                             or SyntaxKind.Utf8SingleLineRawStringLiteralToken or SyntaxKind.Utf8MultiLineRawStringLiteralToken,
-                EnclosingStatement = literal.FirstAncestorOrSelf<StatementSyntax>()?.ToSourceCode(),
-                SourceCode = literal.ToSourceCode(),
+                EnclosingStatementNode = literal.FirstAncestorOrSelf<StatementSyntax>(),
+                SourceNode = literal,
                 FilePath = filePath,
                 Location = literal.ToCodeLocation(filePath)
             };
         }
 
-        private static StringLiteral ToStringLiteral(this InterpolatedStringExpressionSyntax interpolated, string filePath)
+        internal static StringLiteral ToStringLiteral(this InterpolatedStringExpressionSyntax interpolated, string filePath)
         {
             var expression = interpolated.ToExpression(filePath);
             var start = interpolated.StringStartToken.Kind();
@@ -151,8 +168,8 @@ namespace Solution.Parser.CSharp
                 IsVerbatim = start == SyntaxKind.InterpolatedVerbatimStringStartToken,
                 IsRaw = start is SyntaxKind.InterpolatedSingleLineRawStringStartToken or SyntaxKind.InterpolatedMultiLineRawStringStartToken,
                 Parts = expression.InterpolatedParts,
-                EnclosingStatement = interpolated.FirstAncestorOrSelf<StatementSyntax>()?.ToSourceCode(),
-                SourceCode = interpolated.ToSourceCode(),
+                EnclosingStatementNode = interpolated.FirstAncestorOrSelf<StatementSyntax>(),
+                SourceNode = interpolated,
                 FilePath = filePath,
                 Location = interpolated.ToCodeLocation(filePath)
             };

@@ -46,28 +46,34 @@ namespace Solution.Parser.CSharp
             {
                 var text = block.ToSourceCode();
 
+                var scan = BodyScan.Of(block);
+                var invocations = scan.Invocations.ToInvocations(filePath);
+
                 return new MemberBody(text,
                                       block.Statements.Select(s => s.ToSourceCode()).ToImmutableList(),
                                       ToLineStatements(text),
-                                      block.ToLocalFunctions(filePath),
-                                      block.ToInvocations(filePath),
-                                      block.ToLocalVariables(filePath),
+                                      scan.LocalFunctions.Select(l => l.ToLocalFunction(filePath)).ToImmutableList(),
+                                      invocations,
+                                      scan.Variables.Select(v => v.ToLocalVariableOrNull(filePath, invocations)).OfType<LocalVariable>().ToImmutableList(),
                                       IsExpressionBodied: false,
-                                      IsIterator: block.ContainsYield()).WithElementsOf(block, filePath);
+                                      IsIterator: scan.HasYield).WithElementsOf(block, scan, filePath);
             }
 
             if (expressionBody is not null)
             {
                 var text = expressionBody.Expression.ToSourceCode();
 
+                var scan = BodyScan.Of(expressionBody.Expression);
+                var invocations = scan.Invocations.ToInvocations(filePath);
+
                 return new MemberBody(text,
                                       ImmutableList.Create(text),
                                       ToLineStatements(text),
                                       ImmutableList<LocalFunction>.Empty,
-                                      expressionBody.Expression.ToInvocations(filePath),
-                                      expressionBody.Expression.ToLocalVariables(filePath),
+                                      invocations,
+                                      scan.Variables.Select(v => v.ToLocalVariableOrNull(filePath, invocations)).OfType<LocalVariable>().ToImmutableList(),
                                       IsExpressionBodied: true,
-                                      IsIterator: false).WithElementsOf(expressionBody.Expression, filePath);
+                                      IsIterator: false).WithElementsOf(expressionBody.Expression, scan, filePath);
             }
 
             return new MemberBody(string.Empty,
@@ -80,21 +86,20 @@ namespace Solution.Parser.CSharp
                                   IsIterator: false);
         }
 
-        private static MemberBody WithElementsOf(this MemberBody body, SyntaxNode node, string filePath)
+        private static MemberBody WithElementsOf(this MemberBody body, SyntaxNode node, BodyScan scan, string filePath)
         {
-            var builder = new StatementBuilder(filePath, body.Invocations);
-            var nodes = node.BodyNodes().Where(n => n != node).ToList();
+            var builder = new StatementBuilder(filePath, body.Invocations, body.LocalVariables);
 
             return body with
             {
-                ObjectCreations = node.ToObjectCreations(filePath),
-                StringLiterals = node.ToStringLiterals(filePath),
-                MemberAccesses = node.ToMemberAccesses(filePath),
+                ObjectCreations = scan.ObjectCreations.Select(c => c.ToObjectCreation(filePath)).ToImmutableList(),
+                StringLiterals = scan.Strings.Select(s => s.ToStringLiteral(filePath)).ToImmutableList(),
+                MemberAccesses = scan.MemberAccesses.Select(a => a.ToMemberAccess(filePath)).ToImmutableList(),
                 BodyStatements = node is BlockSyntax block ? builder.Build(block.Statements) : ImmutableList<Statement>.Empty,
-                AllStatements = builder.Build(nodes.OfType<StatementSyntax>()),
-                SwitchExpressions = nodes.OfType<SwitchExpressionSyntax>().Select(builder.BuildSwitchExpression).ToImmutableList(),
-                Lambdas = nodes.OfType<AnonymousFunctionExpressionSyntax>().Select(builder.BuildLambda).ToImmutableList(),
-                Awaits = node.BodyNodes().OfType<AwaitExpressionSyntax>().Select(a => a.ToExpression(filePath)).ToImmutableList()
+                AllStatements = builder.Build(scan.Statements),
+                SwitchExpressions = scan.SwitchExpressions.Select(builder.BuildSwitchExpression).ToImmutableList(),
+                Lambdas = scan.Lambdas.Select(builder.BuildLambda).ToImmutableList(),
+                Awaits = scan.Awaits.Select(a => a.ToExpression(filePath)).ToImmutableList()
             };
         }
 
@@ -107,16 +112,6 @@ namespace Solution.Parser.CSharp
                        .OfType<LocalFunctionStatementSyntax>()
                        .Select(l => l.ToLocalFunction(filePath))
                        .ToImmutableList();
-        }
-
-        /// <summary>
-        /// A yield inside a nested local function or lambda belongs to that one, not to the member, so
-        /// the search stops at those boundaries.
-        /// </summary>
-        private static bool ContainsYield(this SyntaxNode node)
-        {
-            return node.DescendantNodes(descendIntoChildren: child => child is not (LocalFunctionStatementSyntax or AnonymousFunctionExpressionSyntax))
-                       .Any(n => n.IsKind(SyntaxKind.YieldReturnStatement) || n.IsKind(SyntaxKind.YieldBreakStatement));
         }
 
         /// <summary>

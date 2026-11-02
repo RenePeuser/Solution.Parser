@@ -16,8 +16,22 @@ namespace Solution.Parser.CSharp
     [DebuggerDisplay("{SourceCode}")]
     public sealed record MemberAccess : CodeElement
     {
+        private string? _target;
+
+        private readonly SourceSlice _targetSlice;
+
         /// <summary>What the member is accessed on, as written: <c>DateTime</c>, <c>this._logger</c>, <c>GetUser()</c>.</summary>
-        public required string Target { get; init; }
+        public string Target
+        {
+            get => _target ??= _targetSlice.ToString();
+            init => _target = value;
+        }
+
+        /// <summary>Sets <see cref="Target"/> by its node, cut out on first use; in a chain a.b.c.d the targets overlap.</summary>
+        internal Microsoft.CodeAnalysis.SyntaxNode TargetNode
+        {
+            init => _targetSlice = SourceSlice.Of(value);
+        }
 
         /// <summary>The accessed member, without type arguments.</summary>
         public required string Name { get; init; }

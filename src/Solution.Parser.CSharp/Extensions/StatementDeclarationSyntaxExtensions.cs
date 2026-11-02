@@ -15,7 +15,9 @@ namespace Solution.Parser.CSharp
             var statements = root.Members.OfType<GlobalStatementSyntax>().Select(g => g.Statement).ToList();
             var invocations = statements.SelectMany(s => s.ToInvocations(filePath)).ToImmutableList();
 
-            return new StatementBuilder(filePath, invocations).Build(statements);
+            var variables = statements.SelectMany(s => s.ToLocalVariables(filePath)).ToImmutableList();
+
+            return new StatementBuilder(filePath, invocations, variables).Build(statements);
         }
     }
 }

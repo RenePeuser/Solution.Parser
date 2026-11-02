@@ -31,7 +31,8 @@ namespace Solution.Parser.CSharp
     {
         internal static CodeLocation ToCodeLocation(this SyntaxNode node, string filePath)
         {
-            var span = node.GetLocation().GetLineSpan().Span;
+            // Straight from the tree: node.GetLocation() allocates a Location only to ask the tree.
+            var span = node.SyntaxTree.GetLineSpan(node.Span).Span;
 
             return new CodeLocation(filePath,
                                     span.Start.Line + 1,
@@ -45,7 +46,7 @@ namespace Solution.Parser.CSharp
         /// <summary>For a declaration whose name is a token rather than a node, like the variable of a foreach.</summary>
         internal static CodeLocation ToCodeLocation(this SyntaxToken token, string filePath)
         {
-            var span = token.GetLocation().GetLineSpan().Span;
+            var span = token.SyntaxTree!.GetLineSpan(token.Span).Span;
 
             return new CodeLocation(filePath,
                                     span.Start.Line + 1,

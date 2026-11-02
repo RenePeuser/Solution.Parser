@@ -21,8 +21,22 @@ namespace Solution.Parser.CSharp
         /// <summary>True for <c>x =&gt; expression</c> rather than a block.</summary>
         public bool IsExpressionBodied { get; init; }
 
+        private string? _body;
+
+        private readonly SourceSlice _bodySlice;
+
         /// <summary>The block with its braces, or the expression.</summary>
-        public required string Body { get; init; }
+        public string Body
+        {
+            get => _body ??= _bodySlice.ToString();
+            init => _body = value;
+        }
+
+        /// <summary>Sets <see cref="Body"/> by its node, cut out on first use.</summary>
+        internal Microsoft.CodeAnalysis.SyntaxNode BodyNode
+        {
+            init => _bodySlice = SourceSlice.Of(value);
+        }
 
         /// <summary>The statements of a block body; empty for an expression bodied lambda.</summary>
         public ImmutableList<Statement> Statements { get; init; } = ImmutableList<Statement>.Empty;
