@@ -17,15 +17,17 @@ namespace Solution.Parser.CSharp
             var arguments = attribute.ArgumentList?.Arguments ?? default;
             var name = attribute.Name.ToSourceCode();
 
-            var positional = arguments.Where(a => a.NameEquals is null && a.NameColon is null)
-                                      .Select(a => a.Expression.ToSourceCode())
-                                      .ToImmutableList();
+            var positionalSyntax = arguments.Where(a => a.NameEquals is null && a.NameColon is null).ToList();
+            var positional = positionalSyntax.Select(a => a.Expression.ToSourceCode()).ToImmutableList();
 
             var named = arguments.Where(a => a.NameEquals is not null || a.NameColon is not null)
                                  .Select(a => new AttributeArgument(a.NameEquals?.Name.Identifier.ValueText ??
                                                                     a.NameColon?.Name.Identifier.ValueText ??
                                                                     string.Empty,
-                                                                    a.Expression.ToSourceCode()))
+                                                                    a.Expression.ToSourceCode())
+                                 {
+                                     ValueExpression = a.Expression.ToExpression(filePath)
+                                 })
                                  .ToImmutableList();
 
             return new Attribute
@@ -34,6 +36,7 @@ namespace Solution.Parser.CSharp
                 FullyQualifiedName = attribute.BuildFullyQualifiedName(name),
                 Arguments = arguments.Select(a => a.ToSourceCode()).ToImmutableList(),
                 PositionalArguments = positional,
+                PositionalExpressions = positionalSyntax.Select(a => a.Expression.ToExpression(filePath)).ToImmutableList(),
                 NamedArguments = named,
                 Target = list.Target?.Identifier.ValueText,
                 SourceCode = attribute.ToSourceCode(),

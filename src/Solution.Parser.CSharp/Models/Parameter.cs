@@ -8,6 +8,9 @@ namespace Solution.Parser.CSharp
     {
         public required string Type { get; init; }
 
+        /// <summary>The type taken apart, see <see cref="CSharp.TypeReference"/>; <see cref="Type"/> is the same as text.</summary>
+        public TypeReference TypeReference { get; init; } = TypeReference.None;
+
         public ImmutableList<Attribute> Attributes { get; init; } = ImmutableList<Attribute>.Empty;
 
         /// <summary><c>ref</c>, <c>out</c>, <c>in</c>, <c>params</c>, <c>this</c> and <c>scoped</c>.</summary>
@@ -16,6 +19,9 @@ namespace Solution.Parser.CSharp
         public bool IsOptional { get; init; }
 
         public string? DefaultValue { get; init; }
+
+        /// <summary>The default value classified, see <see cref="Expression"/>; <see cref="DefaultValue"/> is the same as text.</summary>
+        public Expression? DefaultValueExpression { get; init; }
 
         public bool IsParams { get; init; }
 

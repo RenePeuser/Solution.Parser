@@ -21,6 +21,7 @@ namespace Solution.Parser.CSharp
                 Name = name,
                 FullyQualifiedName = eventDeclarationSyntax.BuildFullyQualifiedName(name),
                 Type = eventDeclarationSyntax.Type.ToSourceCode(),
+                TypeReference = eventDeclarationSyntax.Type.ToTypeReference(filePath),
                 Modifiers = eventDeclarationSyntax.Modifiers.ToModifiers(),
                 Accessibility = eventDeclarationSyntax.Modifiers.ToAccessibility(eventDeclarationSyntax),
                 Attributes = eventDeclarationSyntax.AttributeLists.ToAttributes(filePath),

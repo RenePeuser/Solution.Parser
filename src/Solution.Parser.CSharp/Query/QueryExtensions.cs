@@ -92,6 +92,18 @@ namespace Solution.Parser.CSharp
             return syntaxTrees.SelectMany(AllInvocations).ToImmutableList();
         }
 
+        /// <summary>Every local variable in the file, in every member and local function of every type.</summary>
+        public static ImmutableList<LocalVariable> AllLocalVariables(this CSharpSyntaxTree syntaxTree)
+        {
+            return syntaxTree.AllTypes().SelectMany(AllMembersWithBody).SelectMany(m => m.LocalVariables).ToImmutableList();
+        }
+
+        /// <summary>Every local variable in the files, in every member and local function of every type.</summary>
+        public static ImmutableList<LocalVariable> AllLocalVariables(this IEnumerable<CSharpSyntaxTree> syntaxTrees)
+        {
+            return syntaxTrees.SelectMany(AllLocalVariables).ToImmutableList();
+        }
+
         /// <summary>
         /// The declarations with exactly this name, for example <c>tree.AllMethods().Named("Dispose")</c> or
         /// <c>tree.AllInvocations().Named("AssertPostAsync")</c>.

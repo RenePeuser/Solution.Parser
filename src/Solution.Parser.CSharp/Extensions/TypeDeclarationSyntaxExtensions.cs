@@ -53,7 +53,7 @@ namespace Solution.Parser.CSharp
                 Attributes = syntax.AttributeLists.ToAttributes(filePath),
                 Documentation = syntax.ToDocumentation(),
                 TypeParameters = syntax.TypeParameterList.ToTypeParameters(syntax.ConstraintClauses, filePath),
-                BaseTypes = syntax.BaseList?.ToBaseTypes() ?? ImmutableList<BaseType>.Empty,
+                BaseTypes = syntax.BaseList?.ToBaseTypes(filePath) ?? ImmutableList<BaseType>.Empty,
                 Constructors = constructors,
                 Properties = syntax.DirectMembers<PropertyDeclarationSyntax>().ToProperties(filePath),
                 Methods = syntax.DirectMembers<MethodDeclarationSyntax>().ToMethods(filePath),

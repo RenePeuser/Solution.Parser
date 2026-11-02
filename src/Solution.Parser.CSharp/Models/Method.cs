@@ -9,6 +9,9 @@ namespace Solution.Parser.CSharp
     {
         public required string ReturnParameter { get; init; }
 
+        /// <summary>The return type taken apart, see <see cref="TypeReference"/>; <see cref="ReturnParameter"/> is the same as text.</summary>
+        public TypeReference ReturnType { get; init; } = TypeReference.None;
+
         public ImmutableList<TypeParameter> TypeParameters { get; init; } = ImmutableList<TypeParameter>.Empty;
 
         /// <summary>The interface in <c>void IDisposable.Dispose()</c>, otherwise null.</summary>
@@ -21,7 +24,7 @@ namespace Solution.Parser.CSharp
 
         public bool IsExplicitInterfaceImplementation => ExplicitInterfaceSpecifier is not null;
 
-        /// <summary>The source of the whole method. Kept as the previous name for <see cref="DeclarationBase.SourceCode"/>.</summary>
+        /// <summary>The source of the whole method. Kept as the previous name for <see cref="CodeElement.SourceCode"/>.</summary>
         public string MethodValue => SourceCode;
 
         /// <summary>Kept as the previous name for <see cref="MemberWithBody.Body"/>.</summary>

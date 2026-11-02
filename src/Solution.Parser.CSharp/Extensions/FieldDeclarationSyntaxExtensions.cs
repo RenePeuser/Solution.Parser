@@ -16,6 +16,7 @@ namespace Solution.Parser.CSharp
 
             var declaration = fieldDeclarationSyntax.Declaration;
             var type = declaration.Type.ToSourceCode();
+            var typeReference = declaration.Type.ToTypeReference(filePath);
             var modifiers = fieldDeclarationSyntax.Modifiers.ToModifiers();
             var accessibility = fieldDeclarationSyntax.Modifiers.ToAccessibility(fieldDeclarationSyntax);
             var attributes = fieldDeclarationSyntax.AttributeLists.ToAttributes(filePath);
@@ -27,11 +28,13 @@ namespace Solution.Parser.CSharp
                                   Name = variable.Identifier.Text,
                                   FullyQualifiedName = fieldDeclarationSyntax.BuildFullyQualifiedName(variable.Identifier.Text),
                                   Type = type,
+                                  TypeReference = typeReference,
                                   Modifiers = modifiers,
                                   Accessibility = accessibility,
                                   Attributes = attributes,
                                   Documentation = documentation,
                                   Initializer = variable.Initializer?.ToInitializer(),
+                                  InitializerExpression = variable.Initializer?.Value.ToExpression(filePath),
                                   IsNullable = declaration.Type is NullableTypeSyntax,
                                   IsPartOfMultiVariableDeclaration = isMultiVariable,
                                   SourceCode = fieldDeclarationSyntax.ToSourceCode(),

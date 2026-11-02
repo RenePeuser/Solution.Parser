@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -19,18 +20,29 @@ namespace Solution.Parser.CSharp
                 return ImmutableList<Invocation>.Empty;
             }
 
+            // The receiver of a call is built before the call and then shared, so call.Receiver is the
+            // very instance the list holds, and a chain can be followed by reference.
+            var built = new Dictionary<InvocationExpressionSyntax, Invocation>();
+
             return node.DescendantNodesAndSelf(descendIntoChildren: child => child == node || child is not LocalFunctionStatementSyntax)
                        .OfType<InvocationExpressionSyntax>()
-                       .Select(i => i.ToInvocation(filePath))
+                       .Select(i => i.ToInvocation(filePath, built))
                        .ToImmutableList();
         }
 
-        private static Invocation ToInvocation(this InvocationExpressionSyntax invocation, string filePath)
+        private static Invocation ToInvocation(this InvocationExpressionSyntax invocation, string filePath, Dictionary<InvocationExpressionSyntax, Invocation> built)
         {
-            var (name, target, typeArguments, isConditional) = invocation.Expression.Split();
-
-            return new Invocation
+            if (built.TryGetValue(invocation, out var existing))
             {
+                return existing;
+            }
+
+            var (name, target, typeArguments, isConditional) = invocation.Expression.Split();
+            var receiver = invocation.ReceiverCall()?.ToInvocation(filePath, built);
+
+            var result = new Invocation
+            {
+                Receiver = receiver,
                 Name = name,
                 FullyQualifiedName = target is null ? name : $"{target}.{name}",
                 Target = target,
@@ -41,6 +53,36 @@ namespace Solution.Parser.CSharp
                 FilePath = filePath,
                 Location = invocation.ToCodeLocation(filePath)
             };
+
+            built[invocation] = result;
+
+            return result;
+        }
+
+        /// <summary>
+        /// The call whose result this call is made on: <c>B()</c> in <c>a.B().C()</c> and in
+        /// <c>a.B()?.C()</c>. Parentheses and a <c>!</c> in between do not matter.
+        /// </summary>
+        private static InvocationExpressionSyntax? ReceiverCall(this InvocationExpressionSyntax invocation)
+        {
+            var receiver = invocation.Expression switch
+            {
+                MemberAccessExpressionSyntax memberAccess => memberAccess.Expression,
+                MemberBindingExpressionSyntax memberBinding => memberBinding.EnclosingConditionalAccess()?.Expression,
+                _ => null
+            };
+
+            while (receiver is ParenthesizedExpressionSyntax or PostfixUnaryExpressionSyntax { RawKind: (int)SyntaxKind.SuppressNullableWarningExpression })
+            {
+                receiver = receiver switch
+                {
+                    ParenthesizedExpressionSyntax parenthesized => parenthesized.Expression,
+                    PostfixUnaryExpressionSyntax suppressed => suppressed.Operand,
+                    _ => receiver
+                };
+            }
+
+            return receiver as InvocationExpressionSyntax;
         }
 
         private static (string Name, string? Target, ImmutableList<string> TypeArguments, bool IsConditional) Split(this ExpressionSyntax expression)
@@ -54,7 +96,7 @@ namespace Solution.Parser.CSharp
 
                 // a?.Go(): the call is the WhenNotNull part, the receiver sits on the enclosing conditional access.
                 MemberBindingExpressionSyntax memberBinding => (memberBinding.Name.Identifier.ValueText,
-                                                                memberBinding.FirstAncestorOrSelf<ConditionalAccessExpressionSyntax>()?.Expression.ToSourceCode(),
+                                                                memberBinding.ConditionalTarget(),
                                                                 memberBinding.Name.ToTypeArguments(),
                                                                 true),
 
@@ -72,13 +114,14 @@ namespace Solution.Parser.CSharp
                        : ImmutableList<string>.Empty;
         }
 
-        private static InvocationArgument ToInvocationArgument(this ArgumentSyntax argument, int ordinal, string filePath)
+        internal static InvocationArgument ToInvocationArgument(this ArgumentSyntax argument, int ordinal, string filePath)
         {
             return new InvocationArgument
             {
                 Ordinal = ordinal,
                 Name = argument.NameColon?.Name.Identifier.ValueText,
                 Expression = argument.Expression.ToSourceCode(),
+                ValueExpression = argument.Expression.ToExpression(filePath),
                 RefKind = argument.RefKindKeyword.Kind() switch
                 {
                     SyntaxKind.RefKeyword => ArgumentRefKind.Ref,

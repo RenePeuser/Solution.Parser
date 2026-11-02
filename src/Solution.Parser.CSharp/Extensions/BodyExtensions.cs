@@ -17,8 +17,26 @@ namespace Solution.Parser.CSharp
                                                ImmutableList<string> LineStatements,
                                                ImmutableList<LocalFunction> LocalFunctions,
                                                ImmutableList<Invocation> Invocations,
+                                               ImmutableList<LocalVariable> LocalVariables,
                                                bool IsExpressionBodied,
-                                               bool IsIterator);
+                                               bool IsIterator)
+    {
+        public ImmutableList<ObjectCreation> ObjectCreations { get; init; } = ImmutableList<ObjectCreation>.Empty;
+
+        public ImmutableList<StringLiteral> StringLiterals { get; init; } = ImmutableList<StringLiteral>.Empty;
+
+        public ImmutableList<MemberAccess> MemberAccesses { get; init; } = ImmutableList<MemberAccess>.Empty;
+
+        public ImmutableList<Statement> BodyStatements { get; init; } = ImmutableList<Statement>.Empty;
+
+        public ImmutableList<Statement> AllStatements { get; init; } = ImmutableList<Statement>.Empty;
+
+        public ImmutableList<SwitchExpression> SwitchExpressions { get; init; } = ImmutableList<SwitchExpression>.Empty;
+
+        public ImmutableList<Lambda> Lambdas { get; init; } = ImmutableList<Lambda>.Empty;
+
+        public ImmutableList<Expression> Awaits { get; init; } = ImmutableList<Expression>.Empty;
+    }
 
     internal static class BodyExtensions
     {
@@ -33,8 +51,9 @@ namespace Solution.Parser.CSharp
                                       ToLineStatements(text),
                                       block.ToLocalFunctions(filePath),
                                       block.ToInvocations(filePath),
+                                      block.ToLocalVariables(filePath),
                                       IsExpressionBodied: false,
-                                      IsIterator: block.ContainsYield());
+                                      IsIterator: block.ContainsYield()).WithElementsOf(block, filePath);
             }
 
             if (expressionBody is not null)
@@ -46,8 +65,9 @@ namespace Solution.Parser.CSharp
                                       ToLineStatements(text),
                                       ImmutableList<LocalFunction>.Empty,
                                       expressionBody.Expression.ToInvocations(filePath),
+                                      expressionBody.Expression.ToLocalVariables(filePath),
                                       IsExpressionBodied: true,
-                                      IsIterator: false);
+                                      IsIterator: false).WithElementsOf(expressionBody.Expression, filePath);
             }
 
             return new MemberBody(string.Empty,
@@ -55,8 +75,27 @@ namespace Solution.Parser.CSharp
                                   ImmutableList<string>.Empty,
                                   ImmutableList<LocalFunction>.Empty,
                                   ImmutableList<Invocation>.Empty,
+                                  ImmutableList<LocalVariable>.Empty,
                                   IsExpressionBodied: false,
                                   IsIterator: false);
+        }
+
+        private static MemberBody WithElementsOf(this MemberBody body, SyntaxNode node, string filePath)
+        {
+            var builder = new StatementBuilder(filePath, body.Invocations);
+            var nodes = node.BodyNodes().Where(n => n != node).ToList();
+
+            return body with
+            {
+                ObjectCreations = node.ToObjectCreations(filePath),
+                StringLiterals = node.ToStringLiterals(filePath),
+                MemberAccesses = node.ToMemberAccesses(filePath),
+                BodyStatements = node is BlockSyntax block ? builder.Build(block.Statements) : ImmutableList<Statement>.Empty,
+                AllStatements = builder.Build(nodes.OfType<StatementSyntax>()),
+                SwitchExpressions = nodes.OfType<SwitchExpressionSyntax>().Select(builder.BuildSwitchExpression).ToImmutableList(),
+                Lambdas = nodes.OfType<AnonymousFunctionExpressionSyntax>().Select(builder.BuildLambda).ToImmutableList(),
+                Awaits = node.BodyNodes().OfType<AwaitExpressionSyntax>().Select(a => a.ToExpression(filePath)).ToImmutableList()
+            };
         }
 
         /// <summary>

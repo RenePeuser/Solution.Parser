@@ -19,6 +19,7 @@ namespace Solution.Parser.CSharp
                 FullyQualifiedName = delegateSyntax.BuildFullyQualifiedName(name),
                 Namespace = delegateSyntax.NamespaceOf(),
                 ReturnParameter = delegateSyntax.ReturnType.ToSourceCode(),
+                ReturnType = delegateSyntax.ReturnType.ToTypeReference(filePath),
                 Parameters = delegateSyntax.ParameterList.ToParameters(filePath),
                 TypeParameters = delegateSyntax.TypeParameterList.ToTypeParameters(delegateSyntax.ConstraintClauses, filePath),
                 Modifiers = delegateSyntax.Modifiers.ToModifiers(),

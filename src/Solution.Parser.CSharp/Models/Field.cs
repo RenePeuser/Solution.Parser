@@ -7,7 +7,13 @@ namespace Solution.Parser.CSharp
     {
         public required string Type { get; init; }
 
+        /// <summary>The type taken apart, see <see cref="CSharp.TypeReference"/>; <see cref="Type"/> is the same as text.</summary>
+        public TypeReference TypeReference { get; init; } = TypeReference.None;
+
         public string? Initializer { get; init; }
+
+        /// <summary>The initializer classified, see <see cref="Expression"/>; <see cref="Initializer"/> is the same as text.</summary>
+        public Expression? InitializerExpression { get; init; }
 
         public bool IsReadOnly => Modifiers.Contains(Modifier.ReadOnly);
 

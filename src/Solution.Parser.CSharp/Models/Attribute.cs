@@ -15,6 +15,9 @@ namespace Solution.Parser.CSharp
         /// <summary>The arguments given by position, without a <c>Name =</c> or <c>Name:</c> prefix.</summary>
         public ImmutableList<string> PositionalArguments { get; init; } = ImmutableList<string>.Empty;
 
+        /// <summary>The positional arguments classified, see <see cref="Expression"/>; <see cref="PositionalArguments"/> is the same as text.</summary>
+        public ImmutableList<Expression> PositionalExpressions { get; init; } = ImmutableList<Expression>.Empty;
+
         /// <summary>The <c>Name = value</c> arguments, keyed by name.</summary>
         public ImmutableList<AttributeArgument> NamedArguments { get; init; } = ImmutableList<AttributeArgument>.Empty;
 
@@ -47,7 +50,14 @@ namespace Solution.Parser.CSharp
     }
 
     [DebuggerDisplay("{Name} = {Value}")]
-    public record AttributeArgument(string Name, string Value);
+    public record AttributeArgument(string Name, string Value)
+    {
+        /// <summary>The value classified, see <see cref="Expression"/>; <see cref="Value"/> is the same as text.</summary>
+        public Expression? ValueExpression { get; init; }
+
+        /// <summary>The text of a string literal or <c>nameof</c>, without quotes and escapes; null for anything else.</summary>
+        public string? StringValue => ValueExpression?.StringValue;
+    }
 
     public static class AttributeListExtensions
     {

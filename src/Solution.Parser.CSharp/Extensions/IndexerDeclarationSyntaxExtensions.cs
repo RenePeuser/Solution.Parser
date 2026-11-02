@@ -15,6 +15,7 @@ namespace Solution.Parser.CSharp
                 Name = Name,
                 FullyQualifiedName = indexerDeclarationSyntax.BuildFullyQualifiedName(Name),
                 Type = indexerDeclarationSyntax.Type.ToSourceCode(),
+                TypeReference = indexerDeclarationSyntax.Type.ToTypeReference(filePath),
                 Parameters = indexerDeclarationSyntax.ParameterList.ToParameters(filePath),
                 Modifiers = indexerDeclarationSyntax.Modifiers.ToModifiers(),
                 Accessibility = indexerDeclarationSyntax.Modifiers.ToAccessibility(indexerDeclarationSyntax),

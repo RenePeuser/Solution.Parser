@@ -7,11 +7,11 @@ namespace Solution.Parser.CSharp
 {
     internal static class BaseListSyntaxExtensions
     {
-        internal static ImmutableList<BaseType> ToBaseTypes(this BaseListSyntax baseListSyntax)
+        internal static ImmutableList<BaseType> ToBaseTypes(this BaseListSyntax baseListSyntax, string filePath)
         {
             Throw.IfNull(baseListSyntax);
 
-            return baseListSyntax.Types.Select(type => new BaseType(type.Type.ToSourceCode())).ToImmutableList();
+            return baseListSyntax.Types.Select(type => new BaseType(type.Type.ToSourceCode()) { TypeReference = type.Type.ToTypeReference(filePath) }).ToImmutableList();
         }
     }
 }

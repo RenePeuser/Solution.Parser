@@ -12,10 +12,10 @@ namespace Solution.Parser.CSharp
         /// </summary>
         internal static ImmutableList<Statement> ToTopLevelStatements(this CompilationUnitSyntax root, string filePath)
         {
-            return root.Members
-                       .OfType<GlobalStatementSyntax>()
-                       .Select(g => new Statement(g.Statement.ToSourceCode(), filePath, g.ToCodeLocation(filePath)))
-                       .ToImmutableList();
+            var statements = root.Members.OfType<GlobalStatementSyntax>().Select(g => g.Statement).ToList();
+            var invocations = statements.SelectMany(s => s.ToInvocations(filePath)).ToImmutableList();
+
+            return new StatementBuilder(filePath, invocations).Build(statements);
         }
     }
 }

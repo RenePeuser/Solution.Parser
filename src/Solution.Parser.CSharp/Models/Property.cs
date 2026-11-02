@@ -7,10 +7,16 @@ namespace Solution.Parser.CSharp
     {
         public required string Type { get; init; }
 
+        /// <summary>The type taken apart, see <see cref="CSharp.TypeReference"/>; <see cref="Type"/> is the same as text.</summary>
+        public TypeReference TypeReference { get; init; } = TypeReference.None;
+
         public PropertyAccessors Accessors { get; init; } = PropertyAccessors.None;
 
         /// <summary>The value after <c>=</c>, for example in <c>public int X { get; } = 3;</c>.</summary>
         public string? Initializer { get; init; }
+
+        /// <summary>The initializer classified, see <see cref="Expression"/>; <see cref="Initializer"/> is the same as text.</summary>
+        public Expression? InitializerExpression { get; init; }
 
         /// <summary>True when every accessor is a semicolon, so the compiler supplies the backing field.</summary>
         public bool IsAutoProperty { get; init; }

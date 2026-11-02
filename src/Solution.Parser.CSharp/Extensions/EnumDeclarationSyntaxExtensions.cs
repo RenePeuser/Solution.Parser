@@ -12,7 +12,7 @@ namespace Solution.Parser.CSharp
             Throw.IfNull(enumDeclarationSyntax);
 
             var name = enumDeclarationSyntax.Identifier.ValueText;
-            var baseTypes = enumDeclarationSyntax.BaseList?.ToBaseTypes() ?? ImmutableList<BaseType>.Empty;
+            var baseTypes = enumDeclarationSyntax.BaseList?.ToBaseTypes(filePath) ?? ImmutableList<BaseType>.Empty;
 
             return new Enum
             {

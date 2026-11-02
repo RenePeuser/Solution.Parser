@@ -188,6 +188,87 @@ call.NamedArgument("writeResponse")        // only what is written as writeRespo
 call.ArgumentFor("writeResponse")          // by position, by name or by default; needs symbols, see below
 ```
 
+…and the variables declared in it, however they are declared: `var`, `using var`, `for`, `foreach`,
+`catch`, `out var`, patterns and deconstruction:
+
+```csharp
+method.LocalVariables                      // in source order, lambdas included
+variable.Kind                              // Declaration, UsingStatement, ForEach, Catch, Pattern, OutArgument, ...
+variable.IsUsing / IsAwaitUsing / IsConst / IsVar
+variable.Initializer                       // "factory.GetQueryProvider()"
+variable.Invocations                       // the calls inside the initializer
+tree.AllLocalVariables()
+```
+
+…what it creates, writes and reads:
+
+```csharp
+method.ObjectCreations                     // new HttpClient(), new() with the type of its declaration
+method.StringLiterals                      // value without quotes, IsInterpolated, IsRaw, EnclosingStatement
+method.MemberAccesses                      // DateTime.Now: Target "DateTime", Name "Now", IsInvoked
+method.Lambdas                             // parameters, IsAsync, IsStatic, statements, calls
+method.Awaits                              // await x, with x as Operand
+```
+
+…and its statements, typed, so a rule can pattern match instead of searching text:
+
+```csharp
+method.BodyStatements                      // nested: an if holds its branches, a try its blocks
+method.AllStatements                       // flat, at any depth, lambdas included
+method.TryStatements                       // Catches with ExceptionType, Filter, IsEmpty, CatchesAll, IsRethrowing; Finally
+method.SwitchStatements                    // Subject, Sections with Labels (Value, WhenClause), HasDefault
+method.SwitchExpressions                   // Arms with Pattern, WhenClause, Result; HasDiscardArm
+method.IfStatements / Loops / Returns / Throws
+statement.Invocations                      // the calls inside one statement
+tree.Statements                            // top level statements, typed the same way
+
+from catchClause in method.TryStatements.SelectMany(t => t.Catches)
+where catchClause.CatchesAll && catchClause.IsEmpty
+select $"{catchClause.Location}: an empty catch swallows every exception";
+```
+
+Expressions are classified wherever they are passed or assigned: call and attribute arguments,
+initializers and default values. `Kind` tells a string literal from a `nameof`, a `typeof`, a lambda or
+a member access, and `StringValue` is the text without quotes:
+
+```csharp
+call.Arguments[0].Kind                     // ExpressionKind.StringLiteral
+call.Arguments[0].StringValue              // "api/users"
+call.Arguments[1].ValueExpression.TypeReference   // Foo in typeof(Foo)
+argument.ValueExpression.TextWithHoles()   // "v{}/users" for $"v{version}/users"
+attribute.PositionalExpressions / NamedArguments[i].ValueExpression
+field.InitializerExpression.HasNullForgiving      // null!
+```
+
+Fluent calls are linked: `call.Receiver` is the call it is made on, and `method.InvocationChains`
+groups them:
+
+```csharp
+from chain in method.InvocationChains
+where chain.Contains("MapGet") && !chain.After("MapGet").Any(c => c.Name == "RequireAuthorization")
+select $"{chain.Location}: {chain.First.Arguments[0].StringValue} is not protected";
+```
+
+## Types
+
+Every type written in a declaration is also taken apart, so a rule no longer cuts `Task<List<Foo>>` at
+`<` and `>` by hand. `Type` and `ReturnParameter` stay the text; `TypeReference` and `ReturnType` are
+the structure:
+
+```csharp
+field.TypeReference.Is("ILogger")                    // matches ILogger<MyService> as well
+method.ReturnType.UnwrapTask().IsCollection          // Task<List<Foo>> -> true
+method.ReturnType.UnwrapTask().ElementType?.Name     // "Foo"
+property.TypeReference.TypeArguments                 // each one a TypeReference again
+parameter.TypeReference.Mentions("DateTime")         // anywhere inside, List<DateTime?> included
+variable.TypeReference.IsVar
+TypeReference.Parse("Dictionary<string, int>")       // the same for a type written as text
+```
+
+`Is` compares the way a rule means it: without type arguments it matches any, a namespace only has to
+agree when both sides write one, `String` equals `string`, and the `?` only counts when you ask for it.
+It goes by the written name, so a class of your own named `List` counts as a collection as well.
+
 ## Symbols
 
 The syntax alone cannot tell that `true` in `Client.AssertPostAsync("..", "..", true)` is the

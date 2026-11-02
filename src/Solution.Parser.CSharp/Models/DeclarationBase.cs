@@ -12,23 +12,12 @@ namespace Solution.Parser.CSharp
     /// noticing.
     /// </remarks>
     [DebuggerDisplay("{Name}")]
-    public abstract record DeclarationBase
+    public abstract record DeclarationBase : CodeElement
     {
         /// <summary>The declared name, without any qualifier.</summary>
         public required string Name { get; init; }
 
         /// <summary>Namespace, enclosing types and name, separated by dots.</summary>
         public required string FullyQualifiedName { get; init; }
-
-        /// <summary>The source text of this declaration only, not of the whole file.</summary>
-        public required string SourceCode { get; init; }
-
-        public required string FilePath { get; init; }
-
-        /// <summary>Where the declaration sits in the file. Renders as a clickable <c>path(line,col)</c>.</summary>
-        public CodeLocation Location { get; init; } = CodeLocation.None;
-
-        /// <summary>The number of source lines the declaration spans.</summary>
-        public int LineCount => Location.LineCount;
     }
 }

@@ -16,6 +16,7 @@ namespace Solution.Parser.CSharp
 
             var declaration = eventFieldSyntax.Declaration;
             var type = declaration.Type.ToSourceCode();
+            var typeReference = declaration.Type.ToTypeReference(filePath);
             var modifiers = eventFieldSyntax.Modifiers.ToModifiers();
             var accessibility = eventFieldSyntax.Modifiers.ToAccessibility(eventFieldSyntax);
             var attributes = eventFieldSyntax.AttributeLists.ToAttributes(filePath);
@@ -27,6 +28,7 @@ namespace Solution.Parser.CSharp
                                   Name = variable.Identifier.ValueText,
                                   FullyQualifiedName = eventFieldSyntax.BuildFullyQualifiedName(variable.Identifier.ValueText),
                                   Type = type,
+                                  TypeReference = typeReference,
                                   Modifiers = modifiers,
                                   Accessibility = accessibility,
                                   Attributes = attributes,

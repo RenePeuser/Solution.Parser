@@ -41,5 +41,19 @@ namespace Solution.Parser.CSharp
                                     node.Span.Start,
                                     node.Span.Length);
         }
+
+        /// <summary>For a declaration whose name is a token rather than a node, like the variable of a foreach.</summary>
+        internal static CodeLocation ToCodeLocation(this SyntaxToken token, string filePath)
+        {
+            var span = token.GetLocation().GetLineSpan().Span;
+
+            return new CodeLocation(filePath,
+                                    span.Start.Line + 1,
+                                    span.Start.Character + 1,
+                                    span.End.Line + 1,
+                                    span.End.Character + 1,
+                                    token.Span.Start,
+                                    token.Span.Length);
+        }
     }
 }

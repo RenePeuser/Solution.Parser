@@ -90,6 +90,7 @@ namespace Solution.Parser.CSharp
                 Name = parameter.Name,
                 FullyQualifiedName = parameter.Name,
                 Type = parameter.Type.ToDisplayString(TypeFormat),
+                TypeReference = TypeReference.Parse(parameter.Type.ToDisplayString(TypeFormat)),
                 Modifiers = modifiers.ToImmutable(),
                 IsOptional = parameter.IsOptional,
                 DefaultValue = defaultValue,
@@ -134,6 +135,7 @@ namespace Solution.Parser.CSharp
                 Name = definition.Name,
                 FullyQualifiedName = containingType is null ? definition.Name : $"{containingType}.{definition.Name}",
                 ReturnParameter = definition.ReturnType.ToDisplayString(TypeFormat),
+                ReturnType = TypeReference.Parse(definition.ReturnType.ToDisplayString(TypeFormat)),
                 Parameters = definition.Parameters.Select(p => ToParameter(p, filePath)).ToImmutableList(),
                 TypeParameters = definition.TypeParameters
                                            .Select(t => new TypeParameter(t.Name,

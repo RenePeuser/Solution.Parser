@@ -26,6 +26,28 @@ namespace Solution.Parser.CSharp
 
         /// <summary>True for a call through <c>?.</c>.</summary>
         public bool IsConditional { get; init; }
+
+        /// <summary>
+        /// The call whose result this call is made on, <c>MapGet(...)</c> for <c>WithName</c> in
+        /// <c>app.MapGet(...).WithName("x")</c>; null when the call is not made on another call.
+        /// It is the same instance the member's <c>Invocations</c> holds.
+        /// </summary>
+        public Invocation? Receiver { get; init; }
+
+        /// <summary>The chain up to and including this call, first call first: <c>MapGet</c>, <c>WithName</c>.</summary>
+        public ImmutableList<Invocation> ChainUpToHere()
+        {
+            var calls = new System.Collections.Generic.List<Invocation>();
+
+            for (var call = this; call is not null; call = call.Receiver)
+            {
+                calls.Add(call);
+            }
+
+            calls.Reverse();
+
+            return calls.ToImmutableList();
+        }
     }
 
     /// <summary>One argument of an <see cref="Invocation"/>.</summary>
@@ -40,6 +62,21 @@ namespace Solution.Parser.CSharp
 
         /// <summary>The expression as written, without name and without <c>ref</c>, <c>out</c> or <c>in</c>.</summary>
         public required string Expression { get; init; }
+
+        /// <summary>
+        /// The argument classified, see <see cref="CSharp.Expression"/>: a string literal with its value,
+        /// a lambda, a <c>nameof</c>, a <c>typeof</c>, ... <see cref="Expression"/> is the same as text.
+        /// </summary>
+        public Expression? ValueExpression { get; init; }
+
+        /// <summary>What kind of expression is passed; <see cref="ExpressionKind.Other"/> when unknown.</summary>
+        public ExpressionKind Kind => ValueExpression?.Kind ?? ExpressionKind.Other;
+
+        /// <summary>The value of a literal or <c>nameof</c>, see <see cref="CSharp.Expression.LiteralValue"/>.</summary>
+        public object? LiteralValue => ValueExpression?.LiteralValue;
+
+        /// <summary>The text of a string literal or <c>nameof</c>, without quotes and escapes; null for anything else.</summary>
+        public string? StringValue => ValueExpression?.StringValue;
 
         public ArgumentRefKind RefKind { get; init; }
 
