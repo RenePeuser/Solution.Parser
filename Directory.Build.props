@@ -40,6 +40,16 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
+    <!--
+      GitVersion.MsBuild would otherwise have every project append the version variables to the
+      GitHub Actions GITHUB_ENV file. Projects build in parallel, so two of them open that file at
+      once and the build fails with an IOException. The workflow already gets the version from the
+      gitversion/execute step, so the build-server output is not needed.
+    -->
+    <PropertyGroup>
+        <WriteVersionInfoToBuildLog>false</WriteVersionInfoToBuildLog>
+    </PropertyGroup>
+
     <ItemGroup>
         <PackageReference Include="GitVersion.MsBuild" Version="5.12.0">
             <PrivateAssets>all</PrivateAssets>
