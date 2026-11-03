@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Solution.Parser.CSharp
 {
@@ -6,5 +6,8 @@ namespace Solution.Parser.CSharp
     public record Struct : TypeDeclaration
     {
         public override TypeKind Kind => TypeKind.Struct;
+
+        /// <summary>A <c>ref struct</c>, which lives on the stack only.</summary>
+        public bool IsRefStruct => Modifiers.Contains(Modifier.Ref);
     }
 }

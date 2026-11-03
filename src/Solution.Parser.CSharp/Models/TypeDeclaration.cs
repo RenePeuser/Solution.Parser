@@ -1,4 +1,4 @@
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 
@@ -68,6 +68,12 @@ namespace Solution.Parser.CSharp
         public Constructor? PrimaryConstructor => Constructors.FirstOrDefault(c => c.IsPrimary);
 
         public bool IsGeneric => !TypeParameters.IsEmpty;
+
+        /// <summary>A <c>readonly struct</c> or <c>readonly record struct</c>.</summary>
+        public bool IsReadOnly => Modifiers.Contains(Modifier.ReadOnly);
+
+        /// <summary>A file-local type, written <c>file class</c>, visible only in its own file.</summary>
+        public bool IsFile => Modifiers.Contains(Modifier.File);
 
         /// <summary>True for a static class that declares extension members, classic <c>this</c> methods or <c>extension(...)</c> blocks.</summary>
         public bool HasExtensionMembers => !ExtensionBlocks.IsEmpty || Methods.Any(m => m.IsExtension);

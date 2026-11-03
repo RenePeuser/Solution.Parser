@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Solution.Parser.CSharp
 {
@@ -19,7 +19,10 @@ namespace Solution.Parser.CSharp
 
         public bool IsConst => Modifiers.Contains(Modifier.Const);
 
-        public bool IsStatic => Modifiers.Contains(Modifier.Static);
+        public bool IsVolatile => Modifiers.Contains(Modifier.Volatile);
+
+        /// <summary>A fixed size buffer, as in <c>fixed byte Data[16];</c>.</summary>
+        public bool IsFixed => Modifiers.Contains(Modifier.Fixed);
 
         /// <summary>True when the field type itself carries a nullable annotation, as in <c>string?</c>.</summary>
         public bool IsNullable { get; init; }

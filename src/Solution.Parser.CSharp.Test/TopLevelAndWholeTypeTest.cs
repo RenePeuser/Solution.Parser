@@ -129,5 +129,28 @@ namespace Solution.Parser.CSharp.Test
                                          because: "neither part of Big has more than two methods, the class does",
                                          fix: "Check trees.WholeTypes");
         }
+
+        [TestMethod]
+        public void A_Modifier_On_One_Part_Applies_To_The_Whole_Type()
+        {
+            ImmutableList<CSharpSyntaxTree> trees =
+            [
+                ParseCode("public static partial class Helpers { }"),
+                ParseCode("partial class Helpers { }"),
+                ParseCode("sealed partial class Order { }"),
+                ParseCode("abstract partial class Order { }")
+            ];
+
+            var helpers = trees.WholeTypes.Single(t => t.Name == "Helpers");
+            var order = trees.WholeTypes.Single(t => t.Name == "Order");
+
+            Assert.That.IsTrue(helpers.IsPublic && helpers.IsStatic,
+                               because: "public and static on one part make the whole type public and static",
+                               fix: "Check WholeType.IsPublic and IsStatic read every part");
+
+            Assert.That.IsTrue(!order.IsPublic && order.IsSealed && order.IsAbstract && !helpers.IsSealed,
+                               because: "each modifier counts when any part writes it, and only then",
+                               fix: "Check WholeType.IsSealed and IsAbstract read every part");
+        }
     }
 }

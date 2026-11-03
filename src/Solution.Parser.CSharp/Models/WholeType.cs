@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
@@ -33,7 +33,22 @@ namespace Solution.Parser.CSharp
         public CodeLocation Location => Parts[0].Location;
 
         /// <summary>True when the type is declared <c>partial</c>, whether its parts are spread over files or not.</summary>
-        public bool IsPartial => Parts.Any(p => p.IsPartial());
+        public bool IsPartial => Parts.Any(p => p.IsPartial);
+
+        /// <summary>
+        /// True when any part is written <c>public</c>; the compiler applies an accessibility written on
+        /// one part to the whole type, and the parts that leave it out read as the default internal.
+        /// </summary>
+        public bool IsPublic => Parts.Any(p => p.IsPublic);
+
+        /// <summary>True when any part is written <c>static</c>, which makes the whole type static.</summary>
+        public bool IsStatic => Parts.Any(p => p.IsStatic);
+
+        /// <summary>True when any part is written <c>abstract</c>, which makes the whole type abstract.</summary>
+        public bool IsAbstract => Parts.Any(p => p.IsAbstract);
+
+        /// <summary>True when any part is written <c>sealed</c>, which makes the whole type sealed.</summary>
+        public bool IsSealed => Parts.Any(p => p.IsSealed);
 
         public ImmutableList<Method> Methods => Of(p => p.Methods);
 
@@ -76,7 +91,7 @@ namespace Solution.Parser.CSharp
 
             foreach (var type in types)
             {
-                if (!type.IsPartial())
+                if (!type.IsPartial)
                 {
                     wholes.Add([type]);
 

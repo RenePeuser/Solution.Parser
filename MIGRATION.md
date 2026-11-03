@@ -11,6 +11,8 @@ migration further down first.
 - Rules may report more findings afterwards, see 7.3 and 7.4. That is code they were blind to, not a
   regression; say which rules changed and by how much.
 - A `tree.Classes.Single()` that throws now found a nested class next to the one it meant, see 7.4.
+- Drop the parentheses from the state checks, see 7.5: `type.IsSealed()` becomes `type.IsSealed`. The
+  compiler finds every call site; nothing changes in meaning.
 
 ## 7.1 Removed: `IsAsync()` and `UseCorrectAsyncNaming()`
 
@@ -120,6 +122,48 @@ every call instead of a new one; a rule that compared two of them by reference s
 
 `Solution.Parser.AspNet` looked up data types through `tree.Classes` and the like, so a nested data type
 of a controller was not found since 5.0; it is found again.
+
+## 7.5 Every state is a property
+
+A state check is a question about the declaration, not an operation on it, so it reads like one:
+`method.IsAsync`, `method.IsStatic`, `type.IsSealed`. It used to be a mix of properties and extension
+methods, and the mix had a trap: `method.IsStatic()` compiled, `field.IsStatic()` did not, because `Field`
+had a property of that name and a property hides an extension method.
+
+The extension methods are gone; each is a property on `DeclarationWithModifiers` now, so every type,
+member and accessor has it. The compiler finds every call site.
+
+| 6.x | 7.0 |
+|---|---|
+| `declaration.IsPublic()`, `IsInternal()`, `IsPrivate()` | `declaration.IsPublic`, `IsInternal`, `IsPrivate` |
+| `declaration.IsStatic()`, `IsAbstract()`, `IsVirtual()`, `IsOverride()`, `IsSealed()`, `IsPartial()` | the same without parentheses |
+| `field.IsStatic`, `constructor.IsStatic` | unchanged, now inherited |
+
+`HasAttribute(name)`, `Attribute(name)`, `InheritsFrom(name)` and `Implements(name)` take an argument
+and stay methods.
+
+The accessibility checks read the effective accessibility, the language default included: a class member
+without a modifier is `IsPrivate`, an interface member `IsPublic`. The modifier checks read what is
+written: a body-less interface member is abstract to the compiler but not `IsAbstract` here.
+
+New, so a rule no longer reads `Modifiers.Contains(...)` or `Accessibility == ...` itself:
+
+| Where | New |
+|---|---|
+| every declaration | `IsProtected` (exactly `protected`), `IsProtectedInternal`, `IsPrivateProtected`, `IsNew`, `IsExtern`, `IsUnsafe` |
+| `TypeDeclaration` | `IsReadOnly` (`readonly struct`), `IsFile` (file-local type) |
+| `Struct` | `IsRefStruct` |
+| `Method` | `IsReadOnly` (`readonly` struct member), `ReturnsVoid`, `ReturnsTask` |
+| `LocalFunction`, `Delegate` | `ReturnsVoid`, `ReturnsTask`; `LocalFunction.IsGeneric` |
+| `Field` | `IsVolatile`, `IsFixed` |
+| `Parameter` | `IsRef`, `IsRefReadOnly`, `IsOut`, `IsIn`, `IsScoped` |
+| `WholeType` | `IsPublic`, `IsStatic`, `IsAbstract`, `IsSealed`, true when any part writes it |
+
+`ReturnsTask` is `ReturnType.IsTask` and answers whether the result is awaitable; `IsAsync` answers
+whether the `async` modifier is written. A `Task<int> Load() => ...` is the first, not the second.
+
+`Property.IsReadOnly` and `Indexer.IsReadOnly` keep their meaning, no `set` accessor; `Field.IsReadOnly`,
+`TypeDeclaration.IsReadOnly` and `Method.IsReadOnly` read the `readonly` modifier.
 
 ---
 
@@ -423,6 +467,8 @@ Any rule filtering on those now sees declarations it never saw before. Predicate
 ```csharp
 declaration.IsSealed() / IsVirtual() / IsOverride() / IsAbstract() / IsStatic() / IsPartial()
 ```
+
+Since 7.0 they are properties, written without parentheses; see 7.5.
 
 ### 3.5 `IsNullable` reads the type, not the text
 

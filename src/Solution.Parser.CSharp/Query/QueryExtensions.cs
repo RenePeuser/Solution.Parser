@@ -109,51 +109,6 @@ namespace Solution.Parser.CSharp
             return declaration.Attributes.FirstOrDefault(a => a.IsNamed(attributeName));
         }
 
-        public static bool IsPublic(this DeclarationWithModifiers declaration)
-        {
-            return declaration.Accessibility == Accessibility.Public;
-        }
-
-        public static bool IsInternal(this DeclarationWithModifiers declaration)
-        {
-            return declaration.Accessibility == Accessibility.Internal;
-        }
-
-        public static bool IsPrivate(this DeclarationWithModifiers declaration)
-        {
-            return declaration.Accessibility == Accessibility.Private;
-        }
-
-        public static bool IsStatic(this DeclarationWithModifiers declaration)
-        {
-            return declaration.Modifiers.Contains(Modifier.Static);
-        }
-
-        public static bool IsPartial(this DeclarationWithModifiers declaration)
-        {
-            return declaration.Modifiers.Contains(Modifier.Partial);
-        }
-
-        public static bool IsSealed(this DeclarationWithModifiers declaration)
-        {
-            return declaration.Modifiers.Contains(Modifier.Sealed);
-        }
-
-        public static bool IsAbstract(this DeclarationWithModifiers declaration)
-        {
-            return declaration.Modifiers.Contains(Modifier.Abstract);
-        }
-
-        public static bool IsOverride(this DeclarationWithModifiers declaration)
-        {
-            return declaration.Modifiers.Contains(Modifier.Override);
-        }
-
-        public static bool IsVirtual(this DeclarationWithModifiers declaration)
-        {
-            return declaration.Modifiers.Contains(Modifier.Virtual);
-        }
-
         /// <summary>
         /// True when the base list names the given type. Base classes and interfaces share one list,
         /// because telling them apart needs the semantic model, so this matches either.

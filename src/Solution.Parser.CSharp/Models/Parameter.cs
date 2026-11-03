@@ -1,4 +1,4 @@
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Diagnostics;
 
 namespace Solution.Parser.CSharp
@@ -33,5 +33,17 @@ namespace Solution.Parser.CSharp
 
         /// <summary>True for <c>this string value</c>, the receiver of a classic extension method.</summary>
         public bool IsThis => Modifiers.Contains(Modifier.This);
+
+        /// <summary>Passed by <c>ref</c>, including <c>ref readonly</c>.</summary>
+        public bool IsRef => Modifiers.Contains(Modifier.Ref);
+
+        /// <summary>Passed as <c>ref readonly</c>.</summary>
+        public bool IsRefReadOnly => IsRef && Modifiers.Contains(Modifier.ReadOnly);
+
+        public bool IsOut => Modifiers.Contains(Modifier.Out);
+
+        public bool IsIn => Modifiers.Contains(Modifier.In);
+
+        public bool IsScoped => Modifiers.Contains(Modifier.Scoped);
     }
 }

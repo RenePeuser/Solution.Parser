@@ -378,9 +378,9 @@ namespace Solution.Parser.CSharp.Test
             Assert.That.AreEqual(2, tree.Properties.Count, because: "properties of nested types count", fix: "Check CSharpSyntaxTree.Properties");
             Assert.That.AreEqual(1, outer.DescendantTypes().Count, because: "the types nested in a type, without itself", fix: "Check QueryExtensions.DescendantTypes");
             Assert.That.AreEqual(2, outer.SelfAndDescendantTypes().Count, because: "a type and the types nested in it", fix: "Check QueryExtensions.SelfAndDescendantTypes");
-            Assert.That.IsTrue(outer.IsAbstract() && outer.IsPartial(), because: "the predicates read the modifiers", fix: "Check QueryExtensions");
-            Assert.That.IsTrue(outer.Fields.Single().IsPrivate() && outer.Properties.Single().IsInternal(), because: "the predicates read the accessibility", fix: "Check QueryExtensions");
-            Assert.That.IsTrue(inner.Methods[0].IsVirtual() && inner.Methods[1].IsOverride(), because: "the predicates read the modifiers", fix: "Check QueryExtensions");
+            Assert.That.IsTrue(outer.IsAbstract && outer.IsPartial, because: "the predicates read the modifiers", fix: "Check DeclarationWithModifiers");
+            Assert.That.IsTrue(outer.Fields.Single().IsPrivate && outer.Properties.Single().IsInternal, because: "the predicates read the accessibility", fix: "Check DeclarationWithModifiers");
+            Assert.That.IsTrue(inner.Methods[0].IsVirtual && inner.Methods[1].IsOverride, because: "the predicates read the modifiers", fix: "Check DeclarationWithModifiers");
         }
     }
 }

@@ -372,9 +372,11 @@ select $"{type.Location}: {type.Name} has {type.Methods.Count} methods in {type.
 The top level statements of `Program.cs` are in `tree.Statements`, and each of them answers the same
 questions as a statement in a method: `Loops`, `Awaits`, `ObjectCreations` and the rest.
 
-Predicates that read the way a rule means: `IsPublic()`, `IsStatic()`, `IsSealed()`, `IsAbstract()`,
-`IsPartial()`, `IsOverride()`, `IsVirtual()`, `HasAttribute(name)`, `Implements(name)`,
-`InheritsFrom(name)`.
+Every state is a property, on every type, member and accessor: `IsPublic`, `IsInternal`, `IsPrivate`,
+`IsProtected`, `IsStatic`, `IsSealed`, `IsAbstract`, `IsVirtual`, `IsOverride`, `IsPartial`, `IsNew`,
+and on the declarations they belong to `method.IsAsync`, `method.IsExtension`, `method.ReturnsTask`,
+`field.IsReadOnly`, `parameter.IsOut` and the rest. What needs an argument is a method:
+`HasAttribute(name)`, `Implements(name)`, `InheritsFrom(name)`.
 
 Every member with a body reports the method calls in it, lambdas included, a local function on its own:
 

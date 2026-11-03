@@ -26,9 +26,9 @@ namespace Solution.Parser.CSharp.Test
                                  because: "sealed is central to rules about extensibility and used to be dropped entirely",
                                  fix: SharedMapperFix);
 
-            Assert.That.IsTrue(holder.IsSealed(),
+            Assert.That.IsTrue(holder.IsSealed,
                                because: "the predicate must agree with the modifier list it reads",
-                               fix: "Check QueryExtensions.IsSealed");
+                               fix: "Check DeclarationWithModifiers.IsSealed");
         }
 
         [TestMethod]

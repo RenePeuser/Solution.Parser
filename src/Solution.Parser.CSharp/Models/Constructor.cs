@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Solution.Parser.CSharp
 {
@@ -19,8 +19,6 @@ namespace Solution.Parser.CSharp
         /// parameters are also reported on <see cref="TypeDeclaration.Parameters"/>.
         /// </summary>
         public bool IsPrimary { get; init; }
-
-        public bool IsStatic => Modifiers.Contains(Modifier.Static);
     }
 
     public enum ConstructorInitializerKind

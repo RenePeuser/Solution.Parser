@@ -86,10 +86,10 @@ namespace Solution.Parser.CSharp.Test
         [TestMethod]
         public void Member_Shortcuts_Read_The_Declaration()
         {
-            Assert.That.IsTrue(Cart.Constructors.Single().IsStatic, because: "static Cart() is a static constructor", fix: "Check Constructor.IsStatic");
+            Assert.That.IsTrue(Cart.Constructors.Single().IsStatic, because: "static Cart() is a static constructor", fix: "Check DeclarationWithModifiers.IsStatic");
             Assert.That.IsTrue(Cart.Fields.Single(f => f.Name == "Count").IsStatic && !Cart.Fields.Single(f => f.Name == "Size").IsStatic,
                                because: "only Count is static",
-                               fix: "Check Field.IsStatic");
+                               fix: "Check DeclarationWithModifiers.IsStatic");
 
             var name = Cart.Properties.Single(p => p.Name == "Name");
             var total = Cart.Properties.Single(p => p.Name == "Total");

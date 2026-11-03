@@ -67,19 +67,19 @@ namespace Solution.Parser.CSharp.Test
         {
             var repository = ParseCode(Code).Classes.Single();
 
-            Assert.That.IsTrue(repository.IsPublic(),
+            Assert.That.IsTrue(repository.IsPublic,
                                because: "a rule guarding the public surface filters on this predicate",
-                               fix: "Check QueryExtensions.IsPublic reads the resolved Accessibility");
+                               fix: "Check DeclarationWithModifiers.IsPublic reads the resolved Accessibility");
 
-            Assert.That.IsTrue(repository.IsSealed(),
+            Assert.That.IsTrue(repository.IsSealed,
                                because: "sealed is read from the modifier list, which used to drop the keyword",
                                fix: "Check the shared modifier mapper covers the sealed keyword");
 
-            Assert.That.IsFalse(repository.IsStatic(),
+            Assert.That.IsFalse(repository.IsStatic,
                                 because: "the class is not static and must not be reported as such",
-                                fix: "Check QueryExtensions.IsStatic reads the modifier list");
+                                fix: "Check DeclarationWithModifiers.IsStatic reads the modifier list");
 
-            Assert.That.IsTrue(repository.Properties.Single().IsStatic(),
+            Assert.That.IsTrue(repository.Properties.Single().IsStatic,
                                because: "the predicates apply to members as well as to types",
                                fix: "Declare the predicates on DeclarationWithModifiers so every member gets them");
         }
