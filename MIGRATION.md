@@ -1,3 +1,70 @@
+# Migrating to Solution.Parser 7.0
+
+7.0 removes the guessing async helpers and the code generator leftovers, and lets rules see code they could not see before: accessor
+bodies, extension blocks, expressions as trees and patterns. Coming from 5.x or older, do the 6.0
+migration further down first.
+
+## For the AI assistant doing this migration
+
+- Replace the removed helpers with the table below. Pick per call site which question the rule asks:
+  the `async` modifier or an awaitable return type. Do not replace one with the other blindly.
+- Rules may report more findings afterwards, see 7.3. That is code they were blind to, not a
+  regression; say which rules changed and by how much.
+
+## 7.1 Removed: `IsAsync()` and `UseCorrectAsyncNaming()`
+
+`MethodExtensions` and `LocalFunctionExtensions` are gone. `method.IsAsync()` with parentheses guessed
+from `ReturnParameter.Contains("Task")`, so it matched `TaskScheduler` and `ITaskItem`, while
+`method.IsAsync` without them reads the modifier: one name, two answers.
+
+| 6.x | 7.0 |
+|---|---|
+| `method.IsAsync()`, meaning "has the `async` modifier" | `method.IsAsync` |
+| `method.IsAsync()`, meaning "returns something awaitable" | `method.ReturnType.IsTask` (`Task`, `Task<T>`, `ValueTask`, `ValueTask<T>`) |
+| `method.UseCorrectAsyncNaming()` | `method.Name.EndsWith("Async")` |
+| the same on a `LocalFunction` | the same on a `LocalFunction` |
+
+A typical naming rule reads `where method.ReturnType.IsTask && !method.Name.EndsWith("Async")`.
+
+## 7.2 Removed: the code generator helpers
+
+They generated code rather than parsed it, and nothing in the parser used them. Should a rule suite still
+call one, copy the few lines it needs into the suite.
+
+| 6.x | 7.0 |
+|---|---|
+| `record.ToPropertyDeclaration()`, `record.Normalize()`, `record.ToImmutableListProperties()`, `RecordExtensions.ForbiddenListTypes` | gone; for the check behind `ForbiddenListTypes` use `property.TypeReference.IsMutableCollection` |
+| `@class.BuildServiceRegistration(classes)` | gone |
+| `services.AddCodeFormatter()`, `ICodeFormatter` | gone; `CSharpSyntaxTree.ParseText(code).GetRoot().NormalizeWhitespace().ToFullString()` formats code |
+| `code.FormatSyntaxTree()`, `declaration.FormatSyntaxTree()` | the same |
+
+## 7.3 Accessors with a body, expression trees, patterns
+
+
+Constructing an `Accessor` yourself breaks the build: it was a positional record and is a
+`MemberWithBody` now. Reading it is unchanged:
+`Kind`, `Accessibility`, `IsAutoImplemented`, `IsExpressionBodied`, `Body` and `Location` keep their names.
+
+Rules may report more than before, because they now see code they could not see:
+
+- `AllMembersWithBody`, and with it `AllInvocations` and `AllLocalVariables`, include the accessors of
+  properties, indexers and events, and the members of C# 14 extension blocks. A call in
+  `get { return Load(); }` is found now.
+- `AllMethods` and `AllProperties` include the members of extension blocks. An extension block used to
+  show up as a nested class without a name in `NestedTypes`; it is in `ExtensionBlocks` now.
+- A positional record reports its properties: `record Order(string Id, List<Line> Lines)` has `Id` and
+  `Lines` in `Properties`, marked `IsPositional`, with `get; init;` (`get; set;` in a `record struct`
+  that is not `readonly`). A property the record declares itself wins over its parameter. Rules over
+  `Properties` see them now; `Parameters` still lists the parameters as before.
+- New on `TypeReference`: `IsImmutableCollection`, `IsReadOnlyCollection`, `IsMutableCollection`,
+  `IsImmutable` and `IsImmutableWith(...)`; a rule that kept its own list of immutable type names can use them.
+- `parameter.Modifiers` holds `Modifier.This` for the receiver of a classic extension method; it
+  was dropped before. `method.IsExtension`, `ExtensionReceiver` and `IsInExtensionBlock` are new.
+- A local function or an attribute inside an accessor, an indexer or an event is named below them,
+  as it always was below a property: `Shop.Cart.Total.get.Local`, `Shop.Cart.this[].Range`.
+
+---
+
 # Migrating to Solution.Parser 6.0
 
 6.0 makes the API shorter: fewer wrapper types, fewer `.Value` hops, names that read the way .NET
@@ -106,27 +173,6 @@ applies when you already moved to 6.0.0.
 `GetCSharpFiles()` and `GetXamlFiles()` return `ImmutableList<FileInfo>`. `XamlSyntaxTree.FileInfo` is a
 `FileInfo?`. A `FileInfo` compares by instance, not by path: compare `FullName` where two infos of the
 same file used to be equal.
-
-## 6.7 Accessors with a body, expression trees, patterns
-
-Everything here is additive; the only thing that can break the build is constructing an `Accessor`
-yourself, which was a positional record and is a `MemberWithBody` now. Reading it is unchanged:
-`Kind`, `Accessibility`, `IsAutoImplemented`, `IsExpressionBodied`, `Body` and `Location` keep their names.
-
-Rules may report more than before, because they now see code they could not see:
-
-- `AllMembersWithBody`, and with it `AllInvocations` and `AllLocalVariables`, include the accessors of
-  properties, indexers and events, and the members of C# 14 extension blocks. A call in
-  `get { return Load(); }` is found now.
-- `AllMethods` and `AllProperties` include the members of extension blocks. An extension block used to
-  show up as a nested class without a name in `NestedTypes`; it is in `ExtensionBlocks` now.
-- `parameter.Modifiers` holds `Modifier.This` for the receiver of a classic extension method; it
-  was dropped before. `method.IsExtension`, `ExtensionReceiver` and `IsInExtensionBlock` are new.
-- A local function or an attribute inside an accessor, an indexer or an event is named below them,
-  as it always was below a property: `Shop.Cart.Total.get.Local`, `Shop.Cart.this[].Range`.
-
-The code generator helpers `RecordExtensions`, `ClassDeclarationExtensions`, `AddCodeFormatter` and
-`FormatSyntaxTree` are obsolete; they have nothing to do with parsing and go in the next major version.
 
 ---
 

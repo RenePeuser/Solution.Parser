@@ -21,14 +21,16 @@ namespace Solution.Parser.Core
         {
             Throw.IfNull(fileSystemInfo);
 
-            return fileSystemInfo.Name.Replace(fileSystemInfo.Extension, string.Empty);
+            // Only the last extension: Replace dropped every occurrence and threw for a name without one.
+            return Path.GetFileNameWithoutExtension(fileSystemInfo.Name);
         }
 
         public static string FileNameWithoutExtension(this IFileSystemInfo fileSystemInfo)
         {
             Throw.IfNull(fileSystemInfo);
 
-            return fileSystemInfo.Name.Replace(fileSystemInfo.Extension, string.Empty);
+            // Only the last extension: Replace dropped every occurrence and threw for a name without one.
+            return Path.GetFileNameWithoutExtension(fileSystemInfo.Name);
         }
     }
 }

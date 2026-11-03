@@ -52,6 +52,13 @@ namespace Solution.Parser.CSharp
         public bool IsExplicitInterfaceImplementation => ExplicitInterfaceSpecifier is not null;
 
         /// <summary>
+        /// True for a property the compiler writes for a parameter of a positional record,
+        /// <c>Id</c> in <c>record Order(string Id)</c>. It has <c>get; init;</c>, in a <c>record struct</c>
+        /// that is not <c>readonly</c> <c>get; set;</c>, and is located at the parameter.
+        /// </summary>
+        public bool IsPositional { get; init; }
+
+        /// <summary>
         /// What the member extends: the <c>this</c> parameter of a classic extension method,
         /// <c>Shout(this string value)</c>, or the receiver of the C# 14 extension block the member is
         /// declared in, <c>extension(string value)</c>. Null for a member that extends nothing. A static

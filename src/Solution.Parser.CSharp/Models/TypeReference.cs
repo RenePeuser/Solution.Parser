@@ -104,6 +104,85 @@ namespace Solution.Parser.CSharp
         public bool IsDictionary => !IsArray && !IsTuple && Dictionaries.Contains(Name);
 
         /// <summary>
+        /// True for a collection that never changes once built: <c>ImmutableList</c>,
+        /// <c>ImmutableArray</c>, <c>ImmutableDictionary</c> and their siblings, the <c>IImmutable</c>
+        /// interfaces, <c>FrozenSet</c> and <c>FrozenDictionary</c>. What it holds may still change, see
+        /// <see cref="IsImmutable"/>.
+        /// </summary>
+        public bool IsImmutableCollection => !IsArray && !IsTuple && ImmutableCollections.Contains(Name);
+
+        /// <summary>
+        /// True for a read only view: <c>IEnumerable</c>, <c>IReadOnlyList</c>, <c>IReadOnlyCollection</c>,
+        /// <c>IReadOnlySet</c>, <c>IReadOnlyDictionary</c>, <c>ReadOnlyCollection</c> and the like. The
+        /// holder of the reference cannot change it, but whoever handed it out may, as a
+        /// <c>List</c> behind an <c>IReadOnlyList</c>.
+        /// </summary>
+        public bool IsReadOnlyCollection => !IsArray && !IsTuple && ReadOnlyCollections.Contains(Name);
+
+        /// <summary>
+        /// True for a collection that can be changed through the reference: an array, <c>List</c>,
+        /// <c>Dictionary</c>, <c>HashSet</c>, <c>IList</c>, <c>ICollection</c>, <c>ObservableCollection</c>,
+        /// the concurrent ones. Every collection is exactly one of mutable, read only and immutable.
+        /// </summary>
+        public bool IsMutableCollection => IsCollection && !IsImmutableCollection && !IsReadOnlyCollection;
+
+        /// <summary>
+        /// True when a value of the type can never change, all the way down: a C# keyword type but
+        /// <c>object</c>, the well known immutable framework types such as <c>Guid</c>, <c>DateTime</c>,
+        /// <c>TimeSpan</c> and <c>Uri</c>, and an immutable collection, a tuple, a <c>Nullable</c> or a
+        /// <c>KeyValuePair</c> of such types. <c>ImmutableList&lt;string&gt;</c> is immutable,
+        /// <c>ImmutableList&lt;List&lt;int&gt;&gt;</c> is not.
+        /// </summary>
+        /// <remarks>
+        /// The syntax does not know your own types, so false means "not known to be immutable": an
+        /// <c>ImmutableList&lt;Order&gt;</c> is false even when <c>Order</c> is an immutable record. Tell
+        /// it which of your types are immutable with <see cref="IsImmutableWith"/>.
+        /// </remarks>
+        public bool IsImmutable => IsImmutableWith(static _ => false);
+
+        /// <summary>
+        /// <see cref="IsImmutable"/>, with <paramref name="isImmutableType"/> deciding for every type the
+        /// parser does not know, at any depth.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// var immutableRecords = solution.ProductionTrees.AllTypes().OfType&lt;Record&gt;().Where(IsImmutableRecord).Select(r =&gt; r.Name).ToHashSet();
+        /// property.TypeReference.IsImmutableWith(t =&gt; immutableRecords.Contains(t.Name))
+        /// </code>
+        /// </example>
+        public bool IsImmutableWith(Func<TypeReference, bool> isImmutableType)
+        {
+            Throw.IfNull(isImmutableType);
+
+            if (IsTuple)
+            {
+                return TupleElements.All(e => e.Type.IsImmutableWith(isImmutableType));
+            }
+
+            if (IsArray)
+            {
+                return false;
+            }
+
+            if (IsPredefined)
+            {
+                return Name is not ("object" or "void");
+            }
+
+            if (IsImmutableCollection || ImmutableWrappers.Contains(Name))
+            {
+                return TypeArguments.All(a => a.IsImmutableWith(isImmutableType));
+            }
+
+            if (IsCollection)
+            {
+                return false;
+            }
+
+            return (!IsGeneric && ImmutableScalars.Contains(Name)) || isImmutableType(this);
+        }
+
+        /// <summary>
         /// What the collection holds: the element of an array or the one type argument of a collection,
         /// <c>Foo</c> for <c>IReadOnlyList&lt;Foo&gt;</c>. Null for anything else, also for a dictionary,
         /// whose key and value are <c>TypeArguments[0]</c> and <c>TypeArguments[1]</c>.
@@ -267,6 +346,35 @@ namespace Solution.Parser.CSharp
             "ImmutableArray", "ImmutableList", "ImmutableHashSet", "ImmutableSortedSet", "ImmutableQueue", "ImmutableStack",
             "IImmutableList", "IImmutableSet", "IImmutableQueue", "IImmutableStack",
             "FrozenSet", "ConcurrentBag", "ConcurrentQueue", "ConcurrentStack", "BlockingCollection", "IProducerConsumerCollection"
+        }.ToFrozenSet(StringComparer.Ordinal);
+
+        private static readonly FrozenSet<string> ImmutableCollections = new[]
+        {
+            "ImmutableArray", "ImmutableList", "ImmutableHashSet", "ImmutableSortedSet", "ImmutableQueue", "ImmutableStack",
+            "IImmutableList", "IImmutableSet", "IImmutableQueue", "IImmutableStack",
+            "ImmutableDictionary", "ImmutableSortedDictionary", "IImmutableDictionary",
+            "FrozenSet", "FrozenDictionary"
+        }.ToFrozenSet(StringComparer.Ordinal);
+
+        private static readonly FrozenSet<string> ReadOnlyCollections = new[]
+        {
+            "IEnumerable", "IReadOnlyCollection", "IReadOnlyList", "IReadOnlySet", "IReadOnlyDictionary",
+            "ReadOnlyCollection", "ReadOnlyObservableCollection", "ReadOnlyDictionary"
+        }.ToFrozenSet(StringComparer.Ordinal);
+
+        /// <summary>Framework types whose values never change; the keyword types are recognised by <see cref="IsPredefined"/>.</summary>
+        private static readonly FrozenSet<string> ImmutableScalars = new[]
+        {
+            "String", "Boolean", "Byte", "SByte", "Char", "Decimal", "Double", "Single", "Half",
+            "Int16", "UInt16", "Int32", "UInt32", "Int64", "UInt64", "Int128", "UInt128", "IntPtr", "UIntPtr", "BigInteger",
+            "Guid", "DateTime", "DateTimeOffset", "DateOnly", "TimeOnly", "TimeSpan", "TimeZoneInfo",
+            "Uri", "Version", "Type", "Index", "Range"
+        }.ToFrozenSet(StringComparer.Ordinal);
+
+        /// <summary>Generic framework types that are immutable when their type arguments are.</summary>
+        private static readonly FrozenSet<string> ImmutableWrappers = new[]
+        {
+            "Nullable", "KeyValuePair", "Tuple", "ValueTuple"
         }.ToFrozenSet(StringComparer.Ordinal);
 
         private static readonly FrozenSet<string> Dictionaries = new[]

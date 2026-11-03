@@ -58,7 +58,7 @@ namespace Solution.Parser.CSharp
                 TypeParameters = syntax.TypeParameterList.ToTypeParameters(syntax.ConstraintClauses, filePath),
                 BaseTypes = syntax.BaseList?.ToBaseTypes(filePath) ?? ImmutableList<BaseType>.Empty,
                 Constructors = constructors,
-                Properties = syntax.DirectMembers<PropertyDeclarationSyntax>().ToProperties(filePath),
+                Properties = syntax.ToProperties(filePath),
                 Methods = syntax.DirectMembers<MethodDeclarationSyntax>().ToMethods(filePath),
                 Fields = syntax.DirectMembers<FieldDeclarationSyntax>().ToFields(filePath),
                 Events = syntax.DirectMembers<EventDeclarationSyntax>().ToEvents(filePath),
@@ -70,6 +70,56 @@ namespace Solution.Parser.CSharp
                 NestedTypes = syntax.ToNestedTypes(filePath),
                 ExtensionBlocks = syntax.ToExtensionBlocks(filePath),
                 Parameters = parameters
+            };
+        }
+
+        /// <summary>
+        /// The declared properties, preceded by those the compiler writes for the parameters of a
+        /// positional record, unless the record declares a property of that name itself.
+        /// </summary>
+        private static ImmutableList<Property> ToProperties(this TypeDeclarationSyntax syntax, string filePath)
+        {
+            var declared = syntax.DirectMembers<PropertyDeclarationSyntax>().ToProperties(filePath);
+
+            if (syntax is not RecordDeclarationSyntax { ParameterList.Parameters.Count: > 0 } record)
+            {
+                return declared;
+            }
+
+            var declaredNames = declared.Select(p => p.Name).ToHashSet();
+            var isMutable = record.ClassOrStructKeyword.IsKind(SyntaxKind.StructKeyword) && !record.Modifiers.Any(SyntaxKind.ReadOnlyKeyword);
+
+            var positional = record.ParameterList.Parameters
+                                   .Where(p => !declaredNames.Contains(p.Identifier.ValueText))
+                                   .Select(p => p.ToPositionalProperty(isMutable, filePath));
+
+            return positional.Concat(declared).ToImmutableList();
+        }
+
+        private static Property ToPositionalProperty(this ParameterSyntax parameter, bool isMutable, string filePath)
+        {
+            var name = parameter.Identifier.ValueText;
+            var fullyQualifiedName = parameter.BuildFullyQualifiedName(name);
+            var getter = parameter.ToSynthesizedAccessor(AccessorKind.Get, fullyQualifiedName, filePath);
+            var setter = parameter.ToSynthesizedAccessor(isMutable ? AccessorKind.Set : AccessorKind.Init, fullyQualifiedName, filePath);
+
+            return new Property
+            {
+                Name = name,
+                FullyQualifiedName = fullyQualifiedName,
+                Type = parameter.Type?.ToSourceCode() ?? string.Empty,
+                TypeReference = parameter.Type.ToTypeReference(filePath),
+                Accessibility = Accessibility.Public,
+
+                // [property: JsonPropertyName("id")] goes to the property; an attribute without target stays on the parameter.
+                Attributes = parameter.AttributeLists.ToAttributes(filePath).Where(a => a.Target == "property").ToImmutableList(),
+                Accessors = isMutable ? new PropertyAccessors(getter, setter, null) : new PropertyAccessors(getter, null, setter),
+                IsAutoProperty = true,
+                IsPositional = true,
+                IsNullable = parameter.Type is NullableTypeSyntax,
+                SourceNode = parameter,
+                FilePath = filePath,
+                Location = parameter.ToCodeLocation(filePath)
             };
         }
 

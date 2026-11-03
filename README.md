@@ -316,6 +316,22 @@ TypeReference.Parse("Dictionary<string, int>")       // the same for a type writ
 agree when both sides write one, `String` equals `string`, and the `?` only counts when you ask for it.
 It goes by the written name, so a class of your own named `List` counts as a collection as well.
 
+A collection is exactly one of `IsImmutableCollection` (`ImmutableList`, `FrozenSet`, ...),
+`IsReadOnlyCollection` (`IReadOnlyList`, `IEnumerable`, ...) and `IsMutableCollection` (`List`, arrays,
+`Dictionary`, ...). `IsImmutable` goes all the way down: `ImmutableList<string>` is immutable,
+`ImmutableList<List<int>>` is not. Your own types are unknown to the syntax and count as not immutable
+until you say otherwise. A positional record lists its parameters as `Properties` too, marked
+`IsPositional`, so `record Order(List<Line> Lines)` is found:
+
+```csharp
+var immutableRecords = trees.AllTypes().OfType<Record>().Select(r => r.Name).ToHashSet();
+
+from type in trees.AllTypes().OfType<Record>()
+from property in type.Properties
+where !property.TypeReference.IsImmutableWith(t => immutableRecords.Contains(t.Name))
+select $"{property.Location}: {type.Name}.{property.Name} can change";
+```
+
 ## Symbols
 
 The syntax alone cannot tell that `true` in `Client.AssertPostAsync("..", "..", true)` is the
@@ -455,6 +471,14 @@ never fails proves nothing.
 Upgrading from an older major? See **[MIGRATION.md](MIGRATION.md)** — it covers the mechanical
 renames and, more importantly, the changes that still compile but report something different. It is
 written so you can hand it to an AI assistant along with your rule suite.
+
+The short version for 7.0:
+
+| 6.x | 7.0 |
+|---|---|
+| `method.IsAsync()`, guessed from the return type's name | `method.IsAsync` for the `async` modifier, `method.ReturnType.IsTask` for an awaitable return |
+| `method.UseCorrectAsyncNaming()` | `method.Name.EndsWith("Async")` |
+| calls in accessors and extension blocks were invisible | `AllInvocations` and friends include them, so rules may report more |
 
 The short version for 6.0, all of it caught by the compiler:
 

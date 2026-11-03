@@ -37,6 +37,18 @@ namespace Solution.Parser.CSharp.Semantic.Test
         }
 
         [TestMethod]
+        public void Production_And_Unit_Test_Trees_Are_Apart()
+        {
+            var solution = SolutionFile.Parse(SolutionPath, ParseMode.SyntaxOnly);
+            var production = solution.ProductionTrees.Select(t => t.FileName).ToHashSet();
+
+            Assert.That.IsTrue(solution.UnitTestTrees.Count > 0, because: "the solution has test projects", fix: SolutionCodeFix);
+            Assert.That.IsFalse(solution.UnitTestTrees.Any(t => production.Contains(t.FileName)),
+                                because: "a file of a test project is no production code",
+                                fix: "Check CodeBase.UnitTestTrees, it reads Solution.UnitTestProjects");
+        }
+
+        [TestMethod]
         public void A_Project_Has_Its_Own_Trees_Out_Of_The_Solution_Cache()
         {
             var solution = SolutionFile.Parse(SolutionPath, ParseMode.SyntaxOnly);

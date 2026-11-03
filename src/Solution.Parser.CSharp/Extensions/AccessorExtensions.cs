@@ -86,6 +86,26 @@ namespace Solution.Parser.CSharp
                    };
         }
 
+        /// <summary>
+        /// An accessor the compiler writes, as for the property of a positional record parameter: no
+        /// body, auto implemented, located at the declaration it comes from.
+        /// </summary>
+        internal static Accessor ToSynthesizedAccessor(this SyntaxNode declaration, AccessorKind kind, string propertyFullyQualifiedName, string filePath)
+        {
+            var name = kind.ToString().ToLowerInvariant();
+
+            return Build(kind,
+                         name,
+                         $"{propertyFullyQualifiedName}.{name}",
+                         ((BlockSyntax?)null).ToMemberBody(null, filePath),
+                         declaration,
+                         filePath) with
+                   {
+                       Accessibility = Accessibility.NotApplicable,
+                       IsAutoImplemented = true
+                   };
+        }
+
         private static Accessor Build(AccessorKind kind, string name, string fullyQualifiedName, MemberBody body, SyntaxNode node, string filePath)
         {
             return new Accessor

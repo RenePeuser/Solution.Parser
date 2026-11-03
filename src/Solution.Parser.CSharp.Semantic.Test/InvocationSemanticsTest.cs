@@ -177,6 +177,15 @@ namespace Solution.Parser.CSharp.Semantic.Test
             Assert.That.AreEqual("System.Console.WriteLine", call.Method?.FullyQualifiedName, because: "the method is known from metadata", fix: ResolverFix);
             Assert.That.AreEqual("value", call.ArgumentFor("value")?.Parameter.Name, because: "parameter names live in the metadata", fix: ResolverFix);
             Assert.That.IsFalse(call.Method!.Origin.IsSource, because: "Console is not declared in the code base", fix: "Check SymbolToModel.OriginOf");
+            Assert.That.IsTrue(call.Method!.Origin.IsFramework && !call.Method!.Origin.IsPackage,
+                               because: "Console comes with the shared framework, not from a package",
+                               fix: "Check SymbolToModel.OriginOf");
+
+            var roslyn = call.Roslyn;
+
+            Assert.That.IsTrue(roslyn is { Symbol.Name: "WriteLine", Operation: not null } && roslyn.Node.ToString() == call.SourceCode,
+                               because: "the way out to Roslyn hands out the very node, its symbol and its operation",
+                               fix: "Check InvocationResolver, it fills RoslynInvocation");
         }
 
         [TestMethod]

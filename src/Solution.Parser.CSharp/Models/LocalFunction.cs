@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 
@@ -19,22 +18,5 @@ namespace Solution.Parser.CSharp
 
         /// <summary>Kept as the previous name for <see cref="MemberWithBody.Body"/>.</summary>
         public string LocalFunctionBody => Body;
-    }
-
-    public static class LocalFunctionExtensions
-    {
-        /// <summary>
-        /// True when the local function returns an awaitable shaped type. Prefer
-        /// <see cref="MemberWithBody.IsAsync"/>, which reports the <c>async</c> modifier.
-        /// </summary>
-        public static bool IsAsync(this LocalFunction localFunction)
-        {
-            return localFunction.IsAsync || localFunction.ReturnParameter.Contains("Task", StringComparison.OrdinalIgnoreCase);
-        }
-
-        public static bool UseCorrectAsyncNaming(this LocalFunction localFunction)
-        {
-            return localFunction.Name.EndsWith("Async", StringComparison.Ordinal);
-        }
     }
 }
