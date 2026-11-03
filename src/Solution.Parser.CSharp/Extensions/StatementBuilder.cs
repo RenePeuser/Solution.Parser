@@ -207,6 +207,7 @@ namespace Solution.Parser.CSharp
             return new IfStatement
             {
                 Kind = StatementKind.If,
+                IsElseIf = ifStatement.Parent is ElseClauseSyntax,
                 Condition = ifStatement.Condition.ToExpression(filePath),
                 Then = then,
                 Else = otherwise,

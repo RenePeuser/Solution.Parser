@@ -105,6 +105,44 @@ namespace Solution.Parser.CSharp
             return members.SelectMany(m => m.LocalFunctions.Prepend<MemberWithBody>(m)).ToImmutableList();
         }
 
+        /// <summary>Every member that can carry a body, in every type of the file; see the overload on a type.</summary>
+        public static ImmutableList<MemberWithBody> AllMembersWithBody(this CSharpSyntaxTree syntaxTree)
+        {
+            return syntaxTree.AllTypes().SelectMany(AllMembersWithBody).ToImmutableList();
+        }
+
+        /// <summary>Every member that can carry a body, in every type of the files: the starting point for a rule about code inside bodies.</summary>
+        /// <example>
+        /// <code>
+        /// from member in solution.ProductionTrees.AllMembersWithBody()
+        /// from access in member.MemberAccesses
+        /// where access.Target == "DateTime" &amp;&amp; access.Name == "Now"
+        /// select access.Location
+        /// </code>
+        /// </example>
+        public static ImmutableList<MemberWithBody> AllMembersWithBody(this IEnumerable<CSharpSyntaxTree> syntaxTrees)
+        {
+            return syntaxTrees.SelectMany(AllMembersWithBody).ToImmutableList();
+        }
+
+        /// <summary>The methods of every type in the files, those of extension blocks included.</summary>
+        public static ImmutableList<Method> AllMethods(this IEnumerable<CSharpSyntaxTree> syntaxTrees)
+        {
+            return syntaxTrees.SelectMany(AllMethods).ToImmutableList();
+        }
+
+        /// <summary>The properties of every type in the files, positional ones and those of extension blocks included.</summary>
+        public static ImmutableList<Property> AllProperties(this IEnumerable<CSharpSyntaxTree> syntaxTrees)
+        {
+            return syntaxTrees.SelectMany(AllProperties).ToImmutableList();
+        }
+
+        /// <summary>The fields of every type in the files.</summary>
+        public static ImmutableList<Field> AllFields(this IEnumerable<CSharpSyntaxTree> syntaxTrees)
+        {
+            return syntaxTrees.SelectMany(AllFields).ToImmutableList();
+        }
+
         /// <summary>Every method call in the file, in every member and local function of every type.</summary>
         public static ImmutableList<Invocation> AllInvocations(this CSharpSyntaxTree syntaxTree)
         {

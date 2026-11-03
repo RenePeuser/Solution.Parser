@@ -4,6 +4,16 @@
 [![NuGet](https://img.shields.io/nuget/v/Solution.Parser.svg)](https://www.nuget.org/packages/Solution.Parser/)
 [![Downloads](https://img.shields.io/nuget/dt/Solution.Parser.svg)](https://www.nuget.org/packages/Solution.Parser/)
 
+**Architecture and code rules as plain unit tests.** Solution.Parser reads a whole solution, its
+projects, C# code and XAML, into a typed model that is made to be queried with LINQ: statements,
+expressions and patterns as trees, types taken apart, every finding with a clickable location. When
+the syntax is not enough, the same records carry what the compiler knows: which method a call binds
+to, which parameter an argument fills, which package a method comes from.
+
+No Roslyn ceremony, no visitors, no `SyntaxKind`: a rule reads the way you would say it, which makes
+it just as easy to write for a developer as for an AI agent. And every rule in the
+[cookbook](#cookbook) below runs as a test in this repository, so what you copy works.
+
 ## Quick start
 
 A code rule is a query over the solution and an assertion that it finds nothing:
@@ -128,6 +138,131 @@ public class Records : CodeRuleBase
 }
 ```
 
+## Cookbook
+
+Ready to copy. `trees` is `solution.ProductionTrees`, and each query ends in
+`findings.ShouldBeEmpty("...")`. Every rule here runs word for word against broken and correct code
+in `ReadmeSamplesTest` and `ReadmeSemanticSamplesTest`, so the samples cannot drift from the API.
+
+### Time and async
+
+```csharp
+// Inject the clock: DateTime.Now cannot be tested
+from member in trees.AllMembersWithBody()
+from access in member.MemberAccesses
+where access.Target == "DateTime" && access.Name is "Now" or "UtcNow" or "Today"
+select $"{access.Location}: inject TimeProvider instead of {access.SourceCode}";
+
+// No async void, event handlers aside
+from method in trees.AllMethods()
+where method.IsAsync && method.ReturnType.IsVoid
+where !method.Parameters.LastOrDefault()?.TypeReference.Name.EndsWith("EventArgs", StringComparison.Ordinal) ?? true
+select $"{method.Location}: {method.Name} is async void, return a Task";
+
+// Awaitable methods end in Async
+from method in trees.AllMethods()
+where method.ReturnType.IsTask && !method.Name.EndsWith("Async", StringComparison.Ordinal)
+select $"{method.Location}: {method.Name} returns {method.ReturnType.Name}, call it {method.Name}Async";
+```
+
+### Logging and HTTP
+
+```csharp
+// Structured logging: a template, not an interpolated string
+from call in trees.AllInvocations()
+where call.Name.StartsWith("Log", StringComparison.Ordinal) && call.Arguments.Any(a => a.Kind == ExpressionKind.InterpolatedString)
+select $"{call.Location}: {call.Name} with an interpolated string loses the structure, pass a template";
+
+// No new HttpClient(), it exhausts sockets
+from member in trees.AllMembersWithBody()
+from creation in member.ObjectCreations
+where creation.TypeName == "HttpClient"
+select $"{creation.Location}: use IHttpClientFactory instead of new HttpClient()";
+
+// Every minimal API endpoint requires authorization
+from method in trees.AllMethods()
+from chain in method.InvocationChains
+where chain.Contains("MapGet") && !chain.After("MapGet").Any(c => c.Name == "RequireAuthorization")
+select $"{chain.Location}: {chain.First.Arguments[0].StringValue} is not protected";
+```
+
+### Models
+
+```csharp
+// Records hold no mutable collections, positional properties included
+from record in trees.AllTypes().OfType<Record>()
+from property in record.Properties
+where property.TypeReference.IsMutableCollection
+select $"{property.Location}: {record.Name}.{property.Name} is a {property.TypeReference.Name}, use an immutable collection";
+
+// Getters do not throw, whether in a block or as => x ?? throw
+from property in trees.AllProperties()
+let getter = property.Accessors.Get
+where getter is not null
+where getter.Throws.Any() || getter.AllExpressions.Any(e => e.Kind == ExpressionKind.Throw)
+select $"{property.Location}: the getter of {property.Name} throws, make it a method";
+```
+
+### Readability
+
+```csharp
+// Early exit instead of else-if ladders: more than two else in one chain
+from member in trees.AllMembersWithBody()
+from chain in member.IfStatements
+where !chain.IsElseIf && chain.ElseCount > 2
+select $"{chain.Location}: {member.Name} has an if with {chain.ElseCount} else, use early returns, a switch or a lookup";
+
+// No else after a branch that returns, throws, breaks or continues
+from member in trees.AllMembersWithBody()
+from statement in member.IfStatements
+where statement.HasElse && statement.Then.EndsWithJump
+select $"{statement.Location}: the if in {member.Name} returns, drop the else and go on after it";
+
+// Null checks read as null checks: x is null, x is not null
+from member in trees.AllMembersWithBody()
+from expression in member.AllExpressions
+where (expression.Operator is "==" or "!=" && expression.Right?.Kind == ExpressionKind.NullLiteral)
+   || expression.Pattern is { Kind: PatternKind.Recursive, IsNotNull: true }
+select $"{expression.Location}: write {expression.SourceCode} as is null or is not null";
+
+// A switch expression has a _ arm
+from member in trees.AllMembersWithBody()
+from switchExpression in member.SwitchExpressions
+where !switchExpression.HasDiscardArm
+select $"{switchExpression.Location}: {member.Name} switches without a _ arm";
+
+// Parameters are not reassigned
+from method in trees.AllMethods()
+from assignment in method.AllExpressions
+where assignment.Kind == ExpressionKind.Assignment
+   && method.Parameters.Any(p => p.Name == assignment.Left?.Name)
+select $"{assignment.Location}: do not assign to the parameter {assignment.Left!.Name}";
+
+// Classic extension methods move into C# 14 extension blocks
+from type in trees.AllTypes()
+where type.HasExtensionMembers
+from method in type.Methods
+where method.IsExtension && !method.IsInExtensionBlock
+select $"{method.Location}: move {method.Name} into an extension block";
+```
+
+### With symbols
+
+The syntax sees `Sleep(100)` and cannot tell whose `Sleep` it is. With `ParseMode.WithSymbols` the
+compiler can, `using static` and aliases included:
+
+```csharp
+// No Thread.Sleep, however it is written
+from call in trees.AllInvocations()
+where call.Method?.FullyQualifiedName == "System.Threading.Thread.Sleep"
+select $"{call.Location}: Thread.Sleep blocks a thread, await Task.Delay instead";
+
+// Tests do not ask for the response to be written
+from call in solution.UnitTestTrees.AllInvocations().Named("AssertPostAsync")
+where call.Passes("writeResponse", true)
+select $"{call.Location}: writeResponse is true";
+```
+
 ## What the model gives you
 
 Every declaration carries a `Location`, so a finding points at the source instead of only naming the
@@ -171,6 +306,9 @@ tree.AllMethods()             // every method of the file
 type.DescendantTypes()        // every type declared inside this one, at any depth
 type.AllMethods()             // this type and every type nested in it
 solution.AllTrees.AllTypes()  // the same across a whole solution
+
+trees.AllMethods() / AllProperties() / AllFields() / AllInvocations() / AllLocalVariables()
+trees.AllMembersWithBody()    // methods, constructors, operators, accessors, local functions: every body
 ```
 
 Predicates that read the way a rule means: `IsPublic()`, `IsStatic()`, `IsSealed()`, `IsAbstract()`,
@@ -219,7 +357,10 @@ method.TryStatements                       // Catches with ExceptionType, Filter
 method.SwitchStatements                    // Subject, Sections with Labels (Value, WhenClause), HasDefault
 method.SwitchExpressions                   // Arms with Pattern, TypedPattern, WhenClause, Result; HasDiscardArm
 method.IfStatements / Loops / Returns / Throws
+ifStatement.ElseCount / ElseIfs / IsElseIf // the else-if chain, counted once from its first if
+statement.EndsWithJump                     // ends in return, throw, break, continue or goto
 statement.Invocations                      // the calls inside one statement
+statement.Expressions                      // what the statement holds: condition, value, initializers
 tree.Statements                            // top level statements, typed the same way
 
 from catchClause in method.TryStatements.SelectMany(t => t.Catches)
@@ -479,6 +620,8 @@ The short version for 7.0:
 | `method.IsAsync()`, guessed from the return type's name | `method.IsAsync` for the `async` modifier, `method.ReturnType.IsTask` for an awaitable return |
 | `method.UseCorrectAsyncNaming()` | `method.Name.EndsWith("Async")` |
 | calls in accessors and extension blocks were invisible | `AllInvocations` and friends include them, so rules may report more |
+| positional record parameters were missing from `Properties` | they are in it, marked `IsPositional`, so rules may report more |
+| `RecordExtensions`, `AddCodeFormatter`, `FormatSyntaxTree` | removed, they generated code rather than parsed it |
 
 The short version for 6.0, all of it caught by the compiler:
 

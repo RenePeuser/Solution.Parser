@@ -37,6 +37,15 @@ namespace Solution.Parser.CSharp
         public ImmutableList<Invocation> Invocations { get; init; } = ImmutableList<Invocation>.Empty;
 
         /// <summary>
+        /// True when the statement leaves for good at its end: a <c>return</c>, <c>throw</c>,
+        /// <c>break</c>, <c>continue</c>, <c>goto</c> or <c>yield break</c>, or a block whose last statement
+        /// does. An <c>else</c> after such a branch is not needed, the code can go on after the <c>if</c>.
+        /// </summary>
+        public bool EndsWithJump => Kind is StatementKind.Return or StatementKind.Throw or StatementKind.Break
+                                        or StatementKind.Continue or StatementKind.Goto or StatementKind.YieldBreak ||
+                                    (Kind == StatementKind.Block && Children.LastOrDefault()?.EndsWithJump == true);
+
+        /// <summary>
         /// The expressions this statement itself holds, not those of nested statements: the
         /// expression of an expression statement, the initializers of a declaration, the condition of
         /// an <c>if</c> or a loop, what is returned, thrown, yielded, switched on, walked, locked or

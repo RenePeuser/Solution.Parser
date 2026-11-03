@@ -56,6 +56,9 @@ Rules may report more than before, because they now see code they could not see:
   `Lines` in `Properties`, marked `IsPositional`, with `get; init;` (`get; set;` in a `record struct`
   that is not `readonly`). A property the record declares itself wins over its parameter. Rules over
   `Properties` see them now; `Parameters` still lists the parameters as before.
+- New queries over several files: `trees.AllMethods()`, `AllProperties()`, `AllFields()` and
+  `AllMembersWithBody()`, next to the `AllTypes()` and `AllInvocations()` there were.
+- New on `IfStatement`: `IsElseIf`, `ElseIfs` and `ElseCount`; on every statement `EndsWithJump`.
 - New on `TypeReference`: `IsImmutableCollection`, `IsReadOnlyCollection`, `IsMutableCollection`,
   `IsImmutable` and `IsImmutableWith(...)`; a rule that kept its own list of immutable type names can use them.
 - `parameter.Modifiers` holds `Modifier.This` for the receiver of a classic extension method; it

@@ -15,6 +15,43 @@ namespace Solution.Parser.CSharp
         public Statement? Else { get; init; }
 
         public bool HasElse => Else is not null;
+
+        /// <summary>
+        /// True for the <c>if</c> of an <c>else if</c>, which is the else branch of the <c>if</c> before it.
+        /// A rule about a whole chain starts from the ifs where this is false, so it counts each chain once.
+        /// </summary>
+        public bool IsElseIf { get; init; }
+
+        /// <summary>The <c>else if</c> branches that follow this <c>if</c>, in order; empty when there are none.</summary>
+        public ImmutableList<IfStatement> ElseIfs
+        {
+            get
+            {
+                var elseIfs = ImmutableList.CreateBuilder<IfStatement>();
+
+                for (var next = Else as IfStatement; next is not null; next = next.Else as IfStatement)
+                {
+                    elseIfs.Add(next);
+                }
+
+                return elseIfs.ToImmutable();
+            }
+        }
+
+        /// <summary>
+        /// How often <c>else</c> is written in the chain from here: every <c>else if</c> and a final
+        /// <c>else</c>. 0 for a plain <c>if</c>, 3 for <c>if ... else if ... else if ... else</c>.
+        /// </summary>
+        public int ElseCount
+        {
+            get
+            {
+                var elseIfs = ElseIfs;
+                var last = elseIfs.IsEmpty ? this : elseIfs[^1];
+
+                return elseIfs.Count + (last.HasElse ? 1 : 0);
+            }
+        }
     }
 
     /// <summary>
