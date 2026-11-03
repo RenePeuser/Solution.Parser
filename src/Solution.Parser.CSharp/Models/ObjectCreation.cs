@@ -8,7 +8,7 @@ namespace Solution.Parser.CSharp
     /// </summary>
     /// <example>
     /// <code>
-    /// from method in tree.AllMethods()
+    /// from method in tree.Methods
     /// from creation in method.ObjectCreations
     /// where creation.TypeReference.Is("HttpClient")
     /// select $"{creation.Location}: use IHttpClientFactory instead of new HttpClient()";

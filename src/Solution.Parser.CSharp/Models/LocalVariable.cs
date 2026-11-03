@@ -14,7 +14,7 @@ namespace Solution.Parser.CSharp
     /// </remarks>
     /// <example>
     /// <code>
-    /// from method in tree.AllMethods()
+    /// from method in tree.Methods
     /// from variable in method.LocalVariables
     /// where variable.Invocations.Named("GetQueryProvider").Any() &amp;&amp; !variable.IsUsing
     /// select $"{variable.Location}: dispose {variable.Name} with 'using var'";

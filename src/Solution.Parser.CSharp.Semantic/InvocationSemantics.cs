@@ -10,7 +10,7 @@ namespace Solution.Parser.CSharp
     /// </summary>
     /// <example>
     /// <code>
-    /// from call in tree.AllInvocations().Named("AssertPostAsync")
+    /// from call in tree.Invocations.Named("AssertPostAsync")
     /// where call.Passes("writeResponse", true)
     /// select $"{call.Location}: writeResponse is true";
     /// </code>

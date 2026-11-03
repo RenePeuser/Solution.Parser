@@ -86,7 +86,7 @@ namespace Solution.Parser.CSharp.Test
                 }
                 """);
 
-            var inner = parsed.Classes.Single().NestedTypes.Single();
+            var inner = parsed.Classes.Single(c => c.Name == "Outer").NestedTypes.Single();
 
             Assert.That.AreEqual("My.Sample.Outer.Inner",
                                  inner.FullyQualifiedName,

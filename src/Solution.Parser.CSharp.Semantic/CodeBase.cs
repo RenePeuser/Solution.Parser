@@ -29,6 +29,8 @@ namespace Solution.Parser.CSharp
     {
         private readonly Workspace _workspace;
 
+        private readonly System.Collections.Concurrent.ConcurrentDictionary<string, ImmutableList<CSharpSyntaxTree>> _projectTrees = new(Workspace.PathComparer);
+
         private CodeBase(Workspace workspace,
                          SolutionFile? solution,
                          bool hasSymbols)
@@ -44,12 +46,16 @@ namespace Solution.Parser.CSharp
         /// <summary>True after <see cref="WithSymbols"/>.</summary>
         public bool HasSymbols { get; }
 
-        /// <summary>Every syntax tree of every project, a file linked into two projects once.</summary>
-        public ImmutableList<CSharpSyntaxTree> AllTrees => TreesOf(_workspace.Projects);
+        /// <summary>
+        /// Every syntax tree of every project, a file linked into two projects once. Built once: a file is
+        /// parsed once, and handing out the same list lets <c>trees.Methods</c> and the other lists of many
+        /// files be built once as well, however often a rule suite asks for them.
+        /// </summary>
+        public ImmutableList<CSharpSyntaxTree> AllTrees => field ??= TreesOf(_workspace.Projects);
 
-        internal ImmutableList<CSharpSyntaxTree> ProductionTrees => Solution is null ? AllTrees : Trees(Solution.ProductionProjects);
+        internal ImmutableList<CSharpSyntaxTree> ProductionTrees => field ??= Solution is null ? AllTrees : Trees(Solution.ProductionProjects);
 
-        internal ImmutableList<CSharpSyntaxTree> UnitTestTrees => Solution is null ? ImmutableList<CSharpSyntaxTree>.Empty : Trees(Solution.UnitTestProjects);
+        internal ImmutableList<CSharpSyntaxTree> UnitTestTrees => field ??= Solution is null ? ImmutableList<CSharpSyntaxTree>.Empty : Trees(Solution.UnitTestProjects);
 
         internal Workspace Workspace => _workspace;
 
@@ -120,7 +126,8 @@ namespace Solution.Parser.CSharp
         {
             Throw.IfNull(project);
 
-            return Trees([project]);
+            // The same list for the same project, so the lists of its files are built once, see AllTrees.
+            return _projectTrees.GetOrAdd(project.Path, _ => Trees([project]));
         }
 
         internal ImmutableList<CSharpSyntaxTree> Trees(ImmutableList<ProjectFile> projects)

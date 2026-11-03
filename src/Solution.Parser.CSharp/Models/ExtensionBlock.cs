@@ -6,7 +6,7 @@ namespace Solution.Parser.CSharp
     /// <summary>
     /// A C# 14 extension block, <c>extension(string value) { ... }</c>, inside a static class. It is
     /// no type of its own: its members extend <see cref="Receiver"/>, and the compiler emits them on the
-    /// static class. So <c>AllMethods</c>, <c>AllProperties</c> and <c>AllMembersWithBody</c> include
+    /// static class. So <c>tree.Methods</c>, <c>tree.Properties</c> and <c>tree.MembersWithBody</c> include
     /// them, while <see cref="TypeDeclaration.Methods"/> keeps to what the class declares itself.
     /// </summary>
     /// <example>

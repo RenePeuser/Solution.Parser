@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using AspNetCore.Simple.MsTest.Sdk;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -38,7 +38,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
                 }
                 """);
 
-            var call = code.AllTrees.AllInvocations().Named("AssertPostAsync").Single();
+            var call = code.AllTrees.Invocations.Named("AssertPostAsync").Single();
             var writeResponse = call.ArgumentFor("writeResponse");
 
             Assert.That.IsTrue(call.IsResolved, because: "the extension method is declared right there", fix: ResolverFix);
@@ -60,7 +60,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
                 }
                 """);
 
-            var call = code.AllTrees.AllInvocations().Single();
+            var call = code.AllTrees.Invocations.Single();
 
             Assert.That.AreEqual<string>(["client", "url", "body", "writeResponse"],
                                          call.BoundArguments.Select(a => a.Parameter.Name),
@@ -85,7 +85,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
                 }
                 """);
 
-            var writeResponse = code.AllTrees.AllInvocations().Single().ArgumentFor("writeResponse")!;
+            var writeResponse = code.AllTrees.Invocations.Single().ArgumentFor("writeResponse")!;
 
             Assert.That.IsFalse(writeResponse.IsExplicit, because: "the caller did not pass it", fix: ResolverFix);
             Assert.That.IsNull(writeResponse.Expression, because: "nothing was written", fix: ResolverFix);
@@ -107,7 +107,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
                 }
                 """);
 
-            var calls = code.AllTrees.AllInvocations();
+            var calls = code.AllTrees.Invocations;
 
             Assert.That.All(calls,
                             c => c.ArgumentFor("writeResponse")!.Is(true),
@@ -133,7 +133,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
                 }
                 """);
 
-            var calls = code.AllTrees.AllInvocations().Named("Go");
+            var calls = code.AllTrees.Invocations.Named("Go");
 
             Assert.That.AreEqual<string>(["string", "int"],
                                          calls.Select(c => c.Method!.Parameters.Single().Type),
@@ -153,8 +153,8 @@ namespace Solution.Parser.CSharp.Semantic.Test
                 """);
 
             var tree = code.AllTrees.Single();
-            var declared = tree.AllMethods().Single(m => m.Name == "Run");
-            var resolved = tree.AllInvocations().Single().Method;
+            var declared = tree.Methods.Single(m => m.Name == "Run");
+            var resolved = tree.Invocations.Single().Method;
 
             Assert.That.IsTrue(ReferenceEquals(declared, resolved),
                                because: "one vocabulary: a resolved method of the code base is the very record a rule already walks",
@@ -172,7 +172,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
                 }
                 """);
 
-            var call = code.AllTrees.AllInvocations().Single();
+            var call = code.AllTrees.Invocations.Single();
 
             Assert.That.AreEqual("System.Console.WriteLine", call.Method?.FullyQualifiedName, because: "the method is known from metadata", fix: ResolverFix);
             Assert.That.AreEqual("value", call.ArgumentFor("value")?.Parameter.Name, because: "parameter names live in the metadata", fix: ResolverFix);
@@ -199,7 +199,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
                 }
                 """);
 
-            var values = code.AllTrees.AllInvocations().Single().ArgumentFor("values")!;
+            var values = code.AllTrees.Invocations.Single().ArgumentFor("values")!;
 
             Assert.That.AreEqual("1, 2", values.Expression, because: "every element passed for params belongs to the one parameter", fix: ResolverFix);
             Assert.That.IsTrue(values.IsExplicit, because: "elements were passed", fix: ResolverFix);
@@ -215,7 +215,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
                 }
                 """);
 
-            var call = code.AllTrees.AllInvocations().Single();
+            var call = code.AllTrees.Invocations.Single();
 
             Assert.That.AreEqual(ResolutionStatus.Unresolved, call.Resolution, because: "nothing of that name exists", fix: ResolverFix);
             Assert.That.IsNull(call.Method, because: "there is no method to report", fix: ResolverFix);
@@ -234,7 +234,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
                 }
                 """);
 
-            var call = code.AllTrees.AllInvocations().Single();
+            var call = code.AllTrees.Invocations.Single();
 
             Assert.That.AreEqual(ResolutionStatus.Ambiguous, call.Resolution, because: "null fits both overloads equally", fix: ResolverFix);
             Assert.That.HasCount(2, call.Candidates, because: "a rule can tell the user which overloads compete", fix: ResolverFix);
@@ -251,7 +251,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
                 }
                 """);
 
-            var call = code.AllTrees.AllInvocations().Single();
+            var call = code.AllTrees.Invocations.Single();
 
             var exception = Assert.ThrowsExactly<InvalidOperationException>(() => _ = call.Method);
 
@@ -265,15 +265,15 @@ namespace Solution.Parser.CSharp.Semantic.Test
         {
             var code = SyntaxOnly("public class A { void Go() => Go(); }");
 
-            _ = code.AllTrees.AllInvocations();
+            _ = code.AllTrees.Invocations;
 
             Assert.That.AreEqual(0, code.Workspace.CompilationCount,
                                  because: "symbols cost time and memory, a rule that does not ask for them must not pay",
                                  fix: "Check that nothing on the fast path calls Workspace.Compilation");
 
             var full = code.WithSymbols();
-            _ = full.AllTrees.AllInvocations().Single().Method;
-            _ = full.AllTrees.AllInvocations().Single().Method;
+            _ = full.AllTrees.Invocations.Single().Method;
+            _ = full.AllTrees.Invocations.Single().Method;
 
             Assert.That.AreEqual(1, code.Workspace.CompilationCount,
                                  because: "the full mode compiles once, on first use, and shares the caches with the fast mode",
@@ -300,7 +300,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
                 }
                 """);
 
-            var calls = code.AllTrees.AllInvocations();
+            var calls = code.AllTrees.Invocations;
             var select = calls.Named("Select").Single().Method!;
             var whisper = calls.Named("Whisper").Single().Method!;
             var trim = calls.Named("Trim").Single().Method!;

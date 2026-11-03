@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using AspNetCore.Simple.MsTest.Sdk;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Solution.Parser.CSharp.Test.ParseHelper;
@@ -202,9 +202,9 @@ namespace Solution.Parser.CSharp.Test
                 """);
 
             Assert.That.AreEqual<string>(["inCtor", "inExpression", "inNested"],
-                                         tree.AllLocalVariables().Select(v => v.Name).Order(),
+                                         tree.LocalVariables.Select(v => v.Name).Order(),
                                          because: "a file wide rule starts from every variable of every member",
-                                         fix: "Walk AllTypes and AllMembersWithBody in AllLocalVariables");
+                                         fix: "Walk every type and member with a body in CSharpSyntaxTree.LocalVariables");
         }
     }
 }

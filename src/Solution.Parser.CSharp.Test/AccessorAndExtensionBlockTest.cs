@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using AspNetCore.Simple.MsTest.Sdk;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Solution.Parser.CSharp.Test.ParseHelper;
@@ -78,9 +78,9 @@ namespace Solution.Parser.CSharp.Test
                                fix: "Set Event.Add and Event.Remove in EventDeclarationSyntaxExtensions");
 
             Assert.That.AreEqual<string>(["Calculate", "Validate", "Format", "Lookup", "Subscribe", "Unsubscribe"],
-                                         ParseCode(holder.SourceCode).AllInvocations().Select(i => i.Name),
+                                         ParseCode(holder.SourceCode).Invocations.Select(i => i.Name),
                                          because: "a rule over every call of a file must see the calls in accessors",
-                                         fix: "Include the accessors in QueryExtensions.AllMembersWithBody");
+                                         fix: "Include the accessors in QueryExtensions.AllMembersWithBody(TypeDeclaration), which CSharpSyntaxTree.MembersWithBody builds on");
         }
 
         [TestMethod]
@@ -141,15 +141,15 @@ namespace Solution.Parser.CSharp.Test
                                  fix: "Read the TypeParameterList of the block");
 
             Assert.That.AreEqual<string>(["Shout", "Empty"],
-                                         tree.AllMethods().Select(m => m.Name),
+                                         tree.Methods.Select(m => m.Name),
                                          because: "a rule over all methods must see the extension members",
-                                         fix: "Include ExtensionBlocks in QueryExtensions.AllMethods");
+                                         fix: "Include ExtensionBlocks in QueryExtensions.MethodsOf, which CSharpSyntaxTree.Methods builds on");
 
             // Member kind by member kind, as for any type: methods before property accessors.
             Assert.That.AreEqual<string>(["ToUpper", "IsNullOrWhiteSpace"],
-                                         tree.AllInvocations().Select(i => i.Name),
+                                         tree.Invocations.Select(i => i.Name),
                                          because: "the calls in extension members count",
-                                         fix: "Include ExtensionBlocks in QueryExtensions.AllMembersWithBody");
+                                         fix: "Include ExtensionBlocks in QueryExtensions.AllMembersWithBody(TypeDeclaration)");
         }
 
         [TestMethod]
@@ -177,9 +177,9 @@ namespace Solution.Parser.CSharp.Test
                 }
                 """);
 
-            var shout = tree.AllMethods().Named("Shout").Single();
-            var whisper = tree.AllMethods().Named("Whisper").Single();
-            var isBlank = tree.AllProperties().Named("IsBlank").Single();
+            var shout = tree.Methods.Named("Shout").Single();
+            var whisper = tree.Methods.Named("Whisper").Single();
+            var isBlank = tree.Properties.Named("IsBlank").Single();
 
             Assert.That.IsTrue(shout is { IsExtension: true, IsInExtensionBlock: false, ExtensionReceiver: { Name: "value", IsThis: true } },
                                because: "this string value makes a classic extension method",
@@ -189,7 +189,7 @@ namespace Solution.Parser.CSharp.Test
                                because: "a member of an extension block extends the receiver of the block",
                                fix: "Set ExtensionReceiver on the members in ToExtensionBlocks");
 
-            Assert.That.IsFalse(tree.AllMethods().Named("Plain").Single().IsExtension || tree.AllMethods().Named("Go").Single().IsExtension,
+            Assert.That.IsFalse(tree.Methods.Named("Plain").Single().IsExtension || tree.Methods.Named("Go").Single().IsExtension,
                                 because: "a static method without this extends nothing",
                                 fix: "Only a first parameter with this makes an extension method");
 

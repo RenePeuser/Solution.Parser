@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using AspNetCore.Simple.MsTest.Sdk;
@@ -100,7 +100,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
                 }
                 """).WithSymbols();
 
-            var calls = code.AllTrees.AllInvocations().Named("AssertPostAsync");
+            var calls = code.AllTrees.Invocations.Named("AssertPostAsync");
 
             Assert.That.IsTrue(calls[0].Passes("writeResponse", true), because: "the third argument fills writeResponse", fix: ConsumerApiFix);
             Assert.That.IsTrue(calls[1].Passes("writeResponse", false), because: "a named argument binds by name", fix: ConsumerApiFix);
@@ -118,7 +118,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
                 }
                 """).WithSymbols();
 
-            Assert.That.IsFalse(code.AllTrees.AllInvocations().Single().Passes("anything", true), because: "an unresolved call binds no argument", fix: ConsumerApiFix);
+            Assert.That.IsFalse(code.AllTrees.Invocations.Single().Passes("anything", true), because: "an unresolved call binds no argument", fix: ConsumerApiFix);
         }
 
         [TestMethod]
@@ -134,9 +134,9 @@ namespace Solution.Parser.CSharp.Semantic.Test
                 }
                 """).AllTrees.Single();
 
-            Assert.That.HasCount(1, tree.AllMethods().Named("Dispose"), because: "Named works on methods as on calls", fix: ConsumerApiFix);
+            Assert.That.HasCount(1, tree.Methods.Named("Dispose"), because: "Named works on methods as on calls", fix: ConsumerApiFix);
             Assert.That.HasCount(2,
-                                 tree.AllMethods().SelectMany(m => m.Attributes).Named("Obsolete"),
+                                 tree.Methods.SelectMany(m => m.Attributes).Named("Obsolete"),
                                  because: "an attribute matches with and without its suffix, and Named gives all of them",
                                  fix: ConsumerApiFix);
         }

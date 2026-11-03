@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using AspNetCore.Simple.MsTest.Sdk;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -21,9 +21,9 @@ namespace Solution.Parser.CSharp.Semantic.Test
             const string Code = "public class A { void Go() => Run(); void Run() { } }";
 
             var fast = CodeBase.FromSources((fileName, Code));
-            _ = CodeBase.FromSources((fileName, Code)).WithSymbols().AllTrees.AllInvocations().Single().Method;
+            _ = CodeBase.FromSources((fileName, Code)).WithSymbols().AllTrees.Invocations.Single().Method;
 
-            var call = fast.AllTrees.AllInvocations().Single();
+            var call = fast.AllTrees.Invocations.Single();
 
             Assert.ThrowsExactly<InvalidOperationException>(() => _ = call.Method);
             Assert.That.AreEqual(0, fast.Workspace.CompilationCount, because: "the fast mode must not borrow symbols from another code base", fix: IsolationFix);
@@ -37,8 +37,8 @@ namespace Solution.Parser.CSharp.Semantic.Test
             var first = CodeBase.FromSources((fileName, "public class A { void Go() => First(1); void First(int first) { } }")).WithSymbols();
             var second = CodeBase.FromSources((fileName, "public class A { void Go() => Second(true); void Second(bool second) { } }")).WithSymbols();
 
-            var firstCall = first.AllTrees.AllInvocations().Single();
-            var secondCall = second.AllTrees.AllInvocations().Single();
+            var firstCall = first.AllTrees.Invocations.Single();
+            var secondCall = second.AllTrees.Invocations.Single();
 
             Assert.That.AreEqual("First", firstCall.Method?.Name, because: "the first code base was opened first but still knows its own code", fix: IsolationFix);
             Assert.That.AreEqual("Second", secondCall.Method?.Name, because: "the second code base knows its own code", fix: IsolationFix);

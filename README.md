@@ -25,10 +25,9 @@ using Solution.Parser.Sln;      // SolutionFile
 
 var solution = SolutionFile.Find("MySolution.sln");   // searched upwards from the running test
 
-var findings = from type in solution.ProductionTrees.AllTypes()
-               from property in type.Properties
+var findings = from property in solution.ProductionTrees.Properties
                where !property.IsReadOnly
-               select $"{property.Location}: {type.FullyQualifiedName}.{property.Name} is mutable";
+               select $"{property.Location}: {property.FullyQualifiedName} is mutable";
 
 findings.ShouldBeEmpty("Properties must be immutable");
 ```
@@ -148,19 +147,19 @@ in `ReadmeSamplesTest` and `ReadmeSemanticSamplesTest`, so the samples cannot dr
 
 ```csharp
 // Inject the clock: DateTime.Now cannot be tested
-from member in trees.AllMembersWithBody()
+from member in trees.MembersWithBody
 from access in member.MemberAccesses
 where access.Target == "DateTime" && access.Name is "Now" or "UtcNow" or "Today"
 select $"{access.Location}: inject TimeProvider instead of {access.SourceCode}";
 
 // No async void, event handlers aside
-from method in trees.AllMethods()
+from method in trees.Methods
 where method.IsAsync && method.ReturnType.IsVoid
 where !method.Parameters.LastOrDefault()?.TypeReference.Name.EndsWith("EventArgs", StringComparison.Ordinal) ?? true
 select $"{method.Location}: {method.Name} is async void, return a Task";
 
 // Awaitable methods end in Async
-from method in trees.AllMethods()
+from method in trees.Methods
 where method.ReturnType.IsTask && !method.Name.EndsWith("Async", StringComparison.Ordinal)
 select $"{method.Location}: {method.Name} returns {method.ReturnType.Name}, call it {method.Name}Async";
 ```
@@ -169,18 +168,18 @@ select $"{method.Location}: {method.Name} returns {method.ReturnType.Name}, call
 
 ```csharp
 // Structured logging: a template, not an interpolated string
-from call in trees.AllInvocations()
+from call in trees.Invocations
 where call.Name.StartsWith("Log", StringComparison.Ordinal) && call.Arguments.Any(a => a.Kind == ExpressionKind.InterpolatedString)
 select $"{call.Location}: {call.Name} with an interpolated string loses the structure, pass a template";
 
 // No new HttpClient(), it exhausts sockets
-from member in trees.AllMembersWithBody()
+from member in trees.MembersWithBody
 from creation in member.ObjectCreations
 where creation.TypeName == "HttpClient"
 select $"{creation.Location}: use IHttpClientFactory instead of new HttpClient()";
 
 // Every minimal API endpoint requires authorization
-from method in trees.AllMethods()
+from method in trees.Methods
 from chain in method.InvocationChains
 where chain.Contains("MapGet") && !chain.After("MapGet").Any(c => c.Name == "RequireAuthorization")
 select $"{chain.Location}: {chain.First.Arguments[0].StringValue} is not protected";
@@ -190,13 +189,13 @@ select $"{chain.Location}: {chain.First.Arguments[0].StringValue} is not protect
 
 ```csharp
 // Records hold no mutable collections, positional properties included
-from record in trees.AllTypes().OfType<Record>()
+from record in trees.Records
 from property in record.Properties
 where property.TypeReference.IsMutableCollection
 select $"{property.Location}: {record.Name}.{property.Name} is a {property.TypeReference.Name}, use an immutable collection";
 
 // Getters do not throw, whether in a block or as => x ?? throw
-from property in trees.AllProperties()
+from property in trees.Properties
 let getter = property.Accessors.Get
 where getter is not null
 where getter.Throws.Any() || getter.AllExpressions.Any(e => e.Kind == ExpressionKind.Throw)
@@ -207,32 +206,32 @@ select $"{property.Location}: the getter of {property.Name} throws, make it a me
 
 ```csharp
 // Early exit instead of else-if ladders: more than two else in one chain
-from member in trees.AllMembersWithBody()
+from member in trees.MembersWithBody
 from chain in member.IfStatements
 where !chain.IsElseIf && chain.ElseCount > 2
 select $"{chain.Location}: {member.Name} has an if with {chain.ElseCount} else, use early returns, a switch or a lookup";
 
 // No else after a branch that returns, throws, breaks or continues
-from member in trees.AllMembersWithBody()
+from member in trees.MembersWithBody
 from statement in member.IfStatements
 where statement.HasElse && statement.Then.EndsWithJump
 select $"{statement.Location}: the if in {member.Name} returns, drop the else and go on after it";
 
 // Null checks read as null checks: x is null, x is not null
-from member in trees.AllMembersWithBody()
+from member in trees.MembersWithBody
 from expression in member.AllExpressions
 where (expression.Operator is "==" or "!=" && expression.Right?.Kind == ExpressionKind.NullLiteral)
    || expression.Pattern is { Kind: PatternKind.Recursive, IsNotNull: true }
 select $"{expression.Location}: write {expression.SourceCode} as is null or is not null";
 
 // A switch expression has a _ arm
-from member in trees.AllMembersWithBody()
+from member in trees.MembersWithBody
 from switchExpression in member.SwitchExpressions
 where !switchExpression.HasDiscardArm
 select $"{switchExpression.Location}: {member.Name} switches without a _ arm";
 
 // Parameters are not reassigned
-from method in trees.AllMethods()
+from method in trees.Methods
 from assignment in method.AllExpressions
 where assignment.Kind == ExpressionKind.Assignment
    && method.Parameters.Any(p => p.Name == assignment.Left?.Name)
@@ -246,6 +245,39 @@ where method.IsExtension && !method.IsInExtensionBlock
 select $"{method.Location}: move {method.Name} into an extension block";
 ```
 
+### Code inside code
+
+A rule walks the code the way you read it: the method, the loop in it, what happens in the loop.
+Every statement answers the same questions as its method, only for the code it spans:
+
+```csharp
+// No loop inside a loop: use a lookup
+from method in trees.Methods
+from loop in method.Loops
+from inner in loop.Loops
+select $"{inner.Location}: {method.Name} runs a {inner.Kind} inside a {loop.Kind}, use a lookup";
+
+// No save inside a loop
+from member in trees.MembersWithBody
+from loop in member.Loops
+from call in loop.Invocations
+where call.Name is "SaveChanges" or "SaveChangesAsync"
+select $"{call.Location}: {member.Name} calls {call.Name} once per item, save after the loop";
+
+// No await inside a foreach: start the tasks and await them together
+from member in trees.MembersWithBody
+from loop in member.ForEachLoops
+from awaited in loop.Awaits
+select $"{awaited.Location}: {member.Name} awaits one at a time, start the tasks and await Task.WhenAll";
+
+// throw; keeps the stack trace, throw ex; does not
+from member in trees.MembersWithBody
+from catchClause in member.CatchClauses
+from throwStatement in catchClause.Block.Throws
+where catchClause.VariableName is not null && throwStatement.Value?.Name == catchClause.VariableName
+select $"{throwStatement.Location}: {throwStatement.SourceCode} loses the stack trace, write throw;";
+```
+
 ### With symbols
 
 The syntax sees `Sleep(100)` and cannot tell whose `Sleep` it is. With `ParseMode.WithSymbols` the
@@ -253,12 +285,12 @@ compiler can, `using static` and aliases included:
 
 ```csharp
 // No Thread.Sleep, however it is written
-from call in trees.AllInvocations()
+from call in trees.Invocations
 where call.Method?.FullyQualifiedName == "System.Threading.Thread.Sleep"
 select $"{call.Location}: Thread.Sleep blocks a thread, await Task.Delay instead";
 
 // Tests do not ask for the response to be written
-from call in solution.UnitTestTrees.AllInvocations().Named("AssertPostAsync")
+from call in solution.UnitTestTrees.Invocations.Named("AssertPostAsync")
 where call.Passes("writeResponse", true)
 select $"{call.Location}: writeResponse is true";
 ```
@@ -269,10 +301,9 @@ Every declaration carries a `Location`, so a finding points at the source instea
 type. `Location.ToString()` renders `path(line,column)`, which test runners and IDEs turn into a link:
 
 ```csharp
-var findings = from type in solution.ProductionTrees.AllTypes()
-               from property in type.Properties
+var findings = from property in solution.ProductionTrees.Properties
                where !property.IsReadOnly
-               select $"{property.Location}: {type.FullyQualifiedName}.{property.Name} is mutable";
+               select $"{property.Location}: {property.FullyQualifiedName} is mutable";
 
 // D:\repo\src\Person.cs(12,5): My.Sample.Person.Name is mutable
 ```
@@ -287,29 +318,59 @@ Types also report `Indexers`, `Operators`, `Delegates` and `Finalizers`, and `Ty
 `record` from a `record struct`. `tree.Diagnostics` surfaces what Roslyn reported while parsing, so a
 rule can assert that no file has a syntax error rather than silently trusting an incomplete model.
 
-## Nesting
+## Read it like the code
 
-A member belongs to the type that declares it. `type.Methods` holds the methods of that type, and the
-methods of a nested type belong to the nested type:
+One file is one `CSharpSyntaxTree`. A rule walks it the way you read the file: its classes, their
+methods, the loops in them:
 
 ```csharp
-tree.Types              // the types declared at file level
-type.NestedTypes        // the types declared directly inside this type
+var tree = CSharpSyntaxTree.Parse(@"D:\repo\src\Order.cs");
+
+from @class in tree.Classes          // every class of the file, nested ones included
+from method in @class.Methods        // the methods of this class
+from loop in method.Loops            // the loops of this method
+from inner in loop.Loops             // the loops inside this loop
+select inner.Location;
+```
+
+A file lists everything it declares, nested types included, and a list of files, such as
+`solution.ProductionTrees`, has the very same lists for all of them:
+
+```csharp
+tree.Classes / Records / Structs / Interfaces / Enums
+tree.Methods / Properties / Fields / Constructors
+tree.MembersWithBody          // methods, constructors, operators, accessors, local functions: every body
+tree.Invocations / LocalVariables
+
+trees.Classes / trees.Methods / trees.MembersWithBody / ...   // the same over many files
+```
+
+A type holds what it declares itself; the members of a nested type belong to the nested type:
+
+```csharp
 type.Methods            // the methods declared directly in this type
+type.NestedTypes        // the types declared directly inside this type
+type.AllMethods()       // this type and every type nested in it
+type.DescendantTypes()  // every type declared inside this one, at any depth
+tree.Types              // the structure as written: the types at file level, holding their nested ones
+tree.AllTypes()         // every type of the file regardless of kind, nested ones included
 ```
 
-To walk everything, ask for it:
+The lists are built on first use and then kept: a file is parsed once, so every rule after the first
+reads them for free, and `solution.ProductionTrees` hands out the same list every time, so
+`solution.ProductionTrees.Methods` is built once as well.
+
+A `partial` class written in several files is in `Classes` once per file, each part where it is
+written. For a rule about the class as a whole, `trees.WholeTypes` joins the parts:
 
 ```csharp
-tree.AllTypes()               // every type of the file, nested ones included
-tree.AllMethods()             // every method of the file
-type.DescendantTypes()        // every type declared inside this one, at any depth
-type.AllMethods()             // this type and every type nested in it
-solution.AllTrees.AllTypes()  // the same across a whole solution
-
-trees.AllMethods() / AllProperties() / AllFields() / AllInvocations() / AllLocalVariables()
-trees.AllMembersWithBody()    // methods, constructors, operators, accessors, local functions: every body
+from type in trees.WholeTypes
+where type.Methods.Count > 20
+select $"{type.Location}: {type.Name} has {type.Methods.Count} methods in {type.Parts.Count} files";
 ```
+
+The top level statements of `Program.cs` are in `tree.Statements`, and each of them answers the same
+questions as a statement in a method: `Loops`, `Awaits`, `ObjectCreations` and the rest.
 
 Predicates that read the way a rule means: `IsPublic()`, `IsStatic()`, `IsSealed()`, `IsAbstract()`,
 `IsPartial()`, `IsOverride()`, `IsVirtual()`, `HasAttribute(name)`, `Implements(name)`,
@@ -319,7 +380,7 @@ Every member with a body reports the method calls in it, lambdas included, a loc
 
 ```csharp
 method.Invocations                         // Client.AssertPostAsync("..", "..", true)
-tree.AllInvocations().Named("AssertPostAsync")   // Named works on any declaration list
+tree.Invocations.Named("AssertPostAsync")   // Named works on any declaration list
 call.Target                                // "Client"
 call.Arguments                             // as written, in source order
 call.NamedArgument("writeResponse")        // only what is written as writeResponse: true
@@ -335,7 +396,7 @@ variable.Kind                              // Declaration, UsingStatement, ForEa
 variable.IsUsing / IsAwaitUsing / IsConst / IsVar
 variable.Initializer                       // "factory.GetQueryProvider()"
 variable.Invocations                       // the calls inside the initializer
-tree.AllLocalVariables()
+tree.LocalVariables
 ```
 
 …what it creates, writes and reads:
@@ -356,17 +417,26 @@ method.AllStatements                       // flat, at any depth, lambdas includ
 method.TryStatements                       // Catches with ExceptionType, Filter, IsEmpty, CatchesAll, IsRethrowing; Finally
 method.SwitchStatements                    // Subject, Sections with Labels (Value, WhenClause), HasDefault
 method.SwitchExpressions                   // Arms with Pattern, TypedPattern, WhenClause, Result; HasDiscardArm
-method.IfStatements / Loops / Returns / Throws
+method.IfStatements / Returns / Throws / UsingStatements / CatchClauses
+method.Loops / ForLoops / ForEachLoops / WhileLoops / DoWhileLoops
+loop.IsFor / IsForEach / IsWhile / IsDoWhile / IsAwait
 ifStatement.ElseCount / ElseIfs / IsElseIf // the else-if chain, counted once from its first if
 statement.EndsWithJump                     // ends in return, throw, break, continue or goto
 statement.Invocations                      // the calls inside one statement
 statement.Expressions                      // what the statement holds: condition, value, initializers
 tree.Statements                            // top level statements, typed the same way
 
-from catchClause in method.TryStatements.SelectMany(t => t.Catches)
+from catchClause in method.CatchClauses
 where catchClause.CatchesAll && catchClause.IsEmpty
 select $"{catchClause.Location}: an empty catch swallows every exception";
 ```
+
+A statement asks the same as its member, for the code inside it: `loop.Loops`, `loop.Awaits`,
+`ifStatement.Throws`, `catchClause.Block.Returns`, `tryStatement.Block.Invocations`. The lists are
+`AllStatements`, the shortcuts above, `AllExpressions`, `Invocations`, `Awaits`, `LocalVariables`,
+`ObjectCreations`, `StringLiterals`, `MemberAccesses`, `Lambdas` and `SwitchExpressions`; like the
+member's they include what sits in lambdas and leave local functions to themselves. Each list is built
+on first use and then kept, so asking twice costs nothing.
 
 Expressions are classified wherever they are passed or assigned: call and attribute arguments,
 initializers and default values. `Kind` tells a string literal from a `nameof`, a `typeof`, a lambda or
@@ -387,12 +457,12 @@ call `Name`, `Target` and `Arguments`, `a ? b : c` its `Condition`, `WhenTrue` a
 what a statement holds, and `method.AllExpressions` is every expression of a body at any depth:
 
 ```csharp
-from method in tree.AllMethods()
+from method in tree.Methods
 from comparison in method.AllExpressions
 where comparison.Operator is "==" or "!=" && comparison.Right?.Kind == ExpressionKind.NullLiteral
 select $"{comparison.Location}: write {comparison.Left!.SourceCode} is null";
 
-from method in tree.AllMethods()
+from method in tree.Methods
 from assignment in method.AllExpressions
 where assignment.Kind == ExpressionKind.Assignment
    && method.Parameters.Any(p => p.Name == assignment.Left?.Name)
@@ -410,10 +480,10 @@ pattern.Properties[0].Pattern.Operator     // ">="
 ```
 
 Accessors carry their body like a method does: `property.Accessors.Get.Invocations`,
-`indexer.Accessors.Set.AllStatements`, `event.Add.LocalVariables`. `AllMembersWithBody`, and with it
-`AllInvocations` and `AllLocalVariables`, includes them. A C# 14 `extension(string value) { }` block of a
-static class is in `type.ExtensionBlocks`, with its `Receiver`, `Methods` and `Properties`; `AllMethods`
-and `AllProperties` include its members.
+`indexer.Accessors.Set.AllStatements`, `event.Add.LocalVariables`. `MembersWithBody`, and with it
+`Invocations` and `LocalVariables` of a file, includes them. A C# 14 `extension(string value) { }` block of a
+static class is in `type.ExtensionBlocks`, with its `Receiver`, `Methods` and `Properties`; `tree.Methods`
+and `tree.Properties` include its members.
 
 `method.IsExtension` is true for an extension method written either way, `Shout(this string value)` or
 inside `extension(string value) { }`; `ExtensionReceiver` is the parameter it extends and
@@ -465,9 +535,9 @@ until you say otherwise. A positional record lists its parameters as `Properties
 `IsPositional`, so `record Order(List<Line> Lines)` is found:
 
 ```csharp
-var immutableRecords = trees.AllTypes().OfType<Record>().Select(r => r.Name).ToHashSet();
+var immutableRecords = trees.Records.Select(r => r.Name).ToHashSet();
 
-from type in trees.AllTypes().OfType<Record>()
+from type in trees.Records
 from property in type.Properties
 where !property.TypeReference.IsImmutableWith(t => immutableRecords.Contains(t.Name))
 select $"{property.Location}: {type.Name}.{property.Name} can change";
@@ -483,7 +553,7 @@ The parse mode of the solution decides which of the two you get, over the same r
 var solution = SolutionFile.Find("MySolution.sln", ParseMode.SyntaxOnly);   // syntax only, parsed once and cached
 var solution = SolutionFile.Find("MySolution.sln", ParseMode.WithSymbols);  // plus a Roslyn compilation per project, built on first use
 
-var findings = from call in solution.UnitTestTrees.AllInvocations().Named("AssertPostAsync")
+var findings = from call in solution.UnitTestTrees.Invocations.Named("AssertPostAsync")
                where call.Passes("writeResponse", true)
                select $"{call.Location}: writeResponse is true";
 ```
@@ -619,9 +689,11 @@ The short version for 7.0:
 |---|---|
 | `method.IsAsync()`, guessed from the return type's name | `method.IsAsync` for the `async` modifier, `method.ReturnType.IsTask` for an awaitable return |
 | `method.UseCorrectAsyncNaming()` | `method.Name.EndsWith("Async")` |
-| calls in accessors and extension blocks were invisible | `AllInvocations` and friends include them, so rules may report more |
+| calls in accessors and extension blocks were invisible | `tree.Invocations` and friends include them, so rules may report more |
 | positional record parameters were missing from `Properties` | they are in it, marked `IsPositional`, so rules may report more |
 | `RecordExtensions`, `AddCodeFormatter`, `FormatSyntaxTree` | removed, they generated code rather than parsed it |
+| `tree.Classes`, `Records`, ... held the types at file level only | they hold every type of the file, nested ones included; `tree.Types` is the file level |
+| `trees.AllMethods()`, `AllMembersWithBody()`, `AllInvocations()`, ... | removed; `trees.Methods`, `trees.MembersWithBody`, `trees.Invocations`, ... as properties |
 
 The short version for 6.0, all of it caught by the compiler:
 
@@ -643,7 +715,7 @@ And for 5.0:
 | Before | Now |
 |---|---|
 | `type.Methods` returned nested types' methods too | `type.AllMethods()` |
-| `tree.Classes` contained nested classes | `tree.AllTypes()`, filtered by kind |
+| `tree.Classes` contained nested classes | `tree.Types` for the types at file level; since 7.0 `tree.Classes` holds every class of the file again |
 | `type.NestedClasses` contained grandchildren | `type.DescendantTypes()` |
 | `Record : Class : Interface` | all siblings below `TypeDeclaration`, with `Kind` |
 | `class.Interfaces` (was a duplicate of `NestedInterfaces`) | `BaseTypes`, or `Implements(name)` |

@@ -64,21 +64,56 @@ namespace Solution.Parser.CSharp
         /// </summary>
         public ImmutableList<Statement> AllStatements { get; init; } = ImmutableList<Statement>.Empty;
 
-        public ImmutableList<TryStatement> TryStatements => AllStatements.OfType<TryStatement>().ToImmutableList();
+        /// <summary>Every <c>if</c> of the body at any depth, the <c>if</c> of each <c>else if</c> included.</summary>
+        public ImmutableList<IfStatement> IfStatements => Views.IfStatements;
 
-        public ImmutableList<SwitchStatement> SwitchStatements => AllStatements.OfType<SwitchStatement>().ToImmutableList();
+        /// <summary>Every <c>for</c>, <c>foreach</c>, <c>while</c> and <c>do ... while</c> of the body at any depth.</summary>
+        public ImmutableList<LoopStatement> Loops => Views.Loops;
 
-        public ImmutableList<IfStatement> IfStatements => AllStatements.OfType<IfStatement>().ToImmutableList();
+        /// <summary>Every <c>for (...; ...; ...)</c> of the body at any depth.</summary>
+        public ImmutableList<LoopStatement> ForLoops => Views.ForLoops;
 
-        /// <summary>Every <c>for</c>, <c>foreach</c>, <c>while</c> and <c>do</c>.</summary>
-        public ImmutableList<LoopStatement> Loops => AllStatements.OfType<LoopStatement>().ToImmutableList();
+        /// <summary>Every <c>foreach</c> of the body at any depth, <c>await foreach</c> included.</summary>
+        public ImmutableList<LoopStatement> ForEachLoops => Views.ForEachLoops;
 
-        public ImmutableList<ReturnStatement> Returns => AllStatements.OfType<ReturnStatement>().ToImmutableList();
+        /// <summary>Every <c>while (...) { }</c> of the body at any depth.</summary>
+        public ImmutableList<LoopStatement> WhileLoops => Views.WhileLoops;
 
-        public ImmutableList<ThrowStatement> Throws => AllStatements.OfType<ThrowStatement>().ToImmutableList();
+        /// <summary>Every <c>do { } while (...);</c> of the body at any depth.</summary>
+        public ImmutableList<LoopStatement> DoWhileLoops => Views.DoWhileLoops;
+
+        /// <summary>Every <c>try</c> of the body at any depth.</summary>
+        public ImmutableList<TryStatement> TryStatements => Views.TryStatements;
+
+        /// <summary>Every <c>catch</c> of every <c>try</c> of the body, in source order.</summary>
+        /// <example>
+        /// <code>
+        /// from catchClause in method.CatchClauses
+        /// where catchClause.IsEmpty
+        /// select $"{catchClause.Location}: an empty catch swallows the exception";
+        /// </code>
+        /// </example>
+        public ImmutableList<CatchClause> CatchClauses => Views.CatchClauses;
+
+        /// <summary>Every <c>switch (...) { case ...: }</c> of the body at any depth; for <c>x switch { }</c> see <see cref="SwitchExpressions"/>.</summary>
+        public ImmutableList<SwitchStatement> SwitchStatements => Views.SwitchStatements;
+
+        /// <summary>Every <c>using (...) { }</c> of the body at any depth; a <c>using var</c> is a local variable, see <see cref="LocalVariables"/>.</summary>
+        public ImmutableList<UsingStatement> UsingStatements => Views.UsingStatements;
+
+        /// <summary>Every <c>return</c> of the body at any depth.</summary>
+        public ImmutableList<ReturnStatement> Returns => Views.Returns;
+
+        /// <summary>Every <c>throw</c> statement of the body at any depth; a <c>?? throw</c> is an expression, see <see cref="AllExpressions"/>.</summary>
+        public ImmutableList<ThrowStatement> Throws => Views.Throws;
 
         /// <summary>True when the body has a <c>try</c> with at least one <c>catch</c>.</summary>
-        public bool HasTryCatch => TryStatements.Any(t => t.HasCatch);
+        public bool HasTryCatch => !CatchClauses.IsEmpty;
+
+        private Unequated<Cached<StatementViews>> _views;
+
+        /// <summary>Built once per member on first use, rather than on every access as a rule walks thousands of members.</summary>
+        private StatementViews Views => Cache.For(ref _views, this, static member => new StatementViews(member.AllStatements, member.CollectExpressions));
 
         /// <summary>Every <c>x switch { ... }</c> in the body, lambdas included.</summary>
         public ImmutableList<SwitchExpression> SwitchExpressions { get; init; } = ImmutableList<SwitchExpression>.Empty;
@@ -100,16 +135,15 @@ namespace Solution.Parser.CSharp
         ///                                  &amp;&amp; e.Right?.Kind == ExpressionKind.NullLiteral)
         /// </code>
         /// </example>
-        public ImmutableList<Expression> AllExpressions
-        {
-            get
-            {
-                // An expression body holds no statement, except those of a lambda with a block inside it.
-                var statements = AllStatements.SelectMany(s => s.Expressions);
-                var roots = ExpressionBody is null ? statements : statements.Prepend(ExpressionBody);
+        public ImmutableList<Expression> AllExpressions => Views.AllExpressions;
 
-                return roots.SelectMany(e => e.DescendantsAndSelf()).ToImmutableList();
-            }
+        private ImmutableList<Expression> CollectExpressions()
+        {
+            // An expression body holds no statement, except those of a lambda with a block inside it.
+            var statements = AllStatements.SelectMany(s => s.Expressions);
+            var roots = ExpressionBody is null ? statements : statements.Prepend(ExpressionBody);
+
+            return roots.SelectMany(e => e.DescendantsAndSelf()).ToImmutableList();
         }
 
         /// <summary>Every <c>await x</c> in the body, lambdas included; see <see cref="Expression.Operand"/> for what is awaited.</summary>

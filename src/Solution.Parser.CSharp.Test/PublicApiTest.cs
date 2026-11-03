@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using AspNetCore.Simple.MsTest.Sdk;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -58,7 +58,7 @@ namespace Solution.Parser.CSharp.Test
 
         private static readonly CSharpSyntaxTree Tree = ParseCode(Sample);
 
-        private static readonly Class Cart = Tree.Classes.Single();
+        private static readonly Class Cart = Tree.Classes.Single(c => c.Name == "Cart");
 
         private static Method Method(string name)
         {

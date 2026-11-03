@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -14,13 +14,13 @@ namespace Solution.Parser.CSharp
         /// <summary>Every type of the file, including nested ones at any depth.</summary>
         public static ImmutableList<TypeDeclaration> AllTypes(this CSharpSyntaxTree syntaxTree)
         {
-            return syntaxTree.Types.SelectMany(SelfAndDescendants).ToImmutableList();
+            return syntaxTree.AllTypesOfFile;
         }
 
         /// <summary>Every type of the files, including nested ones at any depth.</summary>
         public static ImmutableList<TypeDeclaration> AllTypes(this IEnumerable<CSharpSyntaxTree> syntaxTrees)
         {
-            return syntaxTrees.SelectMany(tree => tree.Types).SelectMany(SelfAndDescendants).ToImmutableList();
+            return syntaxTrees.SelectMany(tree => tree.AllTypesOfFile).ToImmutableList();
         }
 
         /// <summary>The types declared inside this type, at any depth, excluding the type itself.</summary>
@@ -44,29 +44,17 @@ namespace Solution.Parser.CSharp
             return SelfAndDescendants(type).SelectMany(MethodsOf).ToImmutableList();
         }
 
-        /// <summary>The methods of every type in the file, those declared in extension blocks included.</summary>
-        public static ImmutableList<Method> AllMethods(this CSharpSyntaxTree syntaxTree)
-        {
-            return syntaxTree.AllTypes().SelectMany(MethodsOf).ToImmutableList();
-        }
-
         public static ImmutableList<Property> AllProperties(this TypeDeclaration type)
         {
             return SelfAndDescendants(type).SelectMany(PropertiesOf).ToImmutableList();
         }
 
-        /// <summary>The properties of every type in the file, those declared in extension blocks included.</summary>
-        public static ImmutableList<Property> AllProperties(this CSharpSyntaxTree syntaxTree)
-        {
-            return syntaxTree.AllTypes().SelectMany(PropertiesOf).ToImmutableList();
-        }
-
-        private static IEnumerable<Method> MethodsOf(TypeDeclaration type)
+        internal static IEnumerable<Method> MethodsOf(TypeDeclaration type)
         {
             return type.ExtensionBlocks.IsEmpty ? type.Methods : type.Methods.Concat(type.ExtensionBlocks.SelectMany(b => b.Methods));
         }
 
-        private static IEnumerable<Property> PropertiesOf(TypeDeclaration type)
+        internal static IEnumerable<Property> PropertiesOf(TypeDeclaration type)
         {
             return type.ExtensionBlocks.IsEmpty ? type.Properties : type.Properties.Concat(type.ExtensionBlocks.SelectMany(b => b.Properties));
         }
@@ -74,11 +62,6 @@ namespace Solution.Parser.CSharp
         public static ImmutableList<Field> AllFields(this TypeDeclaration type)
         {
             return SelfAndDescendants(type).SelectMany(t => t.Fields).ToImmutableList();
-        }
-
-        public static ImmutableList<Field> AllFields(this CSharpSyntaxTree syntaxTree)
-        {
-            return syntaxTree.AllTypes().SelectMany(t => t.Fields).ToImmutableList();
         }
 
         /// <summary>
@@ -105,71 +88,9 @@ namespace Solution.Parser.CSharp
             return members.SelectMany(m => m.LocalFunctions.Prepend<MemberWithBody>(m)).ToImmutableList();
         }
 
-        /// <summary>Every member that can carry a body, in every type of the file; see the overload on a type.</summary>
-        public static ImmutableList<MemberWithBody> AllMembersWithBody(this CSharpSyntaxTree syntaxTree)
-        {
-            return syntaxTree.AllTypes().SelectMany(AllMembersWithBody).ToImmutableList();
-        }
-
-        /// <summary>Every member that can carry a body, in every type of the files: the starting point for a rule about code inside bodies.</summary>
-        /// <example>
-        /// <code>
-        /// from member in solution.ProductionTrees.AllMembersWithBody()
-        /// from access in member.MemberAccesses
-        /// where access.Target == "DateTime" &amp;&amp; access.Name == "Now"
-        /// select access.Location
-        /// </code>
-        /// </example>
-        public static ImmutableList<MemberWithBody> AllMembersWithBody(this IEnumerable<CSharpSyntaxTree> syntaxTrees)
-        {
-            return syntaxTrees.SelectMany(AllMembersWithBody).ToImmutableList();
-        }
-
-        /// <summary>The methods of every type in the files, those of extension blocks included.</summary>
-        public static ImmutableList<Method> AllMethods(this IEnumerable<CSharpSyntaxTree> syntaxTrees)
-        {
-            return syntaxTrees.SelectMany(AllMethods).ToImmutableList();
-        }
-
-        /// <summary>The properties of every type in the files, positional ones and those of extension blocks included.</summary>
-        public static ImmutableList<Property> AllProperties(this IEnumerable<CSharpSyntaxTree> syntaxTrees)
-        {
-            return syntaxTrees.SelectMany(AllProperties).ToImmutableList();
-        }
-
-        /// <summary>The fields of every type in the files.</summary>
-        public static ImmutableList<Field> AllFields(this IEnumerable<CSharpSyntaxTree> syntaxTrees)
-        {
-            return syntaxTrees.SelectMany(AllFields).ToImmutableList();
-        }
-
-        /// <summary>Every method call in the file, in every member and local function of every type.</summary>
-        public static ImmutableList<Invocation> AllInvocations(this CSharpSyntaxTree syntaxTree)
-        {
-            return syntaxTree.AllTypes().SelectMany(AllMembersWithBody).SelectMany(m => m.Invocations).ToImmutableList();
-        }
-
-        /// <summary>Every method call in the files, in every member and local function of every type.</summary>
-        public static ImmutableList<Invocation> AllInvocations(this IEnumerable<CSharpSyntaxTree> syntaxTrees)
-        {
-            return syntaxTrees.SelectMany(AllInvocations).ToImmutableList();
-        }
-
-        /// <summary>Every local variable in the file, in every member and local function of every type.</summary>
-        public static ImmutableList<LocalVariable> AllLocalVariables(this CSharpSyntaxTree syntaxTree)
-        {
-            return syntaxTree.AllTypes().SelectMany(AllMembersWithBody).SelectMany(m => m.LocalVariables).ToImmutableList();
-        }
-
-        /// <summary>Every local variable in the files, in every member and local function of every type.</summary>
-        public static ImmutableList<LocalVariable> AllLocalVariables(this IEnumerable<CSharpSyntaxTree> syntaxTrees)
-        {
-            return syntaxTrees.SelectMany(AllLocalVariables).ToImmutableList();
-        }
-
         /// <summary>
-        /// The declarations with exactly this name, for example <c>tree.AllMethods().Named("Dispose")</c> or
-        /// <c>tree.AllInvocations().Named("AssertPostAsync")</c>.
+        /// The declarations with exactly this name, for example <c>tree.Methods.Named("Dispose")</c> or
+        /// <c>tree.Invocations.Named("AssertPostAsync")</c>.
         /// </summary>
         public static ImmutableList<T> Named<T>(this IEnumerable<T> declarations, string name)
             where T : DeclarationBase
@@ -270,7 +191,7 @@ namespace Solution.Parser.CSharp
             return lastDot < 0 ? withoutGeneric : withoutGeneric[(lastDot + 1)..];
         }
 
-        private static IEnumerable<TypeDeclaration> SelfAndDescendants(TypeDeclaration type)
+        internal static IEnumerable<TypeDeclaration> SelfAndDescendants(TypeDeclaration type)
         {
             yield return type;
 

@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using AspNetCore.Simple.MsTest.Sdk;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Solution.Parser.CSharp.Test.ParseHelper;
@@ -55,7 +55,7 @@ namespace Solution.Parser.CSharp.Test
                                  {
                                      void Post() { Client.AssertPostAsync("url", "body", writeResponse: true); }
                                  }
-                                 """).AllInvocations().Single();
+                                 """).Invocations.Single();
 
             Assert.That.AreEqual("true",
                                  call.NamedArgument("writeResponse")?.Expression,
@@ -75,7 +75,7 @@ namespace Solution.Parser.CSharp.Test
                                   {
                                       async Task Post() { await Client.PostAsync("url").ConfigureAwait(false); }
                                   }
-                                  """).AllInvocations();
+                                  """).Invocations;
 
             Assert.That.AreEqual<string>(["ConfigureAwait", "PostAsync"],
                                          calls.Select(c => c.Name),
@@ -96,7 +96,7 @@ namespace Solution.Parser.CSharp.Test
                                  {
                                      void Go(Service? service) { service?.Run<int>(ref x, out var y); }
                                  }
-                                 """).AllInvocations().Single();
+                                 """).Invocations.Single();
 
             Assert.That.AreEqual("Run", call.Name, because: "the name must not carry the ?. or the type arguments",
                                  fix: InvocationFix);
@@ -160,12 +160,12 @@ namespace Solution.Parser.CSharp.Test
                                           void Go() { Local(); void Local() => Deep(); }
                                       }
                                   }
-                                  """).AllInvocations();
+                                  """).Invocations;
 
             Assert.That.AreEqual<string>(["Init", "Local", "Deep"],
                                          calls.Select(c => c.Name),
                                          because: "a rule over all calls of a file must not miss constructors, nested types or local functions",
-                                         fix: "Check QueryExtensions.AllMembersWithBody");
+                                         fix: "Check CSharpSyntaxTree.MembersWithBody");
         }
 
         [TestMethod]
@@ -179,7 +179,7 @@ namespace Solution.Parser.CSharp.Test
                                          Run(1);
                                      }
                                  }
-                                 """).AllInvocations().Single();
+                                 """).Invocations.Single();
 
             Assert.That.AreEqual(5, call.Location.StartLine, because: "a finding must point at the call",
                                  fix: InvocationFix);

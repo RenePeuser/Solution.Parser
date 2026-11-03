@@ -1,4 +1,4 @@
-# Migrating to Solution.Parser 7.0
+﻿# Migrating to Solution.Parser 7.0
 
 7.0 removes the guessing async helpers and the code generator leftovers, and lets rules see code they could not see before: accessor
 bodies, extension blocks, expressions as trees and patterns. Coming from 5.x or older, do the 6.0
@@ -8,8 +8,9 @@ migration further down first.
 
 - Replace the removed helpers with the table below. Pick per call site which question the rule asks:
   the `async` modifier or an awaitable return type. Do not replace one with the other blindly.
-- Rules may report more findings afterwards, see 7.3. That is code they were blind to, not a
+- Rules may report more findings afterwards, see 7.3 and 7.4. That is code they were blind to, not a
   regression; say which rules changed and by how much.
+- A `tree.Classes.Single()` that throws now found a nested class next to the one it meant, see 7.4.
 
 ## 7.1 Removed: `IsAsync()` and `UseCorrectAsyncNaming()`
 
@@ -47,17 +48,17 @@ Constructing an `Accessor` yourself breaks the build: it was a positional record
 
 Rules may report more than before, because they now see code they could not see:
 
-- `AllMembersWithBody`, and with it `AllInvocations` and `AllLocalVariables`, include the accessors of
+- `MembersWithBody`, and with it `Invocations` and `LocalVariables` (see 7.4 for the names), include the accessors of
   properties, indexers and events, and the members of C# 14 extension blocks. A call in
   `get { return Load(); }` is found now.
-- `AllMethods` and `AllProperties` include the members of extension blocks. An extension block used to
+- `Methods` and `Properties` include the members of extension blocks. An extension block used to
   show up as a nested class without a name in `NestedTypes`; it is in `ExtensionBlocks` now.
 - A positional record reports its properties: `record Order(string Id, List<Line> Lines)` has `Id` and
   `Lines` in `Properties`, marked `IsPositional`, with `get; init;` (`get; set;` in a `record struct`
   that is not `readonly`). A property the record declares itself wins over its parameter. Rules over
   `Properties` see them now; `Parameters` still lists the parameters as before.
-- New queries over several files: `trees.AllMethods()`, `AllProperties()`, `AllFields()` and
-  `AllMembersWithBody()`, next to the `AllTypes()` and `AllInvocations()` there were.
+- New lists over several files: `trees.Methods`, `Properties`, `Fields`, `MembersWithBody` and the
+  others of 7.4, next to the `AllTypes()` there was.
 - New on `IfStatement`: `IsElseIf`, `ElseIfs` and `ElseCount`; on every statement `EndsWithJump`.
 - New on `TypeReference`: `IsImmutableCollection`, `IsReadOnlyCollection`, `IsMutableCollection`,
   `IsImmutable` and `IsImmutableWith(...)`; a rule that kept its own list of immutable type names can use them.
@@ -65,6 +66,60 @@ Rules may report more than before, because they now see code they could not see:
   was dropped before. `method.IsExtension`, `ExtensionReceiver` and `IsInExtensionBlock` are new.
 - A local function or an attribute inside an accessor, an indexer or an event is named below them,
   as it always was below a property: `Shop.Cart.Total.get.Local`, `Shop.Cart.this[].Range`.
+
+## 7.4 `tree.Classes` and its siblings hold nested types; read the code like code
+
+This compiles unchanged and may report more. `tree.Classes`, `Records`, `Structs`, `Interfaces` and
+`Enums` held only the types at file level since 5.0, so a class nested in another was missing from them
+and a rule over `tree.Classes` silently skipped it. They hold every type of the file now, nested ones
+included, the way a developer reads the file.
+
+| 6.x | 7.0 |
+|---|---|
+| `tree.Classes`, meaning the classes at file level | `tree.Types.OfType<Class>()`; `tree.Types` is still the file level |
+| `tree.Classes`, meant as every class (and missing the nested ones) | `tree.Classes`, unchanged, now right |
+| `tree.Classes.Single()` on a file with a nested class | throws now; pick the class by name, `tree.Classes.Single(c => c.Name == "Order")` |
+
+Removed, because a property reads the same list the way the code reads: the `All...()` methods on a
+file and on a list of files. The compiler finds every call; replace each with the property. What
+`type.AllMethods()`, `type.AllProperties()`, `type.AllFields()` and `type.AllMembersWithBody()` do on a
+type, this type and the types nested in it, has no property, so those stay, as does `AllTypes()`.
+
+| Before | Now |
+|---|---|
+| `tree.AllMethods()`, `AllProperties()`, `AllFields()` (removed) | `tree.Methods`, `Properties`, `Fields` |
+| `tree.AllMembersWithBody()`, `AllInvocations()`, `AllLocalVariables()` (removed) | `tree.MembersWithBody`, `Invocations`, `LocalVariables` |
+| the same on `IEnumerable<CSharpSyntaxTree>`, as in `solution.ProductionTrees.AllMethods()` (removed) | `solution.ProductionTrees.Methods` |
+| `tree.AllInvocations().Named("Send")` | `tree.Invocations.Named("Send")` |
+
+New, and the way the README writes rules now:
+
+| Before | Now |
+|---|---|
+| `trees.AllTypes().OfType<Record>()` | `trees.Records`, and so on for every kind |
+| `trees.SelectMany(t => t.AllTypes()).SelectMany(t => t.Constructors)` | `trees.Constructors` |
+| `method.TryStatements.SelectMany(t => t.Catches)` | `method.CatchClauses` |
+| `method.Loops.Where(l => l.Kind == StatementKind.ForEach)` | `method.ForEachLoops`, also `ForLoops`, `WhileLoops`, `DoWhileLoops`; `loop.IsForEach` and the like |
+| a loop inside a loop, an await in a loop, a throw in a catch: walked by hand | every statement has the lists of its member: `loop.Loops`, `loop.Awaits`, `catchClause.Block.Throws` |
+
+Every one of these lists is built on first use and kept, on the member, the statement and the file, so a
+rule suite that walks a solution many times builds each list once. Measured on this repository's code,
+parsed eight times over and asked 30 times by a few rules over every body: the rules ran six to eight
+times faster, parsing took a few percent longer, and the kept lists cost about 8 % more memory.
+
+A `partial` type written in several files is in `trees.Classes` once per part, as before. New,
+`trees.WholeTypes` joins the parts of each partial type, for rules about the type as a whole:
+`type.Parts`, `type.Methods` of every part, `type.Location` of the first. Only types declared `partial`
+are joined, by kind, fully qualified name and number of type parameters.
+
+The top level statements in `tree.Statements` answer the questions of 7.4 like any statement:
+`statement.Loops`, `Awaits`, `ObjectCreations` and the rest. Their calls are unchanged.
+
+`solution.AllTrees`, `ProductionTrees`, `UnitTestTrees` and `project.Trees` hand out the same list on
+every call instead of a new one; a rule that compared two of them by reference sees them equal now.
+
+`Solution.Parser.AspNet` looked up data types through `tree.Classes` and the like, so a nested data type
+of a controller was not found since 5.0; it is found again.
 
 ---
 

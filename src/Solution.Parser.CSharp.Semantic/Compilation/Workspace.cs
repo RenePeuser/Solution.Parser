@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Collections.Immutable;
@@ -129,7 +129,7 @@ namespace Solution.Parser.CSharp
         internal Method? DeclaredMethod(string path, int spanStart)
         {
             var methods = _methodsBySpan.GetOrAdd(path,
-                                                  p => new Lazy<FrozenDictionary<int, Method>>(() => Model(p).AllMethods()
+                                                  p => new Lazy<FrozenDictionary<int, Method>>(() => Model(p).Methods
                                                                                                              .DistinctBy(m => m.Location.SpanStart)
                                                                                                              .ToFrozenDictionary(m => m.Location.SpanStart)));
 

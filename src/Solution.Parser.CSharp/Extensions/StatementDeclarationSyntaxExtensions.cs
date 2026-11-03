@@ -1,4 +1,4 @@
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -13,11 +13,8 @@ namespace Solution.Parser.CSharp
         internal static ImmutableList<Statement> ToTopLevelStatements(this CompilationUnitSyntax root, string filePath)
         {
             var statements = root.Members.OfType<GlobalStatementSyntax>().Select(g => g.Statement).ToList();
-            var invocations = statements.SelectMany(s => s.ToInvocations(filePath)).ToImmutableList();
 
-            var variables = statements.SelectMany(s => s.ToLocalVariables(filePath)).ToImmutableList();
-
-            return new StatementBuilder(filePath, invocations, variables).Build(statements);
+            return statements.Count == 0 ? ImmutableList<Statement>.Empty : statements.ToTopLevelBody(filePath).BodyStatements;
         }
     }
 }

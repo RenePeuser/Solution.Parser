@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using AspNetCore.Simple.MsTest.Sdk;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Solution.Parser.CSharp.Semantic.Test.SemanticHelper;
@@ -30,7 +30,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
                 }
                 """);
 
-            var findings = from call in code.AllTrees.AllInvocations()
+            var findings = from call in code.AllTrees.Invocations
                            where call.Method?.FullyQualifiedName == "System.Threading.Thread.Sleep"
                            select $"{call.Location}: Thread.Sleep blocks a thread, await Task.Delay instead";
 

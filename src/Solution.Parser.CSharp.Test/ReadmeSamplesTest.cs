@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
 using AspNetCore.Simple.MsTest.Sdk;
@@ -41,7 +41,7 @@ namespace Solution.Parser.CSharp.Test
                 }
                 """);
 
-            var findings = from member in trees.AllMembersWithBody()
+            var findings = from member in trees.MembersWithBody
                            from access in member.MemberAccesses
                            where access.Target == "DateTime" && access.Name is "Now" or "UtcNow" or "Today"
                            select $"{access.Location}: inject TimeProvider instead of {access.SourceCode}";
@@ -61,7 +61,7 @@ namespace Solution.Parser.CSharp.Test
                 }
                 """);
 
-            var findings = from method in trees.AllMethods()
+            var findings = from method in trees.Methods
                            where method.IsAsync && method.ReturnType.IsVoid
                            where !method.Parameters.LastOrDefault()?.TypeReference.Name.EndsWith("EventArgs", StringComparison.Ordinal) ?? true
                            select $"{method.Location}: {method.Name} is async void, return a Task";
@@ -81,7 +81,7 @@ namespace Solution.Parser.CSharp.Test
                 }
                 """);
 
-            var findings = from method in trees.AllMethods()
+            var findings = from method in trees.Methods
                            where method.ReturnType.IsTask && !method.Name.EndsWith("Async", StringComparison.Ordinal)
                            select $"{method.Location}: {method.Name} returns {method.ReturnType.Name}, call it {method.Name}Async";
 
@@ -102,7 +102,7 @@ namespace Solution.Parser.CSharp.Test
                 }
                 """);
 
-            var findings = from call in trees.AllInvocations()
+            var findings = from call in trees.Invocations
                            where call.Name.StartsWith("Log", StringComparison.Ordinal) && call.Arguments.Any(a => a.Kind == ExpressionKind.InterpolatedString)
                            select $"{call.Location}: {call.Name} with an interpolated string loses the structure, pass a template";
 
@@ -120,7 +120,7 @@ namespace Solution.Parser.CSharp.Test
                 }
                 """);
 
-            var findings = from member in trees.AllMembersWithBody()
+            var findings = from member in trees.MembersWithBody
                            from creation in member.ObjectCreations
                            where creation.TypeName == "HttpClient"
                            select $"{creation.Location}: use IHttpClientFactory instead of new HttpClient()";
@@ -140,7 +140,7 @@ namespace Solution.Parser.CSharp.Test
                 public record Line(string Sku, int Count);
                 """);
 
-            var findings = from record in trees.AllTypes().OfType<Record>()
+            var findings = from record in trees.Records
                            from property in record.Properties
                            where property.TypeReference.IsMutableCollection
                            select $"{property.Location}: {record.Name}.{property.Name} is a {property.TypeReference.Name}, use an immutable collection";
@@ -164,7 +164,7 @@ namespace Solution.Parser.CSharp.Test
                 }
                 """);
 
-            var findings = from property in trees.AllProperties()
+            var findings = from property in trees.Properties
                            let getter = property.Accessors.Get
                            where getter is not null
                            where getter.Throws.Any() || getter.AllExpressions.Any(e => e.Kind == ExpressionKind.Throw)
@@ -187,7 +187,7 @@ namespace Solution.Parser.CSharp.Test
                 }
                 """);
 
-            var findings = from member in trees.AllMembersWithBody()
+            var findings = from member in trees.MembersWithBody
                            from expression in member.AllExpressions
                            where (expression.Operator is "==" or "!=" && expression.Right?.Kind == ExpressionKind.NullLiteral)
                               || expression.Pattern is { Kind: PatternKind.Recursive, IsNotNull: true }
@@ -209,7 +209,7 @@ namespace Solution.Parser.CSharp.Test
                 }
                 """);
 
-            var findings = from member in trees.AllMembersWithBody()
+            var findings = from member in trees.MembersWithBody
                            from switchExpression in member.SwitchExpressions
                            where !switchExpression.HasDiscardArm
                            select $"{switchExpression.Location}: {member.Name} switches without a _ arm";
@@ -228,7 +228,7 @@ namespace Solution.Parser.CSharp.Test
                 }
                 """);
 
-            var findings = from method in trees.AllMethods()
+            var findings = from method in trees.Methods
                            from assignment in method.AllExpressions
                            where assignment.Kind == ExpressionKind.Assignment
                               && method.Parameters.Any(p => p.Name == assignment.Left?.Name)
@@ -275,7 +275,7 @@ namespace Solution.Parser.CSharp.Test
                 }
                 """);
 
-            var findings = from method in trees.AllMethods()
+            var findings = from method in trees.Methods
                            from chain in method.InvocationChains
                            where chain.Contains("MapGet") && !chain.After("MapGet").Any(c => c.Name == "RequireAuthorization")
                            select $"{chain.Location}: {chain.First.Arguments[0].StringValue} is not protected";
@@ -291,10 +291,9 @@ namespace Solution.Parser.CSharp.Test
                 public class Person { public string Name { get; set; } public int Age { get; init; } }
                 """);
 
-            var findings = from type in trees.AllTypes()
-                           from property in type.Properties
+            var findings = from property in trees.Properties
                            where !property.IsReadOnly
-                           select $"{property.Location}: {type.FullyQualifiedName}.{property.Name} is mutable";
+                           select $"{property.Location}: {property.FullyQualifiedName} is mutable";
 
             Finds(["My.Sample.Person.Name is mutable"], findings, "quick start");
         }
@@ -317,7 +316,7 @@ namespace Solution.Parser.CSharp.Test
                 }
                 """);
 
-            var findings = from member in trees.AllMembersWithBody()
+            var findings = from member in trees.MembersWithBody
                            from chain in member.IfStatements
                            where !chain.IsElseIf && chain.ElseCount > 2
                            select $"{chain.Location}: {member.Name} has an if with {chain.ElseCount} else, use early returns, a switch or a lookup";
@@ -351,12 +350,131 @@ namespace Solution.Parser.CSharp.Test
                 }
                 """);
 
-            var findings = from member in trees.AllMembersWithBody()
+            var findings = from member in trees.MembersWithBody
                            from statement in member.IfStatements
                            where statement.HasElse && statement.Then.EndsWithJump
                            select $"{statement.Location}: the if in {member.Name} returns, drop the else and go on after it";
 
             Finds(["the if in Status returns, drop the else and go on after it"], findings, "no else after return");
+        }
+
+        [TestMethod]
+        public void No_Loop_Inside_A_Loop()
+        {
+            var trees = Trees("""
+                public class Report
+                {
+                    public int Matches(Order[] orders, Customer[] customers)
+                    {
+                        var count = 0;
+                        foreach (var order in orders)
+                        {
+                            for (var i = 0; i < customers.Length; i++)
+                            {
+                                if (customers[i].Id == order.CustomerId) count++;
+                            }
+                        }
+                        return count;
+                    }
+
+                    public int Total(Order[] orders)
+                    {
+                        var total = 0;
+                        foreach (var order in orders) total += order.Sum;
+                        return total;
+                    }
+                }
+                """);
+
+            var findings = from method in trees.Methods
+                           from loop in method.Loops
+                           from inner in loop.Loops
+                           select $"{inner.Location}: {method.Name} runs a {inner.Kind} inside a {loop.Kind}, use a lookup";
+
+            Finds(["Matches runs a For inside a ForEach, use a lookup"], findings, "no loop inside a loop");
+        }
+
+        [TestMethod]
+        public void No_Save_Inside_A_Loop()
+        {
+            var trees = Trees("""
+                public class Import(ShopContext db)
+                {
+                    public async Task RunAsync(Order[] orders)
+                    {
+                        foreach (var order in orders)
+                        {
+                            db.Orders.Add(order);
+                            await db.SaveChangesAsync();
+                        }
+                    }
+
+                    public async Task RunOnceAsync(Order[] orders)
+                    {
+                        foreach (var order in orders) db.Orders.Add(order);
+                        await db.SaveChangesAsync();
+                    }
+                }
+                """);
+
+            var findings = from member in trees.MembersWithBody
+                           from loop in member.Loops
+                           from call in loop.Invocations
+                           where call.Name is "SaveChanges" or "SaveChangesAsync"
+                           select $"{call.Location}: {member.Name} calls {call.Name} once per item, save after the loop";
+
+            Finds(["RunAsync calls SaveChangesAsync once per item, save after the loop"], findings, "no save inside a loop");
+        }
+
+        [TestMethod]
+        public void No_Await_Inside_A_ForEach()
+        {
+            var trees = Trees("""
+                public class Mailer(IMailClient client)
+                {
+                    public async Task SendAllAsync(Mail[] mails)
+                    {
+                        foreach (var mail in mails)
+                        {
+                            await client.SendAsync(mail);
+                        }
+                    }
+
+                    public Task SendTogetherAsync(Mail[] mails) => Task.WhenAll(mails.Select(client.SendAsync));
+                }
+                """);
+
+            var findings = from member in trees.MembersWithBody
+                           from loop in member.ForEachLoops
+                           from awaited in loop.Awaits
+                           select $"{awaited.Location}: {member.Name} awaits one at a time, start the tasks and await Task.WhenAll";
+
+            Finds(["SendAllAsync awaits one at a time, start the tasks and await Task.WhenAll"], findings, "no await inside a foreach");
+        }
+
+        [TestMethod]
+        public void Throw_Keeps_The_Stack_Trace()
+        {
+            var trees = Trees("""
+                public class Store
+                {
+                    public void Save()
+                    {
+                        try { Write(); }
+                        catch (IOException ex) { throw ex; }
+                        catch (TimeoutException ex) { throw new StoreException("timeout", ex); }
+                        catch (Exception) { throw; }
+                    }
+                }
+                """);
+
+            var findings = from member in trees.MembersWithBody
+                           from catchClause in member.CatchClauses
+                           from throwStatement in catchClause.Block.Throws
+                           where catchClause.VariableName is not null && throwStatement.Value?.Name == catchClause.VariableName
+                           select $"{throwStatement.Location}: {throwStatement.SourceCode} loses the stack trace, write throw;";
+
+            Finds(["throw ex; loses the stack trace, write throw;"], findings, "throw keeps the stack trace");
         }
     }
 }

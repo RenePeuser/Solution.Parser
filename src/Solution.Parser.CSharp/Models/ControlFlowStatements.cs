@@ -176,6 +176,18 @@ namespace Solution.Parser.CSharp
         public bool IsAwait { get; init; }
 
         public required Statement Body { get; init; }
+
+        /// <summary>True for <c>for (...; ...; ...)</c>.</summary>
+        public bool IsFor => Kind == StatementKind.For;
+
+        /// <summary>True for <c>foreach</c> and <c>await foreach</c>.</summary>
+        public bool IsForEach => Kind == StatementKind.ForEach;
+
+        /// <summary>True for <c>while (...) { }</c>.</summary>
+        public bool IsWhile => Kind == StatementKind.While;
+
+        /// <summary>True for <c>do { } while (...);</c>.</summary>
+        public bool IsDoWhile => Kind == StatementKind.Do;
     }
 
     /// <summary><c>using (var x = ...) { }</c> and <c>await using (...)</c>. A <c>using var</c> declaration is a <see cref="LocalDeclarationStatement"/>.</summary>

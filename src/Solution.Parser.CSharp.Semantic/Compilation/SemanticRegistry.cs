@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Solution.Parser.CSharp
@@ -23,7 +23,7 @@ namespace Solution.Parser.CSharp
         {
             var owner = new Owner(workspace, projectKey);
 
-            foreach (var call in tree.AllInvocations())
+            foreach (var call in tree.Invocations)
             {
                 Owners.AddOrUpdate(call, owner);
             }

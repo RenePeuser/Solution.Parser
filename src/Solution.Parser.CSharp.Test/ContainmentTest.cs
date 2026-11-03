@@ -47,7 +47,7 @@ namespace Solution.Parser.CSharp.Test
         [TestMethod]
         public void Type_Reports_Only_Its_Own_Methods()
         {
-            var outer = ParseCode(Code).Classes.Single();
+            var outer = ParseCode(Code).Classes.Single(c => c.Name == "Outer");
 
             Assert.That.AreEqual<string>(["OuterMethod"],
                                          outer.Methods.Select(m => m.Name),
@@ -58,7 +58,7 @@ namespace Solution.Parser.CSharp.Test
         [TestMethod]
         public void Type_Reports_Only_Its_Direct_Nested_Types()
         {
-            var outer = ParseCode(Code).Classes.Single();
+            var outer = ParseCode(Code).Classes.Single(c => c.Name == "Outer");
 
             Assert.That.AreEqual<string>(["Inner"],
                                          outer.NestedTypes.Select(t => t.Name),
@@ -74,7 +74,7 @@ namespace Solution.Parser.CSharp.Test
         [TestMethod]
         public void Descendant_Types_Walks_Every_Level()
         {
-            var outer = ParseCode(Code).Classes.Single();
+            var outer = ParseCode(Code).Classes.Single(c => c.Name == "Outer");
 
             Assert.That.AreEqual<string>(["Inner", "Deepest"],
                                          outer.DescendantTypes().Select(t => t.Name),
@@ -85,7 +85,7 @@ namespace Solution.Parser.CSharp.Test
         [TestMethod]
         public void All_Methods_Reproduces_The_Recursive_Walk_Explicitly()
         {
-            var outer = ParseCode(Code).Classes.Single();
+            var outer = ParseCode(Code).Classes.Single(c => c.Name == "Outer");
 
             Assert.That.AreEqual<string>(["OuterMethod", "InnerMethod", "DeepMethod"],
                                          outer.AllMethods().Select(m => m.Name),
@@ -110,7 +110,7 @@ namespace Solution.Parser.CSharp.Test
             var parsed = ParseCode(Code);
 
             Assert.That.HasCount(3,
-                                 parsed.AllMethods(),
+                                 parsed.Methods,
                                  because: "the file declares three methods, and a member must be reported by exactly one type",
                                  fix: "Make sure nested types are not collected at file level as well as by their declaring type");
         }

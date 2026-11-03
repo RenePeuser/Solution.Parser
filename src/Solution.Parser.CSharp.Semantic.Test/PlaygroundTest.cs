@@ -50,7 +50,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
                 }
                 """);
 
-            var calls = code.AllTrees.AllInvocations();
+            var calls = code.AllTrees.Invocations;
 
             foreach (var call in calls)
             {
@@ -71,7 +71,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
             }
 
             var calls = project.Trees
-                            .AllInvocations()
+                            .Invocations
                             .Where(c => MethodName.Length == 0 || c.Name == MethodName)
                             .Take(20)
                             .ToList();

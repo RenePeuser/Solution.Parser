@@ -63,7 +63,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
         public void A_Call_Into_A_Package_Knows_The_Package_And_The_Parameter_Names()
         {
             var call = Project("Solution.Parser.Architecture.Test").Trees
-                            .AllInvocations()
+                            .Invocations
                             .Named("HasCount")
                             .First();
 
@@ -79,7 +79,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
         public void A_Call_Into_A_Referenced_Project_Is_The_Declared_Method()
         {
             var call = Project("Solution.Parser.CSharp.Test").Trees
-                            .AllInvocations()
+                            .Invocations
                             .Named("Parse")
                             .First(c => c.FilePath.EndsWith("ParseHelper.cs", StringComparison.OrdinalIgnoreCase));
 
@@ -93,7 +93,7 @@ namespace Solution.Parser.CSharp.Semantic.Test
         public void A_Package_Call_In_Productive_Code_Resolves_Too()
         {
             var calls = Project("Solution.Parser.CSharp").Trees
-                             .AllInvocations()
+                             .Invocations
                              .Named("IfNull")
                              .Where(c => c.Target == "Throw")
                              .ToList();

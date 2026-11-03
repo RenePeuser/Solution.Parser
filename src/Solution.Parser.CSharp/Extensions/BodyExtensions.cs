@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -58,7 +58,7 @@ namespace Solution.Parser.CSharp
                                       invocations,
                                       scan.Variables.Select(v => v.ToLocalVariableOrNull(filePath, invocations)).OfType<LocalVariable>().ToImmutableList(),
                                       IsExpressionBodied: false,
-                                      IsIterator: scan.HasYield).WithElementsOf(block, scan, filePath);
+                                      IsIterator: scan.HasYield).WithElementsOf(block.Statements, scan, filePath);
             }
 
             if (expressionBody is not null)
@@ -75,7 +75,7 @@ namespace Solution.Parser.CSharp
                                       invocations,
                                       scan.Variables.Select(v => v.ToLocalVariableOrNull(filePath, invocations)).OfType<LocalVariable>().ToImmutableList(),
                                       IsExpressionBodied: true,
-                                      IsIterator: false).WithElementsOf(expressionBody.Expression, scan, filePath) with
+                                      IsIterator: false).WithElementsOf([], scan, filePath) with
                        {
                            ExpressionBody = expressionBody.Expression.ToExpression(filePath)
                        };
@@ -91,21 +91,44 @@ namespace Solution.Parser.CSharp
                                   IsIterator: false);
         }
 
-        private static MemberBody WithElementsOf(this MemberBody body, SyntaxNode node, BodyScan scan, string filePath)
+        /// <summary>
+        /// The top level statements of a file as one body, so each of them answers the same questions as a
+        /// statement in a method: its loops, awaits, variables and the like.
+        /// </summary>
+        internal static MemberBody ToTopLevelBody(this IReadOnlyList<StatementSyntax> statements, string filePath)
+        {
+            var scan = BodyScan.OfTopLevel(statements);
+            var invocations = scan.Invocations.ToInvocations(filePath);
+
+            return new MemberBody(string.Empty,
+                                  ImmutableList<string>.Empty,
+                                  ImmutableList<string>.Empty,
+                                  ImmutableList<LocalFunction>.Empty,
+                                  invocations,
+                                  scan.Variables.Select(v => v.ToLocalVariableOrNull(filePath, invocations)).OfType<LocalVariable>().ToImmutableList(),
+                                  IsExpressionBodied: false,
+                                  IsIterator: false).WithElementsOf(statements, scan, filePath);
+        }
+
+        private static MemberBody WithElementsOf(this MemberBody body, IEnumerable<StatementSyntax> bodyStatements, BodyScan scan, string filePath)
         {
             var builder = new StatementBuilder(filePath, body.Invocations, body.LocalVariables);
 
-            return body with
+            var complete = body with
             {
                 ObjectCreations = scan.ObjectCreations.Select(c => c.ToObjectCreation(filePath)).ToImmutableList(),
                 StringLiterals = scan.Strings.Select(s => s.ToStringLiteral(filePath)).ToImmutableList(),
                 MemberAccesses = scan.MemberAccesses.Select(a => a.ToMemberAccess(filePath)).ToImmutableList(),
-                BodyStatements = node is BlockSyntax block ? builder.Build(block.Statements) : ImmutableList<Statement>.Empty,
+                BodyStatements = builder.Build(bodyStatements),
                 AllStatements = builder.Build(scan.Statements),
                 SwitchExpressions = scan.SwitchExpressions.Select(builder.BuildSwitchExpression).ToImmutableList(),
                 Lambdas = scan.Lambdas.Select(builder.BuildLambda).ToImmutableList(),
                 Awaits = scan.Awaits.Select(a => a.ToExpression(filePath)).ToImmutableList()
             };
+
+            builder.Complete(complete);
+
+            return complete;
         }
 
         /// <summary>

@@ -23,6 +23,15 @@ namespace Solution.Parser.CSharp
 
         private readonly LocalVariable[] _variables = localVariables.OrderBy(v => v.Location.SpanStart).ToArray();
 
+        /// <summary>Shared by every statement built here, so each can cut out what lies inside it; see <see cref="Complete"/>.</summary>
+        private readonly BodyIndex _index = new();
+
+        /// <summary>Hands the finished body to the statements built here. Until then they read their contents as empty.</summary>
+        internal void Complete(MemberBody body)
+        {
+            _index.Complete(body);
+        }
+
         internal ImmutableList<Statement> Build(IEnumerable<StatementSyntax> statements)
         {
             return statements.Select(Build).ToImmutableList();
@@ -33,6 +42,7 @@ namespace Solution.Parser.CSharp
             if (!_built.TryGetValue(statement, out var built))
             {
                 built = Create(statement, new Common(statement, statement.ToCodeLocation(filePath), InvocationsIn(statement)));
+                built.Attach(_index);
 
                 _built[statement] = built;
             }

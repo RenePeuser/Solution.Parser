@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using AspNetCore.Simple.MsTest.Sdk;
@@ -371,11 +371,11 @@ namespace Solution.Parser.CSharp.Test
                 }
                 """);
 
-            var outer = tree.Classes.Single();
+            var outer = tree.Classes.Single(c => c.Name == "Outer");
             var inner = outer.NestedClasses.Single();
 
-            Assert.That.AreEqual(2, tree.AllFields().Count, because: "fields of nested types count", fix: "Check QueryExtensions.AllFields");
-            Assert.That.AreEqual(2, tree.AllProperties().Count, because: "properties of nested types count", fix: "Check QueryExtensions.AllProperties");
+            Assert.That.AreEqual(2, tree.Fields.Count, because: "fields of nested types count", fix: "Check CSharpSyntaxTree.Fields");
+            Assert.That.AreEqual(2, tree.Properties.Count, because: "properties of nested types count", fix: "Check CSharpSyntaxTree.Properties");
             Assert.That.AreEqual(1, outer.DescendantTypes().Count, because: "the types nested in a type, without itself", fix: "Check QueryExtensions.DescendantTypes");
             Assert.That.AreEqual(2, outer.SelfAndDescendantTypes().Count, because: "a type and the types nested in it", fix: "Check QueryExtensions.SelfAndDescendantTypes");
             Assert.That.IsTrue(outer.IsAbstract() && outer.IsPartial(), because: "the predicates read the modifiers", fix: "Check QueryExtensions");

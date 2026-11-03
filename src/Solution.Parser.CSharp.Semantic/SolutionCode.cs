@@ -34,7 +34,7 @@ namespace Solution.Parser.CSharp
     /// <code>
     /// var solution = SolutionFile.Parse(path, ParseMode.WithSymbols);
     ///
-    /// from call in solution.UnitTestTrees.AllInvocations().Named("AssertPostAsync")
+    /// from call in solution.UnitTestTrees.Invocations.Named("AssertPostAsync")
     /// where call.Passes("writeResponse", true)
     /// select $"{call.Location}: writeResponse is true";
     /// </code>

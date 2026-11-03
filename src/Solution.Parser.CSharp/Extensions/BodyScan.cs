@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -57,7 +57,27 @@ namespace Solution.Parser.CSharp
             return scan;
         }
 
-        private void Add(SyntaxNode node, SyntaxNode root)
+        /// <summary>
+        /// The top level statements of a file, walked as one body and each statement itself included. A
+        /// local function written at top level has no member of its own to report its code, so it counts
+        /// here, as it always did for the calls; one nested in it reports its own, as in a member.
+        /// </summary>
+        internal static BodyScan OfTopLevel(IEnumerable<StatementSyntax> statements)
+        {
+            var scan = new BodyScan();
+
+            foreach (var statement in statements)
+            {
+                foreach (var node in statement.DescendantNodesAndSelf(descendIntoChildren: child => child == statement || child is not LocalFunctionStatementSyntax))
+                {
+                    scan.Add(node, root: null);
+                }
+            }
+
+            return scan;
+        }
+
+        private void Add(SyntaxNode node, SyntaxNode? root)
         {
             switch (node)
             {
