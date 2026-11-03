@@ -41,22 +41,34 @@ namespace Solution.Parser.CSharp
         /// </summary>
         public static ImmutableList<Method> AllMethods(this TypeDeclaration type)
         {
-            return SelfAndDescendants(type).SelectMany(t => t.Methods).ToImmutableList();
+            return SelfAndDescendants(type).SelectMany(MethodsOf).ToImmutableList();
         }
 
+        /// <summary>The methods of every type in the file, those declared in extension blocks included.</summary>
         public static ImmutableList<Method> AllMethods(this CSharpSyntaxTree syntaxTree)
         {
-            return syntaxTree.AllTypes().SelectMany(t => t.Methods).ToImmutableList();
+            return syntaxTree.AllTypes().SelectMany(MethodsOf).ToImmutableList();
         }
 
         public static ImmutableList<Property> AllProperties(this TypeDeclaration type)
         {
-            return SelfAndDescendants(type).SelectMany(t => t.Properties).ToImmutableList();
+            return SelfAndDescendants(type).SelectMany(PropertiesOf).ToImmutableList();
         }
 
+        /// <summary>The properties of every type in the file, those declared in extension blocks included.</summary>
         public static ImmutableList<Property> AllProperties(this CSharpSyntaxTree syntaxTree)
         {
-            return syntaxTree.AllTypes().SelectMany(t => t.Properties).ToImmutableList();
+            return syntaxTree.AllTypes().SelectMany(PropertiesOf).ToImmutableList();
+        }
+
+        private static IEnumerable<Method> MethodsOf(TypeDeclaration type)
+        {
+            return type.ExtensionBlocks.IsEmpty ? type.Methods : type.Methods.Concat(type.ExtensionBlocks.SelectMany(b => b.Methods));
+        }
+
+        private static IEnumerable<Property> PropertiesOf(TypeDeclaration type)
+        {
+            return type.ExtensionBlocks.IsEmpty ? type.Properties : type.Properties.Concat(type.ExtensionBlocks.SelectMany(b => b.Properties));
         }
 
         public static ImmutableList<Field> AllFields(this TypeDeclaration type)
@@ -71,11 +83,24 @@ namespace Solution.Parser.CSharp
 
         /// <summary>
         /// Every member of the type that can carry a body: methods, constructors, operators,
-        /// finalizers and the local functions declared inside them.
+        /// finalizers, the accessors of properties, indexers and events, the members of extension
+        /// blocks and the local functions declared inside all of them.
         /// </summary>
         public static ImmutableList<MemberWithBody> AllMembersWithBody(this TypeDeclaration type)
         {
-            IEnumerable<MemberWithBody> members = [..type.Methods, ..type.Constructors, ..type.Operators, ..type.Finalizers];
+            IEnumerable<MemberWithBody> members =
+            [
+                ..type.Methods,
+                ..type.Constructors,
+                ..type.Operators,
+                ..type.Finalizers,
+                ..type.Properties.SelectMany(p => p.Accessors.All),
+                ..type.Indexers.SelectMany(i => i.Accessors.All),
+                ..type.Events.SelectMany(e => new[] { e.Add, e.Remove }.OfType<Accessor>()),
+                ..type.ExtensionBlocks.SelectMany(b => b.Methods),
+                ..type.ExtensionBlocks.SelectMany(b => b.Operators),
+                ..type.ExtensionBlocks.SelectMany(b => b.Properties).SelectMany(p => p.Accessors.All)
+            ];
 
             return members.SelectMany(m => m.LocalFunctions.Prepend<MemberWithBody>(m)).ToImmutableList();
         }

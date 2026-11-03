@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -14,7 +16,66 @@ namespace Solution.Parser.CSharp
             return expression is null ? null : expression.ToExpression(filePath);
         }
 
+        /// <summary>
+        /// The expressions built while one file is parsed, by node. An expression is a tree now, and the
+        /// same node is asked for from several sides: as part of a statement, as the argument of a call,
+        /// as what is awaited. Each node is built once and the instance shared, as statements are.
+        /// </summary>
+        [ThreadStatic]
+        private static Dictionary<ExpressionSyntax, Expression>? _built;
+
+        /// <summary>The dictionary of the last file, emptied, so the next file on the thread starts at its size.</summary>
+        [ThreadStatic]
+        private static Dictionary<ExpressionSyntax, Expression>? _spare;
+
+        /// <summary>
+        /// Shares the expressions built until the scope is disposed; <see cref="CSharpParser"/> opens one
+        /// per file. A nested scope joins the outer one.
+        /// </summary>
+        internal static Scope ShareExpressions()
+        {
+            if (_built is not null)
+            {
+                return new Scope(isOutermost: false);
+            }
+
+            _built = _spare ?? new Dictionary<ExpressionSyntax, Expression>();
+            _spare = null;
+
+            return new Scope(isOutermost: true);
+        }
+
+        internal readonly struct Scope(bool isOutermost) : IDisposable
+        {
+            public void Dispose()
+            {
+                if (isOutermost && _built is not null)
+                {
+                    // Dropping the entries lets the file be collected; the capacity is kept.
+                    _built.Clear();
+                    _spare = _built;
+                    _built = null;
+                }
+            }
+        }
+
         internal static Expression ToExpression(this ExpressionSyntax expression, string filePath)
+        {
+            if (_built is null)
+            {
+                return Build(expression, filePath);
+            }
+
+            if (!_built.TryGetValue(expression, out var built))
+            {
+                built = Build(expression, filePath);
+                _built[expression] = built;
+            }
+
+            return built;
+        }
+
+        private static Expression Build(ExpressionSyntax expression, string filePath)
         {
             var location = expression.ToCodeLocation(filePath);
 
@@ -39,6 +100,13 @@ namespace Solution.Parser.CSharp
                 }
             }
 
+            // a?.b.c is the access c on a.b, made only when a is not null: classify what is accessed
+            // and let the bindings inside find a, see ConditionalTarget.
+            while (inner is ConditionalAccessExpressionSyntax conditional)
+            {
+                inner = conditional.WhenNotNull;
+            }
+
             var shape = inner.Classify(filePath);
 
             return new Expression
@@ -49,6 +117,18 @@ namespace Solution.Parser.CSharp
                 TypeReference = shape.TypeReference,
                 Operand = shape.Operand,
                 Name = shape.Name,
+                Operator = shape.Operator,
+                Left = shape.Left,
+                Right = shape.Right,
+                Condition = shape.Condition,
+                WhenTrue = shape.WhenTrue,
+                WhenFalse = shape.WhenFalse,
+                Target = shape.Target,
+                Arguments = shape.Arguments ?? ImmutableList<Expression>.Empty,
+                Elements = shape.Elements ?? ImmutableList<Expression>.Empty,
+                Pattern = shape.Pattern,
+                IsPostfix = shape.IsPostfix,
+                IsConditional = shape.IsConditional,
                 HasNullForgiving = hasNullForgiving,
                 SourceNode = expression,
                 FilePath = filePath,
@@ -71,6 +151,30 @@ namespace Solution.Parser.CSharp
             public Expression? Operand { get; init; }
 
             public string? Name { get; init; }
+
+            public string? Operator { get; init; }
+
+            public Expression? Left { get; init; }
+
+            public Expression? Right { get; init; }
+
+            public Expression? Condition { get; init; }
+
+            public Expression? WhenTrue { get; init; }
+
+            public Expression? WhenFalse { get; init; }
+
+            public Expression? Target { get; init; }
+
+            public ImmutableList<Expression>? Arguments { get; init; }
+
+            public ImmutableList<Expression>? Elements { get; init; }
+
+            public Pattern? Pattern { get; init; }
+
+            public bool IsPostfix { get; init; }
+
+            public bool IsConditional { get; init; }
         }
 
         private static Shape Classify(this ExpressionSyntax expression, string filePath)
@@ -104,30 +208,90 @@ namespace Solution.Parser.CSharp
                         LiteralValue = LastName(nameOf.ArgumentList.Arguments[0].Expression)
                     },
 
-                InvocationExpressionSyntax => Of(ExpressionKind.Invocation),
+                InvocationExpressionSyntax invocation => invocation.Expression.Classify(filePath) switch
+                {
+                    // The name and receiver of a call are those of what is called: Go in a.Go().
+                    { Kind: ExpressionKind.MemberAccess or ExpressionKind.Identifier } callee => Of(ExpressionKind.Invocation) with
+                    {
+                        Name = callee.Name,
+                        Target = callee.Target,
+                        IsConditional = callee.IsConditional,
+                        Arguments = invocation.ArgumentList.ToArguments(filePath)
+                    },
+
+                    // A delegate called right away, as in GetHandler()(x), is called on that expression.
+                    _ => Of(ExpressionKind.Invocation) with
+                    {
+                        Target = invocation.Expression.ToExpression(filePath),
+                        Arguments = invocation.ArgumentList.ToArguments(filePath)
+                    }
+                },
 
                 IdentifierNameSyntax identifier => Of(ExpressionKind.Identifier) with { Name = identifier.Identifier.ValueText },
 
                 GenericNameSyntax generic => Of(ExpressionKind.Identifier) with { Name = generic.Identifier.ValueText },
 
-                MemberAccessExpressionSyntax memberAccess => Of(ExpressionKind.MemberAccess) with { Name = memberAccess.Name.Identifier.ValueText },
+                MemberAccessExpressionSyntax memberAccess => Of(ExpressionKind.MemberAccess) with
+                {
+                    Name = memberAccess.Name.Identifier.ValueText,
+                    Target = memberAccess.Expression.ToExpression(filePath)
+                },
 
-                ConditionalAccessExpressionSyntax conditional => conditional.WhenNotNull is InvocationExpressionSyntax
-                                                                     ? Of(ExpressionKind.Invocation)
-                                                                     : Of(ExpressionKind.MemberAccess) with { Name = LastName(conditional.WhenNotNull) },
+                MemberBindingExpressionSyntax binding => Of(ExpressionKind.MemberAccess) with
+                {
+                    Name = binding.Name.Identifier.ValueText,
+                    Target = ConditionalTarget(binding, filePath),
+                    IsConditional = true
+                },
 
-                ObjectCreationExpressionSyntax creation => Of(ExpressionKind.ObjectCreation) with { TypeReference = creation.Type.ToTypeReference(filePath) },
+                ElementBindingExpressionSyntax elementBinding => Of(ExpressionKind.ElementAccess) with
+                {
+                    Target = ConditionalTarget(elementBinding, filePath),
+                    Arguments = elementBinding.ArgumentList.ToArguments(filePath),
+                    IsConditional = true
+                },
 
-                ImplicitObjectCreationExpressionSyntax => Of(ExpressionKind.ObjectCreation),
+                ObjectCreationExpressionSyntax creation => Of(ExpressionKind.ObjectCreation) with
+                {
+                    TypeReference = creation.Type.ToTypeReference(filePath),
+                    Arguments = creation.ArgumentList.ToArguments(filePath),
+                    Elements = creation.Initializer.ToElements(filePath)
+                },
 
-                ArrayCreationExpressionSyntax or ImplicitArrayCreationExpressionSyntax
-                    or StackAllocArrayCreationExpressionSyntax or ImplicitStackAllocArrayCreationExpressionSyntax => Of(ExpressionKind.ArrayCreation),
+                ImplicitObjectCreationExpressionSyntax implicitCreation => Of(ExpressionKind.ObjectCreation) with
+                {
+                    Arguments = implicitCreation.ArgumentList.ToArguments(filePath),
+                    Elements = implicitCreation.Initializer.ToElements(filePath)
+                },
 
-                CollectionExpressionSyntax => Of(ExpressionKind.CollectionExpression),
+                ArrayCreationExpressionSyntax arrayCreation => Of(ExpressionKind.ArrayCreation) with
+                {
+                    TypeReference = arrayCreation.Type.ToTypeReference(filePath),
+                    Arguments = arrayCreation.Type.RankSpecifiers
+                                             .SelectMany(r => r.Sizes)
+                                             .Where(s => s is not OmittedArraySizeExpressionSyntax)
+                                             .Select(s => s.ToExpression(filePath))
+                                             .ToImmutableList(),
+                    Elements = arrayCreation.Initializer.ToElements(filePath)
+                },
 
-                AnonymousObjectCreationExpressionSyntax => Of(ExpressionKind.AnonymousObject),
+                ImplicitArrayCreationExpressionSyntax implicitArray => Of(ExpressionKind.ArrayCreation) with { Elements = implicitArray.Initializer.ToElements(filePath) },
 
-                AnonymousFunctionExpressionSyntax => Of(ExpressionKind.Lambda),
+                StackAllocArrayCreationExpressionSyntax stackAlloc => Of(ExpressionKind.ArrayCreation) with { Elements = stackAlloc.Initializer.ToElements(filePath) },
+
+                ImplicitStackAllocArrayCreationExpressionSyntax implicitStackAlloc => Of(ExpressionKind.ArrayCreation) with { Elements = implicitStackAlloc.Initializer.ToElements(filePath) },
+
+                CollectionExpressionSyntax collection => Of(ExpressionKind.CollectionExpression) with
+                {
+                    Elements = collection.Elements.Select(e => e.ToElement(filePath)).ToImmutableList()
+                },
+
+                AnonymousObjectCreationExpressionSyntax anonymous => Of(ExpressionKind.AnonymousObject) with
+                {
+                    Elements = anonymous.Initializers.Select(i => i.Expression.ToExpression(filePath)).ToImmutableList()
+                },
+
+                AnonymousFunctionExpressionSyntax lambda => Of(ExpressionKind.Lambda) with { Operand = lambda.ExpressionBody.ToExpressionOrNull(filePath) },
 
                 TypeOfExpressionSyntax typeOf => Of(ExpressionKind.TypeOf) with { TypeReference = typeOf.Type.ToTypeReference(filePath) },
 
@@ -142,32 +306,94 @@ namespace Solution.Parser.CSharp
                 BinaryExpressionSyntax { RawKind: (int)SyntaxKind.AsExpression } asExpression => Of(ExpressionKind.As) with
                 {
                     TypeReference = (asExpression.Right as TypeSyntax).ToTypeReference(filePath),
-                    Operand = asExpression.Left.ToExpression(filePath)
+                    Operand = asExpression.Left.ToExpression(filePath),
+                    Operator = "as"
                 },
 
-                BinaryExpressionSyntax { RawKind: (int)SyntaxKind.IsExpression } or IsPatternExpressionSyntax => Of(ExpressionKind.Is),
+                // x is Foo, the old form of the type pattern.
+                BinaryExpressionSyntax { RawKind: (int)SyntaxKind.IsExpression } isType => Of(ExpressionKind.Is) with
+                {
+                    Operand = isType.Left.ToExpression(filePath),
+                    Pattern = isType.Right is TypeSyntax type ? type.ToTypePattern(filePath) : null,
+                    Operator = "is"
+                },
 
-                BinaryExpressionSyntax => Of(ExpressionKind.Binary),
+                IsPatternExpressionSyntax isPattern => Of(ExpressionKind.Is) with
+                {
+                    Operand = isPattern.Expression.ToExpression(filePath),
+                    Pattern = isPattern.Pattern.ToPattern(filePath),
+                    Operator = "is"
+                },
+
+                BinaryExpressionSyntax binary => Of(ExpressionKind.Binary) with
+                {
+                    Left = binary.Left.ToExpression(filePath),
+                    Right = binary.Right.ToExpression(filePath),
+                    Operator = binary.OperatorToken.ValueText
+                },
+
+                RangeExpressionSyntax range => Of(ExpressionKind.Range) with
+                {
+                    Left = range.LeftOperand.ToExpressionOrNull(filePath),
+                    Right = range.RightOperand.ToExpressionOrNull(filePath),
+                    Operator = ".."
+                },
 
                 AwaitExpressionSyntax await => Of(ExpressionKind.Await) with { Operand = await.Expression.ToExpression(filePath) },
 
-                PrefixUnaryExpressionSyntax prefix => Of(ExpressionKind.Unary) with { Operand = prefix.Operand.ToExpression(filePath) },
+                PrefixUnaryExpressionSyntax prefix => Of(ExpressionKind.Unary) with
+                {
+                    Operand = prefix.Operand.ToExpression(filePath),
+                    Operator = prefix.OperatorToken.ValueText
+                },
 
-                PostfixUnaryExpressionSyntax postfix => Of(ExpressionKind.Unary) with { Operand = postfix.Operand.ToExpression(filePath) },
+                PostfixUnaryExpressionSyntax postfix => Of(ExpressionKind.Unary) with
+                {
+                    Operand = postfix.Operand.ToExpression(filePath),
+                    Operator = postfix.OperatorToken.ValueText,
+                    IsPostfix = true
+                },
 
-                ConditionalExpressionSyntax => Of(ExpressionKind.Conditional),
+                ConditionalExpressionSyntax conditional => Of(ExpressionKind.Conditional) with
+                {
+                    Condition = conditional.Condition.ToExpression(filePath),
+                    WhenTrue = conditional.WhenTrue.ToExpression(filePath),
+                    WhenFalse = conditional.WhenFalse.ToExpression(filePath)
+                },
 
-                AssignmentExpressionSyntax => Of(ExpressionKind.Assignment),
+                AssignmentExpressionSyntax assignment => Of(ExpressionKind.Assignment) with
+                {
+                    Left = assignment.Left.ToExpression(filePath),
+                    Right = assignment.Right.ToExpression(filePath),
+                    Operator = assignment.OperatorToken.ValueText
+                },
 
-                SwitchExpressionSyntax => Of(ExpressionKind.Switch),
+                SwitchExpressionSyntax switchExpression => Of(ExpressionKind.Switch) with
+                {
+                    Operand = switchExpression.GoverningExpression.ToExpression(filePath),
+                    Elements = switchExpression.Arms.Select(a => a.Expression.ToExpression(filePath)).ToImmutableList()
+                },
 
-                ThrowExpressionSyntax => Of(ExpressionKind.Throw),
+                ThrowExpressionSyntax throwExpression => Of(ExpressionKind.Throw) with { Operand = throwExpression.Expression.ToExpression(filePath) },
 
-                ElementAccessExpressionSyntax => Of(ExpressionKind.ElementAccess),
+                ElementAccessExpressionSyntax elementAccess => Of(ExpressionKind.ElementAccess) with
+                {
+                    Target = elementAccess.Expression.ToExpression(filePath),
+                    Arguments = elementAccess.ArgumentList.ToArguments(filePath)
+                },
 
-                TupleExpressionSyntax => Of(ExpressionKind.Tuple),
+                TupleExpressionSyntax tuple => Of(ExpressionKind.Tuple) with
+                {
+                    Elements = tuple.Arguments.Select(a => a.Expression.ToExpression(filePath)).ToImmutableList()
+                },
 
-                WithExpressionSyntax => Of(ExpressionKind.With),
+                WithExpressionSyntax with => Of(ExpressionKind.With) with
+                {
+                    Operand = with.Expression.ToExpression(filePath),
+                    Elements = with.Initializer.ToElements(filePath)
+                },
+
+                QueryExpressionSyntax => Of(ExpressionKind.Query),
 
                 ThisExpressionSyntax => Of(ExpressionKind.This),
 
@@ -175,7 +401,69 @@ namespace Solution.Parser.CSharp
 
                 PredefinedTypeSyntax predefined => Of(ExpressionKind.Identifier) with { Name = predefined.Keyword.ValueText },
 
+                // checked(x), ref x and the like keep what they wrap.
+                CheckedExpressionSyntax checkedExpression => Of(ExpressionKind.Other) with { Operand = checkedExpression.Expression.ToExpression(filePath) },
+
+                RefExpressionSyntax refExpression => Of(ExpressionKind.Other) with { Operand = refExpression.Expression.ToExpression(filePath) },
+
                 _ => Of(ExpressionKind.Other)
+            };
+        }
+
+        /// <summary>
+        /// The expression a <c>?.b</c> or <c>?[0]</c> is applied to: that of the nearest
+        /// <c>?.</c> whose right side holds the binding. In <c>a?.b?.c</c> the target of <c>.c</c> is
+        /// <c>a?.b</c>, and the target of <c>.b</c> is <c>a</c>.
+        /// </summary>
+        private static Expression? ConditionalTarget(SyntaxNode binding, string filePath)
+        {
+            for (var parent = binding.Parent; parent is not null; parent = parent.Parent)
+            {
+                if (parent is ConditionalAccessExpressionSyntax conditional && conditional.WhenNotNull.Span.Contains(binding.Span))
+                {
+                    return conditional.Expression.ToExpression(filePath);
+                }
+            }
+
+            return null;
+        }
+
+        private static ImmutableList<Expression> ToArguments(this BaseArgumentListSyntax? arguments, string filePath)
+        {
+            return arguments is null || arguments.Arguments.Count == 0
+                       ? ImmutableList<Expression>.Empty
+                       : arguments.Arguments.Select(a => a.Expression.ToExpression(filePath)).ToImmutableList();
+        }
+
+        /// <summary>The expressions in the braces: <c>X = 1</c> of an object initializer, <c>1</c> of an array initializer.</summary>
+        private static ImmutableList<Expression> ToElements(this InitializerExpressionSyntax? initializer, string filePath)
+        {
+            return initializer is null || initializer.Expressions.Count == 0
+                       ? ImmutableList<Expression>.Empty
+                       : initializer.Expressions.Select(e => e.ToExpression(filePath)).ToImmutableList();
+        }
+
+        private static Expression ToElement(this CollectionElementSyntax element, string filePath)
+        {
+            return element switch
+            {
+                ExpressionElementSyntax expression => expression.Expression.ToExpression(filePath),
+                SpreadElementSyntax spread => new Expression
+                {
+                    Kind = ExpressionKind.Spread,
+                    Operand = spread.Expression.ToExpression(filePath),
+                    Operator = "..",
+                    SourceNode = spread,
+                    FilePath = filePath,
+                    Location = spread.ToCodeLocation(filePath)
+                },
+                _ => new Expression
+                {
+                    Kind = ExpressionKind.Other,
+                    SourceNode = element,
+                    FilePath = filePath,
+                    Location = element.ToCodeLocation(filePath)
+                }
             };
         }
 

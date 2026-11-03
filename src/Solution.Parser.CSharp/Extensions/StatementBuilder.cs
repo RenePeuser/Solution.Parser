@@ -74,6 +74,7 @@ namespace Solution.Parser.CSharp
                                        .Select(arm => new SwitchExpressionArm
                                        {
                                            Pattern = arm.Pattern.ToSourceCode(),
+                                           TypedPattern = arm.Pattern.ToPattern(filePath),
                                            WhenClause = arm.WhenClause?.Condition.ToExpression(filePath),
                                            Result = arm.Expression.ToExpression(filePath),
                                            IsDiscard = arm.Pattern is DiscardPatternSyntax && arm.WhenClause is null,
@@ -162,6 +163,7 @@ namespace Solution.Parser.CSharp
                 {
                     Kind = StatementKind.Using,
                     Resource = ((SyntaxNode?)usingStatement.Declaration ?? usingStatement.Expression)?.ToSourceCode() ?? string.Empty,
+                    ResourceExpression = usingStatement.Expression.ToExpressionOrNull(filePath),
                     Variables = VariablesBefore(usingStatement, usingStatement.Statement),
                     IsAwait = usingStatement.AwaitKeyword.IsKind(SyntaxKind.AwaitKeyword),
                     Body = Build(usingStatement.Statement),
@@ -244,19 +246,33 @@ namespace Solution.Parser.CSharp
 
         private SwitchLabel ToLabel(SwitchLabelSyntax label)
         {
-            var (pattern, value, when) = label switch
+            var (pattern, typedPattern, when) = label switch
             {
-                CaseSwitchLabelSyntax caseLabel => (caseLabel.Value.ToSourceCode(), caseLabel.Value.ToExpression(filePath), (Expression?)null),
+                CaseSwitchLabelSyntax caseLabel => (caseLabel.Value.ToSourceCode(), ToConstantPattern(caseLabel.Value), (Expression?)null),
                 CasePatternSwitchLabelSyntax patternLabel => (patternLabel.Pattern.ToSourceCode(),
-                                                              patternLabel.Pattern is ConstantPatternSyntax constant ? constant.Expression.ToExpression(filePath) : null,
+                                                              patternLabel.Pattern.ToPattern(filePath),
                                                               patternLabel.WhenClause?.Condition.ToExpression(filePath)),
-                _ => ((string?)null, (Expression?)null, (Expression?)null)
+                _ => ((string?)null, (Pattern?)null, (Expression?)null)
             };
+
+            // case 1: is no pattern in the syntax, yet means the constant pattern 1.
+            Pattern ToConstantPattern(ExpressionSyntax value)
+            {
+                return new Pattern
+                {
+                    Kind = PatternKind.Constant,
+                    Value = value.ToExpression(filePath),
+                    SourceNode = value,
+                    FilePath = filePath,
+                    Location = value.ToCodeLocation(filePath)
+                };
+            }
 
             return new SwitchLabel
             {
                 Pattern = pattern,
-                Value = value,
+                TypedPattern = typedPattern,
+                Value = typedPattern is { Kind: PatternKind.Constant } ? typedPattern.Value : null,
                 WhenClause = when,
                 IsDefault = label is DefaultSwitchLabelSyntax,
                 SourceNode = label,

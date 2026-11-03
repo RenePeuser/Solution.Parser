@@ -77,7 +77,6 @@ namespace Solution.Parser.CSharp
             return declaration switch
             {
                 LocalFunctionStatementSyntax => Accessibility.NotApplicable,
-                EnumMemberDeclarationSyntax => Accessibility.Public,
                 _ => declaration.Parent switch
                 {
                     // A member of an interface is public unless stated otherwise.
@@ -85,9 +84,6 @@ namespace Solution.Parser.CSharp
 
                     // A member of a class, struct or record is private unless stated otherwise.
                     TypeDeclarationSyntax => Accessibility.Private,
-
-                    // Enum members are always public.
-                    EnumDeclarationSyntax => Accessibility.Public,
 
                     // A type declared directly in a namespace or in the compilation unit is internal.
                     BaseNamespaceDeclarationSyntax or CompilationUnitSyntax => Accessibility.Internal,
@@ -124,6 +120,7 @@ namespace Solution.Parser.CSharp
                 SyntaxKind.InKeyword => Modifier.In,
                 SyntaxKind.OutKeyword => Modifier.Out,
                 SyntaxKind.ScopedKeyword => Modifier.Scoped,
+                SyntaxKind.ThisKeyword => Modifier.This,
                 _ => null
             };
         }

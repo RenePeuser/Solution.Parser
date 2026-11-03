@@ -30,5 +30,8 @@ namespace Solution.Parser.CSharp
 
         /// <summary>The position in the parameter list, zero based.</summary>
         public int Ordinal { get; init; }
+
+        /// <summary>True for <c>this string value</c>, the receiver of a classic extension method.</summary>
+        public bool IsThis => Modifiers.Contains(Modifier.This);
     }
 }

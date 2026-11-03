@@ -107,6 +107,27 @@ applies when you already moved to 6.0.0.
 `FileInfo?`. A `FileInfo` compares by instance, not by path: compare `FullName` where two infos of the
 same file used to be equal.
 
+## 6.7 Accessors with a body, expression trees, patterns
+
+Everything here is additive; the only thing that can break the build is constructing an `Accessor`
+yourself, which was a positional record and is a `MemberWithBody` now. Reading it is unchanged:
+`Kind`, `Accessibility`, `IsAutoImplemented`, `IsExpressionBodied`, `Body` and `Location` keep their names.
+
+Rules may report more than before, because they now see code they could not see:
+
+- `AllMembersWithBody`, and with it `AllInvocations` and `AllLocalVariables`, include the accessors of
+  properties, indexers and events, and the members of C# 14 extension blocks. A call in
+  `get { return Load(); }` is found now.
+- `AllMethods` and `AllProperties` include the members of extension blocks. An extension block used to
+  show up as a nested class without a name in `NestedTypes`; it is in `ExtensionBlocks` now.
+- `parameter.Modifiers` holds `Modifier.This` for the receiver of a classic extension method; it
+  was dropped before. `method.IsExtension`, `ExtensionReceiver` and `IsInExtensionBlock` are new.
+- A local function or an attribute inside an accessor, an indexer or an event is named below them,
+  as it always was below a property: `Shop.Cart.Total.get.Local`, `Shop.Cart.this[].Range`.
+
+The code generator helpers `RecordExtensions`, `ClassDeclarationExtensions`, `AddCodeFormatter` and
+`FormatSyntaxTree` are obsolete; they have nothing to do with parsing and go in the next major version.
+
 ---
 
 # Migrating to Solution.Parser 5.0

@@ -86,6 +86,32 @@ namespace Solution.Parser.CSharp
         /// <summary>Every lambda and anonymous method in the body, nested ones included.</summary>
         public ImmutableList<Lambda> Lambdas { get; init; } = ImmutableList<Lambda>.Empty;
 
+        /// <summary>The expression of an expression bodied member, <c>Total * 2</c> in <c>=&gt; Total * 2</c>; null for a block body.</summary>
+        public Expression? ExpressionBody { get; init; }
+
+        /// <summary>
+        /// Every expression of the body at any depth, in source order per statement: the expressions
+        /// of <see cref="AllStatements"/> and the <see cref="ExpressionBody"/>, each with everything
+        /// inside it. A local function reports its own.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// method.AllExpressions.Where(e =&gt; e.Kind == ExpressionKind.Binary &amp;&amp; e.Operator is "==" or "!="
+        ///                                  &amp;&amp; e.Right?.Kind == ExpressionKind.NullLiteral)
+        /// </code>
+        /// </example>
+        public ImmutableList<Expression> AllExpressions
+        {
+            get
+            {
+                // An expression body holds no statement, except those of a lambda with a block inside it.
+                var statements = AllStatements.SelectMany(s => s.Expressions);
+                var roots = ExpressionBody is null ? statements : statements.Prepend(ExpressionBody);
+
+                return roots.SelectMany(e => e.DescendantsAndSelf()).ToImmutableList();
+            }
+        }
+
         /// <summary>Every <c>await x</c> in the body, lambdas included; see <see cref="Expression.Operand"/> for what is awaited.</summary>
         public ImmutableList<Expression> Awaits { get; init; } = ImmutableList<Expression>.Empty;
 

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
@@ -43,15 +44,113 @@ namespace Solution.Parser.CSharp
 
         /// <summary>
         /// The expression inside: what is awaited in <c>await x</c>, cast in <c>(Foo)x</c> or
-        /// converted in <c>x as Foo</c>, negated in <c>!x</c>. Null for any other kind.
+        /// converted in <c>x as Foo</c>, negated in <c>!x</c>, tested in <c>x is Foo</c>, thrown in
+        /// <c>throw ex</c>, switched on in <c>x switch { }</c>, copied in <c>p with { }</c>, spread in
+        /// <c>..items</c>, and the body of an expression lambda. Null for any other kind.
         /// </summary>
         public Expression? Operand { get; init; }
 
-        /// <summary>The name for an <see cref="ExpressionKind.Identifier"/> and the last name of a <see cref="ExpressionKind.MemberAccess"/>, <c>Now</c> in <c>DateTime.Now</c>.</summary>
+        /// <summary>
+        /// The name for an <see cref="ExpressionKind.Identifier"/>, the last name of a
+        /// <see cref="ExpressionKind.MemberAccess"/>, <c>Now</c> in <c>DateTime.Now</c>, and the called
+        /// method of an <see cref="ExpressionKind.Invocation"/>, <c>Send</c> in <c>client.Send()</c>.
+        /// </summary>
         public string? Name { get; init; }
 
         /// <summary>True when a <c>!</c> follows the expression, as in <c>null!</c> or <c>user!.Name</c> at its end.</summary>
         public bool HasNullForgiving { get; init; }
+
+        /// <summary>
+        /// The operator as written: <c>==</c>, <c>+</c>, <c>&amp;&amp;</c>, <c>??</c> of a binary expression,
+        /// <c>=</c>, <c>+=</c>, <c>??=</c> of an assignment, <c>!</c>, <c>-</c>, <c>++</c>, <c>^</c> of a
+        /// unary one, <c>..</c> of a range. Null for any other kind.
+        /// </summary>
+        public string? Operator { get; init; }
+
+        /// <summary>The left side of a binary expression, a range or an assignment, where it is what is assigned to.</summary>
+        public Expression? Left { get; init; }
+
+        /// <summary>The right side of a binary expression, a range or an assignment, where it is the value.</summary>
+        public Expression? Right { get; init; }
+
+        /// <summary>The condition of <c>a ? b : c</c>.</summary>
+        public Expression? Condition { get; init; }
+
+        /// <summary>The value of <c>a ? b : c</c> when the condition holds, <c>b</c>.</summary>
+        public Expression? WhenTrue { get; init; }
+
+        /// <summary>The value of <c>a ? b : c</c> when the condition does not hold, <c>c</c>.</summary>
+        public Expression? WhenFalse { get; init; }
+
+        /// <summary>
+        /// What a member is accessed, a method called or an element indexed on: <c>DateTime</c> in
+        /// <c>DateTime.Now</c>, <c>client</c> in <c>client.Send()</c> and in <c>client?.Send()</c>,
+        /// <c>items</c> in <c>items[0]</c>. Null for a plain name and for a call like <c>Go()</c>.
+        /// </summary>
+        public Expression? Target { get; init; }
+
+        /// <summary>The arguments of a call, of <c>new Foo(...)</c> and of an element access, without names and <c>ref</c>; also the sizes of <c>new int[3]</c>.</summary>
+        public ImmutableList<Expression> Arguments { get; init; } = ImmutableList<Expression>.Empty;
+
+        /// <summary>
+        /// The expressions in braces or brackets: the assignments of <c>new Foo { X = 1 }</c> and of
+        /// <c>with { X = 1 }</c>, the elements of an array, a collection expression and a tuple, the
+        /// values of an anonymous object and the results of the arms of a switch expression.
+        /// </summary>
+        public ImmutableList<Expression> Elements { get; init; } = ImmutableList<Expression>.Empty;
+
+        /// <summary>The pattern of <c>x is ...</c>, taken apart; null for any other kind.</summary>
+        public Pattern? Pattern { get; init; }
+
+        /// <summary>True for <c>x++</c> and <c>x--</c>, false for <c>++x</c>.</summary>
+        public bool IsPostfix { get; init; }
+
+        /// <summary>True for an access or call through <c>?.</c> or <c>?[]</c>.</summary>
+        public bool IsConditional { get; init; }
+
+        /// <summary>
+        /// The expressions directly inside this one, in source order: operands, sides, target,
+        /// arguments, elements, the holes of an interpolated string and the body of an expression
+        /// lambda. A lambda with a block keeps its statements to itself, see <c>Lambdas</c>.
+        /// </summary>
+        public ImmutableList<Expression> Children
+        {
+            get
+            {
+                IEnumerable<Expression?> children =
+                [
+                    Operand, Left, Right, Condition, WhenTrue, WhenFalse, Target,
+                    ..Arguments, ..Elements, ..InterpolatedParts.Select(p => p.Hole),
+                    ..Pattern?.DescendantsAndSelf().Select(p => p.Value) ?? []
+                ];
+
+                return children.OfType<Expression>().OrderBy(e => e.Location.SpanStart).ToImmutableList();
+            }
+        }
+
+        /// <summary>This expression followed by every expression inside it, depth first, in source order.</summary>
+        /// <example>
+        /// <code>
+        /// // x == null, which a rule may want written as x is null
+        /// statement.Expressions.SelectMany(e =&gt; e.DescendantsAndSelf())
+        ///          .Where(e =&gt; e.Operator == "==" &amp;&amp; e.Right?.Kind == ExpressionKind.NullLiteral)
+        /// </code>
+        /// </example>
+        public IEnumerable<Expression> DescendantsAndSelf()
+        {
+            yield return this;
+
+            foreach (var descendant in Children.SelectMany(c => c.DescendantsAndSelf()))
+            {
+                yield return descendant;
+            }
+        }
+
+        /// <summary>Every expression inside this one, depth first, in source order.</summary>
+        public IEnumerable<Expression> Descendants()
+        {
+            return DescendantsAndSelf().Skip(1);
+        }
 
         public bool IsLiteral => Kind is ExpressionKind.StringLiteral or ExpressionKind.NumericLiteral or ExpressionKind.BooleanLiteral
                                      or ExpressionKind.CharLiteral or ExpressionKind.NullLiteral or ExpressionKind.DefaultLiteral;
@@ -120,7 +219,11 @@ namespace Solution.Parser.CSharp
         /// <summary><c>a.b</c>, including <c>a?.b</c>.</summary>
         MemberAccess,
 
-        /// <summary>A method call; the details are in the member's <c>Invocations</c>.</summary>
+        /// <summary>
+        /// A method call, with <see cref="Expression.Name"/>, <see cref="Expression.Target"/> and
+        /// <see cref="Expression.Arguments"/>; argument names, <c>ref</c> and the chain are in the
+        /// member's <c>Invocations</c>.
+        /// </summary>
         Invocation,
 
         /// <summary><c>new Foo()</c> and the target typed <c>new()</c>.</summary>
@@ -185,6 +288,15 @@ namespace Solution.Parser.CSharp
 
         This,
 
-        Base
+        Base,
+
+        /// <summary><c>1..^1</c>, <c>..3</c> and <c>..</c>; see <see cref="Expression.Left"/> and <see cref="Expression.Right"/>.</summary>
+        Range,
+
+        /// <summary>The <c>..items</c> in a collection expression; see <see cref="Expression.Operand"/>.</summary>
+        Spread,
+
+        /// <summary>A LINQ query, <c>from x in items select x</c>.</summary>
+        Query
     }
 }

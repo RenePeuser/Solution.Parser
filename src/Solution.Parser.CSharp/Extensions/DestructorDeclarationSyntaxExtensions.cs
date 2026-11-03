@@ -33,6 +33,7 @@ namespace Solution.Parser.CSharp
                 SwitchExpressions = body.SwitchExpressions,
                 Lambdas = body.Lambdas,
                 Awaits = body.Awaits,
+                ExpressionBody = body.ExpressionBody,
                 IsExpressionBodied = body.IsExpressionBodied,
                 SourceCode = destructorSyntax.ToSourceCode(),
                 FilePath = filePath,

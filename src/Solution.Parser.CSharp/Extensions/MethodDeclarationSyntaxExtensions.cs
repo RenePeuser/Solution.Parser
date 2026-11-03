@@ -15,6 +15,7 @@ namespace Solution.Parser.CSharp
             var modifiers = methodDeclarationSyntax.Modifiers.ToModifiers();
             var body = methodDeclarationSyntax.Body.ToMemberBody(methodDeclarationSyntax.ExpressionBody, filePath);
             var hasNoBody = methodDeclarationSyntax.Body is null && methodDeclarationSyntax.ExpressionBody is null;
+            var parameters = methodDeclarationSyntax.ParameterList.ToParameters(filePath);
 
             return new Method
             {
@@ -22,7 +23,8 @@ namespace Solution.Parser.CSharp
                 FullyQualifiedName = methodDeclarationSyntax.BuildFullyQualifiedName(name),
                 ReturnParameter = methodDeclarationSyntax.ReturnType.ToSourceCode(),
                 ReturnType = methodDeclarationSyntax.ReturnType.ToTypeReference(filePath),
-                Parameters = methodDeclarationSyntax.ParameterList.ToParameters(filePath),
+                Parameters = parameters,
+                ExtensionReceiver = parameters.FirstOrDefault() is { IsThis: true } receiver ? receiver : null,
                 TypeParameters = methodDeclarationSyntax.TypeParameterList.ToTypeParameters(methodDeclarationSyntax.ConstraintClauses, filePath),
                 Modifiers = modifiers,
                 Accessibility = methodDeclarationSyntax.Modifiers.ToAccessibility(methodDeclarationSyntax),
@@ -42,6 +44,7 @@ namespace Solution.Parser.CSharp
                 SwitchExpressions = body.SwitchExpressions,
                 Lambdas = body.Lambdas,
                 Awaits = body.Awaits,
+                ExpressionBody = body.ExpressionBody,
                 IsExpressionBodied = body.IsExpressionBodied,
                 IsIterator = body.IsIterator,
                 ExplicitInterfaceSpecifier = methodDeclarationSyntax.ExplicitInterfaceSpecifier?.Name.ToSourceCode(),

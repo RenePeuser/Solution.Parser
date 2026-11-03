@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 
 namespace Solution.Parser.CSharp
@@ -41,5 +42,23 @@ namespace Solution.Parser.CSharp
 
         /// <summary>True for an access through <c>?.</c>.</summary>
         public bool IsConditional { get; init; }
+
+        /// <summary>
+        /// Equal by what the access says, not by how far its text was cut out yet; the generated
+        /// equality would compare the cached target and the file text it is cut from.
+        /// </summary>
+        public bool Equals(MemberAccess? other)
+        {
+            return base.Equals(other) &&
+                   Name == other.Name &&
+                   IsInvoked == other.IsInvoked &&
+                   IsConditional == other.IsConditional &&
+                   Target == other.Target;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(base.GetHashCode(), Name);
+        }
     }
 }

@@ -217,7 +217,7 @@ method.BodyStatements                      // nested: an if holds its branches, 
 method.AllStatements                       // flat, at any depth, lambdas included
 method.TryStatements                       // Catches with ExceptionType, Filter, IsEmpty, CatchesAll, IsRethrowing; Finally
 method.SwitchStatements                    // Subject, Sections with Labels (Value, WhenClause), HasDefault
-method.SwitchExpressions                   // Arms with Pattern, WhenClause, Result; HasDiscardArm
+method.SwitchExpressions                   // Arms with Pattern, TypedPattern, WhenClause, Result; HasDiscardArm
 method.IfStatements / Loops / Returns / Throws
 statement.Invocations                      // the calls inside one statement
 tree.Statements                            // top level statements, typed the same way
@@ -238,6 +238,53 @@ call.Arguments[1].ValueExpression.TypeReference   // Foo in typeof(Foo)
 argument.ValueExpression.TextWithHoles()   // "v{}/users" for $"v{version}/users"
 attribute.PositionalExpressions / NamedArguments[i].ValueExpression
 field.InitializerExpression.HasNullForgiving      // null!
+```
+
+An expression is a tree. A binary expression or an assignment has `Left`, `Right` and `Operator`, a
+call `Name`, `Target` and `Arguments`, `a ? b : c` its `Condition`, `WhenTrue` and `WhenFalse`, and
+`x is ...` its `Pattern`. `Children` and `DescendantsAndSelf()` walk it, `statement.Expressions` hands out
+what a statement holds, and `method.AllExpressions` is every expression of a body at any depth:
+
+```csharp
+from method in tree.AllMethods()
+from comparison in method.AllExpressions
+where comparison.Operator is "==" or "!=" && comparison.Right?.Kind == ExpressionKind.NullLiteral
+select $"{comparison.Location}: write {comparison.Left!.SourceCode} is null";
+
+from method in tree.AllMethods()
+from assignment in method.AllExpressions
+where assignment.Kind == ExpressionKind.Assignment
+   && method.Parameters.Any(p => p.Name == assignment.Left?.Name)
+select $"{assignment.Location}: do not assign to the parameter {assignment.Left!.Name}";
+```
+
+A pattern is taken apart the same way, wherever it is written: `expression.Pattern`,
+`label.TypedPattern` and `arm.TypedPattern`. `Kind` is a `Constant`, `Type`, `Declaration`, `Relational`,
+`Not`, `And`, `Or`, `Recursive` (with `Properties` and `Positional`), `List` and the like; `IsNull` and
+`IsNotNull` cover the null checks.
+
+```csharp
+pattern.Properties[0].Name                 // "Customer.Age" in { Customer.Age: >= 18 }
+pattern.Properties[0].Pattern.Operator     // ">="
+```
+
+Accessors carry their body like a method does: `property.Accessors.Get.Invocations`,
+`indexer.Accessors.Set.AllStatements`, `event.Add.LocalVariables`. `AllMembersWithBody`, and with it
+`AllInvocations` and `AllLocalVariables`, includes them. A C# 14 `extension(string value) { }` block of a
+static class is in `type.ExtensionBlocks`, with its `Receiver`, `Methods` and `Properties`; `AllMethods`
+and `AllProperties` include its members.
+
+`method.IsExtension` is true for an extension method written either way, `Shout(this string value)` or
+inside `extension(string value) { }`; `ExtensionReceiver` is the parameter it extends and
+`IsInExtensionBlock` tells the two forms apart. With symbols, `call.Method.IsExtension` works for
+methods from packages and the framework too, `Enumerable.Select` for one.
+
+```csharp
+from type in tree.AllTypes()
+where type.HasExtensionMembers
+from method in type.Methods
+where method.IsExtension && !method.IsInExtensionBlock
+select $"{method.Location}: move {method.Name} into an extension block";
 ```
 
 Fluent calls are linked: `call.Receiver` is the call it is made on, and `method.InvocationChains`

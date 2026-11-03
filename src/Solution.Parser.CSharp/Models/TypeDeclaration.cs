@@ -56,6 +56,9 @@ namespace Solution.Parser.CSharp
         /// <summary>The types declared directly inside this type.</summary>
         public ImmutableList<TypeDeclaration> NestedTypes { get; init; } = ImmutableList<TypeDeclaration>.Empty;
 
+        /// <summary>The C# 14 <c>extension(...) { }</c> blocks of a static class; empty for any other type.</summary>
+        public ImmutableList<ExtensionBlock> ExtensionBlocks { get; init; } = ImmutableList<ExtensionBlock>.Empty;
+
         /// <summary>
         /// The parameters of the primary constructor when there is one, otherwise those of the
         /// constructor taking the most arguments.
@@ -65,6 +68,9 @@ namespace Solution.Parser.CSharp
         public Constructor? PrimaryConstructor => Constructors.FirstOrDefault(c => c.IsPrimary);
 
         public bool IsGeneric => !TypeParameters.IsEmpty;
+
+        /// <summary>True for a static class that declares extension members, classic <c>this</c> methods or <c>extension(...)</c> blocks.</summary>
+        public bool HasExtensionMembers => !ExtensionBlocks.IsEmpty || Methods.Any(m => m.IsExtension);
 
         public ImmutableList<Class> NestedClasses => NestedTypes.OfType<Class>().ToImmutableList();
 

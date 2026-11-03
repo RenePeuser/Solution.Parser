@@ -29,6 +29,8 @@ namespace Solution.Parser.CSharp
                 ExplicitInterfaceSpecifier = eventDeclarationSyntax.ExplicitInterfaceSpecifier?.Name.ToSourceCode(),
                 HasAdd = accessors.Any(a => a.IsKind(SyntaxKind.AddAccessorDeclaration)),
                 HasRemove = accessors.Any(a => a.IsKind(SyntaxKind.RemoveAccessorDeclaration)),
+                Add = eventDeclarationSyntax.AccessorList.Find(SyntaxKind.AddAccessorDeclaration, filePath),
+                Remove = eventDeclarationSyntax.AccessorList.Find(SyntaxKind.RemoveAccessorDeclaration, filePath),
                 SourceCode = eventDeclarationSyntax.ToSourceCode(),
                 FilePath = filePath,
                 Location = eventDeclarationSyntax.ToCodeLocation(filePath)

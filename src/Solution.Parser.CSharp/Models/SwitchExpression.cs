@@ -33,6 +33,9 @@ namespace Solution.Parser.CSharp
         /// <summary>The pattern as written, <c>&gt; 10</c>, <c>Foo { Id: 1 }</c> or <c>_</c>.</summary>
         public required string Pattern { get; init; }
 
+        /// <summary>The pattern taken apart, see <see cref="CSharp.Pattern"/>; <see cref="Pattern"/> is the same as text.</summary>
+        public required CSharp.Pattern TypedPattern { get; init; }
+
         /// <summary>The condition after <c>when</c>; null when there is none.</summary>
         public Expression? WhenClause { get; init; }
 

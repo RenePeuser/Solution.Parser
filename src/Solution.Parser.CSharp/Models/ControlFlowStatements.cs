@@ -105,6 +105,12 @@ namespace Solution.Parser.CSharp
         /// <summary>The value or pattern after <c>case</c>, as written; null for <c>default</c>.</summary>
         public string? Pattern { get; init; }
 
+        /// <summary>
+        /// The pattern taken apart, see <see cref="CSharp.Pattern"/>; <see cref="Pattern"/> is the same as
+        /// text. A <c>case 1:</c> is a constant pattern. Null for <c>default</c>.
+        /// </summary>
+        public CSharp.Pattern? TypedPattern { get; init; }
+
         /// <summary>The value classified, for a <c>case</c> with a constant such as <c>case "admin":</c>; null for a pattern and for <c>default</c>.</summary>
         public Expression? Value { get; init; }
 
@@ -140,6 +146,9 @@ namespace Solution.Parser.CSharp
     {
         /// <summary>What is disposed, as written: the declaration or the expression in the parentheses.</summary>
         public required string Resource { get; init; }
+
+        /// <summary>The expression in <c>using (expression)</c> classified; null for a declaration, see <see cref="Variables"/>.</summary>
+        public Expression? ResourceExpression { get; init; }
 
         public ImmutableList<LocalVariable> Variables { get; init; } = ImmutableList<LocalVariable>.Empty;
 

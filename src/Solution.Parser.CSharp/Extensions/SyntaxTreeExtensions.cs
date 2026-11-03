@@ -8,14 +8,6 @@ namespace Solution.Parser.CSharp
 {
     internal static class SyntaxTreeExtensions
     {
-        internal static ImmutableList<T> AllOfType<T>(this SyntaxTree syntaxTree)
-            where T : SyntaxNode
-        {
-            Throw.IfNull(syntaxTree);
-
-            return syntaxTree.GetRoot().DescendantNodes().OfType<T>().ToImmutableList();
-        }
-
         /// <summary>Every namespace declared in the file, in source order.</summary>
         internal static ImmutableList<Namespace> GetNamespaces(this SyntaxTree syntaxTree)
         {
@@ -27,15 +19,6 @@ namespace Solution.Parser.CSharp
                              .OfType<BaseNamespaceDeclarationSyntax>()
                              .Select(ns => new Namespace(ns.Name.ToSourceCode()))
                              .ToImmutableList();
-        }
-
-        /// <summary>
-        /// The first namespace of the file, or an empty one when the file declares none. Prefer the
-        /// namespace reported on each declaration, which is correct even when a file holds several.
-        /// </summary>
-        internal static Namespace GetNamespaceOrDefault(this SyntaxTree syntaxTree)
-        {
-            return syntaxTree.GetNamespaces().FirstOrDefault() ?? new Namespace(string.Empty);
         }
 
         internal static ImmutableList<ParseDiagnostic> ToParseDiagnostics(this SyntaxTree syntaxTree, string filePath)

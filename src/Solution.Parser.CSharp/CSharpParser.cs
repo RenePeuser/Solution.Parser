@@ -14,6 +14,8 @@ public static class CSharpParser
     {
         Throw.IfNull(syntaxTree);
 
+        using var sharedExpressions = ExpressionSyntaxExtensions.ShareExpressions();
+
         var root = syntaxTree.GetRoot();
         var nameSpaces = syntaxTree.GetNamespaces();
         var nameSpace = nameSpaces.FirstOrDefault() ?? new Namespace(string.Empty);

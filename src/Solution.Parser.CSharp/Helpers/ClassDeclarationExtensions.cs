@@ -6,6 +6,7 @@ using Extensions.Pack;
 
 namespace Solution.Parser.CSharp.Helpers
 {
+    [System.Obsolete("A leftover of a code generator, unrelated to parsing; it will be removed in the next major version.")]
     public static class ClassDeclarationExtensions
     {
         public static string BuildServiceRegistration(this Class @class, ImmutableList<Class> classes)

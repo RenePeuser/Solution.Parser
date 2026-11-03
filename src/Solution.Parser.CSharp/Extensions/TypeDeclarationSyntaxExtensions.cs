@@ -22,6 +22,9 @@ namespace Solution.Parser.CSharp
             return member switch
             {
                 EnumDeclarationSyntax enumDeclaration => enumDeclaration.ToEnum(filePath),
+
+                // An extension block is a TypeDeclarationSyntax, yet no type: see ToExtensionBlocks.
+                ExtensionBlockDeclarationSyntax => null,
                 TypeDeclarationSyntax typeDeclaration => typeDeclaration.ToTypeDeclaration(filePath),
                 _ => null
             };
@@ -65,8 +68,43 @@ namespace Solution.Parser.CSharp
                 Delegates = syntax.DirectMembers<DelegateDeclarationSyntax>().ToDelegates(filePath),
                 Finalizers = syntax.DirectMembers<DestructorDeclarationSyntax>().ToFinalizers(filePath),
                 NestedTypes = syntax.ToNestedTypes(filePath),
+                ExtensionBlocks = syntax.ToExtensionBlocks(filePath),
                 Parameters = parameters
             };
+        }
+
+        private static ImmutableList<ExtensionBlock> ToExtensionBlocks(this TypeDeclarationSyntax syntax, string filePath)
+        {
+            return syntax.DirectMembers<ExtensionBlockDeclarationSyntax>()
+                         .Select(block =>
+                         {
+                             var receiver = block.ParameterList?.Parameters.FirstOrDefault()?.ToParameter(0, filePath) ?? new Parameter
+                             {
+                                 Name = string.Empty,
+                                 FullyQualifiedName = string.Empty,
+                                 Type = string.Empty,
+                                 FilePath = filePath
+                             };
+
+                             return new ExtensionBlock
+                             {
+                                 Receiver = receiver,
+                                 TypeParameters = block.TypeParameterList.ToTypeParameters(block.ConstraintClauses, filePath),
+                                 Methods = block.DirectMembers<MethodDeclarationSyntax>()
+                                                .ToMethods(filePath)
+                                                .Select(m => m with { ExtensionReceiver = receiver, IsInExtensionBlock = true })
+                                                .ToImmutableList(),
+                                 Properties = block.DirectMembers<PropertyDeclarationSyntax>()
+                                                   .ToProperties(filePath)
+                                                   .Select(p => p with { ExtensionReceiver = receiver, IsInExtensionBlock = true })
+                                                   .ToImmutableList(),
+                                 Operators = block.ToOperators(filePath),
+                                 SourceNode = block,
+                                 FilePath = filePath,
+                                 Location = block.ToCodeLocation(filePath)
+                             };
+                         })
+                         .ToImmutableList();
         }
 
         /// <summary>The types declared directly in this type, each with its own members.</summary>

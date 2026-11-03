@@ -21,35 +21,6 @@ namespace Solution.Parser.CSharp
                        : node.DescendantNodesAndSelf(descendIntoChildren: child => child == node || child is not LocalFunctionStatementSyntax);
         }
 
-        internal static ImmutableList<ObjectCreation> ToObjectCreations(this SyntaxNode? node, string filePath)
-        {
-            return node.BodyNodes().OfType<BaseObjectCreationExpressionSyntax>().Select(c => c.ToObjectCreation(filePath)).ToImmutableList();
-        }
-
-        internal static ImmutableList<StringLiteral> ToStringLiterals(this SyntaxNode? node, string filePath)
-        {
-            return node.BodyNodes()
-                       .Select(n => n switch
-                       {
-                           LiteralExpressionSyntax literal when literal.IsKind(SyntaxKind.StringLiteralExpression) || literal.IsKind(SyntaxKind.Utf8StringLiteralExpression)
-                               => literal.ToStringLiteral(filePath),
-                           InterpolatedStringExpressionSyntax interpolated => interpolated.ToStringLiteral(filePath),
-                           _ => null
-                       })
-                       .OfType<StringLiteral>()
-                       .ToImmutableList();
-        }
-
-        internal static ImmutableList<MemberAccess> ToMemberAccesses(this SyntaxNode? node, string filePath)
-        {
-            return node.BodyNodes()
-                       .OfType<ExpressionSyntax>()
-                       .Where(n => n.IsKind(SyntaxKind.SimpleMemberAccessExpression) || n is MemberBindingExpressionSyntax)
-                       .Select(n => n.ToMemberAccess(filePath))
-                       .ToImmutableList();
-        }
-
-        /// <summary>A string literal or an interpolated string, as the scan collects them.</summary>
         internal static StringLiteral ToStringLiteral(this ExpressionSyntax node, string filePath)
         {
             return node is InterpolatedStringExpressionSyntax interpolated

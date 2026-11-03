@@ -270,5 +270,43 @@ namespace Solution.Parser.CSharp.Semantic.Test
                                  because: "the full mode compiles once, on first use, and shares the caches with the fast mode",
                                  fix: "Check the Lazy in Workspace.Compilation");
         }
+
+        [TestMethod]
+        public void A_Resolved_Method_Tells_Whether_It_Is_An_Extension()
+        {
+            var code = WithSymbols("""
+                using System.Linq;
+
+                public static class Modern
+                {
+                    extension(string value)
+                    {
+                        public string Whisper() => value.ToLower();
+                    }
+                }
+
+                public class Tests
+                {
+                    public object Go(int[] numbers, string text) => (numbers.Select(n => n * 2).ToList(), text.Whisper(), text.Trim());
+                }
+                """);
+
+            var calls = code.AllTrees.AllInvocations();
+            var select = calls.Named("Select").Single().Method!;
+            var whisper = calls.Named("Whisper").Single().Method!;
+            var trim = calls.Named("Trim").Single().Method!;
+
+            Assert.That.IsTrue(select is { IsExtension: true, IsInExtensionBlock: false, ExtensionReceiver.IsThis: true },
+                               because: "Enumerable.Select comes from the framework as a classic extension method",
+                               fix: "Set ExtensionReceiver from IMethodSymbol.IsExtensionMethod in SymbolToModel.FromSymbol");
+
+            Assert.That.IsTrue(whisper is { IsExtension: true, IsInExtensionBlock: true, ExtensionReceiver.Name: "value" },
+                               because: "a member of an extension block in the code base is the declared one, with its receiver",
+                               fix: "Find methods of extension blocks in Workspace.DeclaredMethod");
+
+            Assert.That.IsFalse(trim.IsExtension,
+                                because: "string.Trim is an instance method",
+                                fix: "Leave ExtensionReceiver null for any other method");
+        }
     }
 }

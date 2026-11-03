@@ -19,24 +19,14 @@ namespace Solution.Parser.CSharp
             // An expression bodied member is a getter and nothing else.
             if (accessorList is null)
             {
-                if (expressionBody is null)
-                {
-                    return PropertyAccessors.None;
-                }
-
-                var getter = new Accessor(AccessorKind.Get,
-                                          Accessibility.NotApplicable,
-                                          IsAutoImplemented: false,
-                                          IsExpressionBodied: true,
-                                          expressionBody.Expression.ToSourceCode(),
-                                          expressionBody.ToCodeLocation(filePath));
-
-                return new PropertyAccessors(getter, null, null);
+                return expressionBody is null
+                           ? PropertyAccessors.None
+                           : new PropertyAccessors(expressionBody.ToExpressionBodiedGetter(filePath), null, null);
             }
 
-            return new PropertyAccessors(accessorList.Find(SyntaxKind.GetAccessorDeclaration, AccessorKind.Get, filePath),
-                                         accessorList.Find(SyntaxKind.SetAccessorDeclaration, AccessorKind.Set, filePath),
-                                         accessorList.Find(SyntaxKind.InitAccessorDeclaration, AccessorKind.Init, filePath));
+            return new PropertyAccessors(accessorList.Find(SyntaxKind.GetAccessorDeclaration, filePath),
+                                         accessorList.Find(SyntaxKind.SetAccessorDeclaration, filePath),
+                                         accessorList.Find(SyntaxKind.InitAccessorDeclaration, filePath));
         }
 
         /// <summary>True when every accessor is a bare semicolon, so the compiler supplies the backing field.</summary>
@@ -47,23 +37,83 @@ namespace Solution.Parser.CSharp
                    accessorList.Accessors.All(a => a.Body is null && a.ExpressionBody is null);
         }
 
-        private static Accessor? Find(this AccessorListSyntax accessorList, SyntaxKind kind, AccessorKind accessorKind, string filePath)
+        internal static Accessor? Find(this AccessorListSyntax? accessorList, SyntaxKind kind, string filePath)
         {
-            var accessor = accessorList.Accessors.FirstOrDefault(a => a.IsKind(kind));
+            return accessorList?.Accessors.FirstOrDefault(a => a.IsKind(kind)) is { } accessor
+                       ? accessor.ToAccessor(filePath)
+                       : null;
+        }
 
-            if (accessor is null)
+        private static Accessor ToAccessor(this AccessorDeclarationSyntax accessor, string filePath)
+        {
+            var kind = accessor.Kind() switch
             {
-                return null;
-            }
+                SyntaxKind.SetAccessorDeclaration => AccessorKind.Set,
+                SyntaxKind.InitAccessorDeclaration => AccessorKind.Init,
+                SyntaxKind.AddAccessorDeclaration => AccessorKind.Add,
+                SyntaxKind.RemoveAccessorDeclaration => AccessorKind.Remove,
+                _ => AccessorKind.Get
+            };
 
-            var body = accessor.Body?.ToSourceCode() ?? accessor.ExpressionBody?.Expression.ToSourceCode() ?? string.Empty;
+            var name = accessor.Keyword.ValueText;
 
-            return new Accessor(accessorKind,
-                                accessor.Modifiers.ToAccessibility(accessor),
-                                accessor.Body is null && accessor.ExpressionBody is null,
-                                accessor.ExpressionBody is not null,
-                                body,
-                                accessor.ToCodeLocation(filePath));
+            return Build(kind,
+                         name,
+                         accessor.BuildFullyQualifiedName(name),
+                         accessor.Body.ToMemberBody(accessor.ExpressionBody, filePath),
+                         accessor,
+                         filePath) with
+                   {
+                       Modifiers = accessor.Modifiers.ToModifiers(),
+                       Accessibility = accessor.Modifiers.ToAccessibility(accessor),
+                       Attributes = accessor.AttributeLists.ToAttributes(filePath),
+                       IsAutoImplemented = accessor.Body is null && accessor.ExpressionBody is null
+                   };
+        }
+
+        private static Accessor ToExpressionBodiedGetter(this ArrowExpressionClauseSyntax expressionBody, string filePath)
+        {
+            const string Name = "get";
+
+            return Build(AccessorKind.Get,
+                         Name,
+                         expressionBody.BuildFullyQualifiedName(Name),
+                         ((BlockSyntax?)null).ToMemberBody(expressionBody, filePath),
+                         expressionBody,
+                         filePath) with
+                   {
+                       Accessibility = Accessibility.NotApplicable
+                   };
+        }
+
+        private static Accessor Build(AccessorKind kind, string name, string fullyQualifiedName, MemberBody body, SyntaxNode node, string filePath)
+        {
+            return new Accessor
+            {
+                Kind = kind,
+                Name = name,
+                FullyQualifiedName = fullyQualifiedName,
+                Body = body.Text,
+                Statements = body.Statements,
+                LineStatements = body.LineStatements,
+                LocalFunctions = body.LocalFunctions,
+                Invocations = body.Invocations,
+                LocalVariables = body.LocalVariables,
+                ObjectCreations = body.ObjectCreations,
+                StringLiterals = body.StringLiterals,
+                MemberAccesses = body.MemberAccesses,
+                BodyStatements = body.BodyStatements,
+                AllStatements = body.AllStatements,
+                SwitchExpressions = body.SwitchExpressions,
+                Lambdas = body.Lambdas,
+                Awaits = body.Awaits,
+                ExpressionBody = body.ExpressionBody,
+                IsExpressionBodied = body.IsExpressionBodied,
+                IsIterator = body.IsIterator,
+                SourceNode = node,
+                FilePath = filePath,
+                Location = node.ToCodeLocation(filePath)
+            };
         }
     }
 }

@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Collections.Immutable;
 using System.Diagnostics;
 
@@ -48,6 +50,26 @@ namespace Solution.Parser.CSharp
         internal Microsoft.CodeAnalysis.SyntaxNode? EnclosingStatementNode
         {
             init => _enclosingStatementSlice = value is null ? null : SourceSlice.Of(value);
+        }
+
+        /// <summary>
+        /// Equal by what the string says, not by how far its text was cut out yet; the generated
+        /// equality would compare the cached statement and the file text it is cut from.
+        /// </summary>
+        public bool Equals(StringLiteral? other)
+        {
+            return base.Equals(other) &&
+                   Value == other.Value &&
+                   IsInterpolated == other.IsInterpolated &&
+                   IsVerbatim == other.IsVerbatim &&
+                   IsRaw == other.IsRaw &&
+                   Parts.SequenceEqual(other.Parts) &&
+                   EnclosingStatement == other.EnclosingStatement;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(base.GetHashCode(), Value);
         }
     }
 }

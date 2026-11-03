@@ -48,6 +48,9 @@ namespace Solution.Parser.CSharp
 
         Out,
 
-        Scoped
+        Scoped,
+
+        /// <summary>The <c>this</c> in front of the first parameter of a classic extension method.</summary>
+        This
     }
 }

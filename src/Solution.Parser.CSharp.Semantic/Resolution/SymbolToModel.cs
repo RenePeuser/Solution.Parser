@@ -83,6 +83,12 @@ namespace Solution.Parser.CSharp
                 modifiers.Add(Modifier.Scoped);
             }
 
+            // IParameterSymbol.IsThis means the hidden this of an instance method, not this one.
+            if (parameter is { Ordinal: 0, ContainingSymbol: IMethodSymbol { IsExtensionMethod: true } })
+            {
+                modifiers.Add(Modifier.This);
+            }
+
             var defaultValue = parameter.HasExplicitDefaultValue ? FormatConstant(parameter.ExplicitDefaultValue) : null;
 
             return new Parameter
@@ -129,14 +135,23 @@ namespace Solution.Parser.CSharp
             var sourceLocation = definition.Locations.FirstOrDefault(l => l.IsInSource);
             var filePath = sourceLocation?.SourceTree?.FilePath ?? origin.Path;
             var containingType = definition.ContainingType?.ToDisplayString(QualifiedFormat);
+            var parameters = definition.Parameters.Select(p => ToParameter(p, filePath)).ToImmutableList();
+
+            // A classic extension method has its receiver as this parameter, a member of an extension
+            // block has it on the block.
+            var blockReceiver = definition.ContainingType is { IsExtension: true, ExtensionParameter: { } extensionParameter }
+                                    ? ToParameter(extensionParameter, filePath)
+                                    : null;
 
             return new Method
             {
+                ExtensionReceiver = blockReceiver ?? (definition.IsExtensionMethod && !parameters.IsEmpty ? parameters[0] : null),
+                IsInExtensionBlock = blockReceiver is not null,
                 Name = definition.Name,
                 FullyQualifiedName = containingType is null ? definition.Name : $"{containingType}.{definition.Name}",
                 ReturnParameter = definition.ReturnType.ToDisplayString(TypeFormat),
                 ReturnType = TypeReference.Parse(definition.ReturnType.ToDisplayString(TypeFormat)),
-                Parameters = definition.Parameters.Select(p => ToParameter(p, filePath)).ToImmutableList(),
+                Parameters = parameters,
                 TypeParameters = definition.TypeParameters
                                            .Select(t => new TypeParameter(t.Name,
                                                                           t.Variance switch

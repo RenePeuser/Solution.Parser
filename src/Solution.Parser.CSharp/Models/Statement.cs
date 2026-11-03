@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Solution.Parser.CSharp
 {
@@ -33,6 +35,37 @@ namespace Solution.Parser.CSharp
 
         /// <summary>The method calls inside this statement, nested statements and lambdas included, in source order.</summary>
         public ImmutableList<Invocation> Invocations { get; init; } = ImmutableList<Invocation>.Empty;
+
+        /// <summary>
+        /// The expressions this statement itself holds, not those of nested statements: the
+        /// expression of an expression statement, the initializers of a declaration, the condition of
+        /// an <c>if</c> or a loop, what is returned, thrown, yielded, switched on, walked, locked or
+        /// disposed, the filters of the catches and the values and conditions of the case labels. Walk
+        /// each with <see cref="Expression.DescendantsAndSelf"/>.
+        /// </summary>
+        public ImmutableList<Expression> Expressions
+        {
+            get
+            {
+                IEnumerable<Expression?> expressions = this switch
+                {
+                    ExpressionStatement e => [e.Expression],
+                    LocalDeclarationStatement d => d.Variables.Select(v => v.InitializerExpression),
+                    ReturnStatement r => [r.Value],
+                    ThrowStatement t => [t.Value],
+                    YieldStatement y => [y.Value],
+                    IfStatement i => [i.Condition],
+                    LoopStatement l => [..l.Variables.Select(v => v.InitializerExpression), l.Condition, l.Collection],
+                    SwitchStatement s => [s.Subject, ..s.Labels.SelectMany(l => new[] { l.Value, l.WhenClause })],
+                    TryStatement t => t.Catches.Select(c => c.Filter),
+                    UsingStatement u => [u.ResourceExpression, ..u.Variables.Select(v => v.InitializerExpression)],
+                    LockStatement l => [l.Target],
+                    _ => []
+                };
+
+                return expressions.OfType<Expression>().ToImmutableList();
+            }
+        }
     }
 
     /// <summary>A call or an assignment on its own, as in <c>await SaveAsync();</c> or <c>x = 3;</c>.</summary>

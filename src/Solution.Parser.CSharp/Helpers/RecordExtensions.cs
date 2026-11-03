@@ -5,6 +5,7 @@ using Extensions.Pack;
 
 namespace Solution.Parser.CSharp
 {
+    [System.Obsolete("A leftover of a code generator, unrelated to parsing; it will be removed in the next major version.")]
     public static class RecordExtensions
     {
         private static readonly CodeFormatter CodeFormatter = new();

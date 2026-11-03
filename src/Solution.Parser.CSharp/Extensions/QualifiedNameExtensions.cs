@@ -79,6 +79,18 @@ namespace Solution.Parser.CSharp
                         yield return property.Identifier.ValueText;
 
                         break;
+                    case EventDeclarationSyntax eventDeclaration:
+                        yield return eventDeclaration.Identifier.ValueText;
+
+                        break;
+                    case IndexerDeclarationSyntax:
+                        yield return "this[]";
+
+                        break;
+                    case AccessorDeclarationSyntax accessor:
+                        yield return accessor.Keyword.ValueText;
+
+                        break;
                 }
             }
         }

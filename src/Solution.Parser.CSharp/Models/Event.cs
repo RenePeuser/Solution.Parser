@@ -16,5 +16,11 @@ namespace Solution.Parser.CSharp
         public bool HasAdd { get; init; }
 
         public bool HasRemove { get; init; }
+
+        /// <summary>The <c>add</c> accessor with its body; null when there is none.</summary>
+        public Accessor? Add { get; init; }
+
+        /// <summary>The <c>remove</c> accessor with its body; null when there is none.</summary>
+        public Accessor? Remove { get; init; }
     }
 }

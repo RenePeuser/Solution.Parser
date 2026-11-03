@@ -1,12 +1,13 @@
 ﻿namespace Solution.Parser.CSharp
 {
-    public static class DeclarationBaseExtensions
+    [System.Obsolete("A leftover of a code generator, unrelated to parsing; it will be removed in the next major version.")]
+    public static class StringExtensions
     {
         private static readonly CodeFormatter CodeFormatter = new();
 
-        public static string FormatSyntaxTree(this DeclarationBase declarationBase)
+        public static string FormatSyntaxTree(this string value)
         {
-            return CodeFormatter.FormatCode(declarationBase.SourceCode);
+            return CodeFormatter.FormatCode(value);
         }
     }
 }

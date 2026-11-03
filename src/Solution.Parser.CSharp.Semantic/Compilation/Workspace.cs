@@ -129,8 +129,7 @@ namespace Solution.Parser.CSharp
         internal Method? DeclaredMethod(string path, int spanStart)
         {
             var methods = _methodsBySpan.GetOrAdd(path,
-                                                  p => new Lazy<FrozenDictionary<int, Method>>(() => Model(p).AllTypes()
-                                                                                                             .SelectMany(t => t.Methods)
+                                                  p => new Lazy<FrozenDictionary<int, Method>>(() => Model(p).AllMethods()
                                                                                                              .DistinctBy(m => m.Location.SpanStart)
                                                                                                              .ToFrozenDictionary(m => m.Location.SpanStart)));
 

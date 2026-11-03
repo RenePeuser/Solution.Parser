@@ -36,6 +36,8 @@ namespace Solution.Parser.CSharp
         public ImmutableList<Lambda> Lambdas { get; init; } = ImmutableList<Lambda>.Empty;
 
         public ImmutableList<Expression> Awaits { get; init; } = ImmutableList<Expression>.Empty;
+
+        public Expression? ExpressionBody { get; init; }
     }
 
     internal static class BodyExtensions
@@ -73,7 +75,10 @@ namespace Solution.Parser.CSharp
                                       invocations,
                                       scan.Variables.Select(v => v.ToLocalVariableOrNull(filePath, invocations)).OfType<LocalVariable>().ToImmutableList(),
                                       IsExpressionBodied: true,
-                                      IsIterator: false).WithElementsOf(expressionBody.Expression, scan, filePath);
+                                      IsIterator: false).WithElementsOf(expressionBody.Expression, scan, filePath) with
+                       {
+                           ExpressionBody = expressionBody.Expression.ToExpression(filePath)
+                       };
             }
 
             return new MemberBody(string.Empty,
