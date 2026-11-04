@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <Description>Analyses ASP.NET controllers, routes and response types across a solution.</Description>
@@ -14,8 +14,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="NuGet.Configuration" Version="7.3.0" />
-        <PackageReference Include="NuGet.Versioning" Version="7.3.0" />
+        <PackageReference Include="NuGet.Configuration" />
+        <PackageReference Include="NuGet.Versioning" />
     </ItemGroup>
 
 </Project>

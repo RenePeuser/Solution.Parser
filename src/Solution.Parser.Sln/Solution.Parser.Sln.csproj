@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <Description>Parses sln and the xml based slnx solution format and walks their projects.</Description>
@@ -9,9 +9,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Build" Version="18.4.0" />
+        <PackageReference Include="Microsoft.Build" />
         <!-- Required at runtime by Microsoft.Build to parse the xml based slnx solution format. Microsoft.Build does not declare it as dependency. -->
-        <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52" />
+        <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
     </ItemGroup>
 
     <ItemGroup>

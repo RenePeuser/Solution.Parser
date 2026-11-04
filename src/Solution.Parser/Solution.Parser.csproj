@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <!--
       The one package that ships. The split into Solution.Parser.Core, .CSharp, .Xaml, .Nuspec,
@@ -48,14 +48,14 @@
       when a referenced project gains or drops a PackageReference; PackageDependencyTest guards it.
     -->
     <ItemGroup>
-        <PackageReference Include="Extensions.Pack" Version="7.0.0" />
-        <PackageReference Include="FileSystem.Abstraction" Version="0.1.2" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" />
-        <PackageReference Include="Microsoft.Build" Version="18.4.0" />
+        <PackageReference Include="Extensions.Pack" />
+        <PackageReference Include="FileSystem.Abstraction" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+        <PackageReference Include="Microsoft.Build" />
         <!-- Required at runtime by Microsoft.Build to parse the xml based slnx solution format. Microsoft.Build does not declare it as dependency. -->
-        <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52" />
-        <PackageReference Include="NuGet.Configuration" Version="7.3.0" />
-        <PackageReference Include="NuGet.Versioning" Version="7.3.0" />
+        <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
+        <PackageReference Include="NuGet.Configuration" />
+        <PackageReference Include="NuGet.Versioning" />
     </ItemGroup>
 
     <Target Name="AddReferencedAssembliesToPackage" DependsOnTargets="ResolveReferences">

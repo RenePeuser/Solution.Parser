@@ -1,0 +1,34 @@
+<Project>
+
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+
+    <!-- Build -->
+    <ItemGroup>
+        <!-- Pinned to exactly 5.12.0: GitVersion 6 changes the alpha package version generation. Do not update. -->
+        <PackageVersion Include="GitVersion.MsBuild" Version="[5.12.0]" />
+        <PackageVersion Include="Microsoft.SourceLink.AzureRepos.Git" Version="10.0.403" />
+    </ItemGroup>
+
+    <!-- Libraries -->
+    <ItemGroup>
+        <PackageVersion Include="Extensions.Pack" Version="7.0.0" />
+        <PackageVersion Include="FileSystem.Abstraction" Version="0.1.2" />
+        <!-- 18.10+ targets net11.0 only (besides net472); 18.9.6 is the last version with a net10.0 build. -->
+        <PackageVersion Include="Microsoft.Build" Version="18.9.6" />
+        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.0" />
+        <PackageVersion Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52" />
+        <PackageVersion Include="NuGet.Configuration" Version="7.9.0" />
+        <PackageVersion Include="NuGet.Versioning" Version="7.9.0" />
+    </ItemGroup>
+
+    <!-- Tests -->
+    <ItemGroup>
+        <PackageVersion Include="AspNetCore.Simple.MsTest.Sdk" Version="10.1.2" />
+        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
+        <PackageVersion Include="MSTest.TestAdapter" Version="4.5.2" />
+        <PackageVersion Include="MSTest.TestFramework" Version="4.5.2" />
+    </ItemGroup>
+
+</Project>
