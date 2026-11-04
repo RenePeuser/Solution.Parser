@@ -272,9 +272,10 @@ select $"{awaited.Location}: {member.Name} awaits one at a time, start the tasks
 
 // throw; keeps the stack trace, throw ex; does not
 from member in trees.MembersWithBody
-from catchClause in member.CatchClauses
-from throwStatement in catchClause.Block.Throws
-where catchClause.VariableName is not null && throwStatement.Value?.Name == catchClause.VariableName
+from tryStatement in member.TryStatements
+from @catch in tryStatement.Catches
+from throwStatement in @catch.Throws
+where @catch.VariableName is not null && throwStatement.Value?.Name == @catch.VariableName
 select $"{throwStatement.Location}: {throwStatement.SourceCode} loses the stack trace, write throw;";
 ```
 
@@ -416,10 +417,11 @@ method.Awaits                              // await x, with x as Operand
 ```csharp
 method.BodyStatements                      // nested: an if holds its branches, a try its blocks
 method.AllStatements                       // flat, at any depth, lambdas included
-method.TryStatements                       // Catches with ExceptionType, Filter, IsEmpty, CatchesAll, IsRethrowing; Finally
+method.TryStatements                       // Block, Catches, Finally, HasCatch, HasFinally
+tryStatement.Catches                       // ExceptionType, Filter, IsEmpty, CatchesAnyException, IsRethrowing, IsThrowing
 method.SwitchStatements                    // Subject, Sections with Labels (Value, WhenClause), HasDefault
 method.SwitchExpressions                   // Arms with Pattern, TypedPattern, WhenClause, Result; HasDiscardArm
-method.IfStatements / Returns / Throws / UsingStatements / CatchClauses
+method.IfStatements / Returns / Throws / UsingStatements
 method.Loops / ForLoops / ForEachLoops / WhileLoops / DoWhileLoops
 loop.IsFor / IsForEach / IsWhile / IsDoWhile / IsAwait
 ifStatement.ElseCount / ElseIfs / IsElseIf // the else-if chain, counted once from its first if
@@ -428,13 +430,21 @@ statement.Invocations                      // the calls inside one statement
 statement.Expressions                      // what the statement holds: condition, value, initializers
 tree.Statements                            // top level statements, typed the same way
 
-from catchClause in method.CatchClauses
-where catchClause.CatchesAll && catchClause.IsEmpty
-select $"{catchClause.Location}: an empty catch swallows every exception";
+from tryStatement in method.TryStatements
+from @catch in tryStatement.Catches
+where @catch.CatchesAnyException && @catch.IsEmpty
+select $"{@catch.Location}: an empty catch swallows every exception";
+
+from tryStatement in method.TryStatements
+from @catch in tryStatement.Catches
+where @catch.CatchesAnyException && !@catch.IsThrowing && !@catch.Invocations.Any(i => i.Name == "LogError")
+select $"{@catch.Location}: the catch neither throws nor logs";
 ```
 
 A statement asks the same as its member, for the code inside it: `loop.Loops`, `loop.Awaits`,
-`ifStatement.Throws`, `catchClause.Block.Returns`, `tryStatement.Block.Invocations`. The lists are
+`ifStatement.Throws`, `tryStatement.Block.Invocations`, `tryStatement.Finally?.Invocations`. A catch
+does too, for its block: `@catch.Returns`, `@catch.Invocations`. A catch is part of its `try`, not a
+statement, so it is reached the way the code reads: the method, its `try`, its catches. The lists are
 `AllStatements`, the shortcuts above, `AllExpressions`, `Invocations`, `Awaits`, `LocalVariables`,
 `ObjectCreations`, `StringLiterals`, `MemberAccesses`, `Lambdas` and `SwitchExpressions`; like the
 member's they include what sits in lambdas and leave local functions to themselves. Each list is built

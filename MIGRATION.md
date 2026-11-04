@@ -100,9 +100,19 @@ New, and the way the README writes rules now:
 |---|---|
 | `trees.AllTypes().OfType<Record>()` | `trees.Records`, and so on for every kind |
 | `trees.SelectMany(t => t.AllTypes()).SelectMany(t => t.Constructors)` | `trees.Constructors` |
-| `method.TryStatements.SelectMany(t => t.Catches)` | `method.CatchClauses` |
 | `method.Loops.Where(l => l.Kind == StatementKind.ForEach)` | `method.ForEachLoops`, also `ForLoops`, `WhileLoops`, `DoWhileLoops`; `loop.IsForEach` and the like |
-| a loop inside a loop, an await in a loop, a throw in a catch: walked by hand | every statement has the lists of its member: `loop.Loops`, `loop.Awaits`, `catchClause.Block.Throws` |
+| a loop inside a loop, an await in a loop, a throw in a catch: walked by hand | every statement and every catch has the lists of its member: `loop.Loops`, `loop.Awaits`, `@catch.Throws` |
+| `catchClause.Throws`, the `bool` | `@catch.IsThrowing`; `@catch.Throws` is the list of throw statements now, like `method.Throws` |
+| `catchClause.CatchesAll` | `@catch.CatchesAnyException`: a bare `catch` or `catch (Exception)`, now only without a `when`, see below |
+| `catchClause.CatchesAll` on `catch (Exception ex) when (...)`, meaning "the type is `Exception`" | `@catch.ExceptionType.Is("System.Exception")` |
+
+`CatchesAnyException` is false for a catch with a `when`: only what passes the filter is caught, as in
+`when (ex is not OperationCanceledException)` or the logging `when (Log(ex))`. A rule over it may report
+fewer findings; those were catches that do not catch every exception.
+
+A catch is part of its `try`, not a statement, so it is reached through the `try`, the way the code
+reads: `from tryStatement in method.TryStatements from @catch in tryStatement.Catches`. There is no
+list of catches on a member or a statement, as there is none of else branches or switch sections.
 
 Every one of these lists is built on first use and kept, on the member, the statement and the file, so a
 rule suite that walks a solution many times builds each list once. Measured on this repository's code,

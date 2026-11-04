@@ -27,8 +27,6 @@ namespace Solution.Parser.CSharp
 
         internal ImmutableList<TryStatement> TryStatements => field ??= statements.OfType<TryStatement>().ToImmutableList();
 
-        internal ImmutableList<CatchClause> CatchClauses => field ??= TryStatements.SelectMany(t => t.Catches).ToImmutableList();
-
         internal ImmutableList<SwitchStatement> SwitchStatements => field ??= statements.OfType<SwitchStatement>().ToImmutableList();
 
         internal ImmutableList<UsingStatement> UsingStatements => field ??= statements.OfType<UsingStatement>().ToImmutableList();

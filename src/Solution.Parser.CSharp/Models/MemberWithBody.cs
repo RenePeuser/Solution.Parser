@@ -82,18 +82,16 @@ namespace Solution.Parser.CSharp
         /// <summary>Every <c>do { } while (...);</c> of the body at any depth.</summary>
         public ImmutableList<LoopStatement> DoWhileLoops => Views.DoWhileLoops;
 
-        /// <summary>Every <c>try</c> of the body at any depth.</summary>
-        public ImmutableList<TryStatement> TryStatements => Views.TryStatements;
-
-        /// <summary>Every <c>catch</c> of every <c>try</c> of the body, in source order.</summary>
+        /// <summary>Every <c>try</c> of the body at any depth; its catches are <see cref="TryStatement.Catches"/>, read the way the code is written.</summary>
         /// <example>
         /// <code>
-        /// from catchClause in method.CatchClauses
-        /// where catchClause.IsEmpty
-        /// select $"{catchClause.Location}: an empty catch swallows the exception";
+        /// from tryStatement in method.TryStatements
+        /// from @catch in tryStatement.Catches
+        /// where @catch.IsEmpty
+        /// select $"{@catch.Location}: an empty catch swallows the exception";
         /// </code>
         /// </example>
-        public ImmutableList<CatchClause> CatchClauses => Views.CatchClauses;
+        public ImmutableList<TryStatement> TryStatements => Views.TryStatements;
 
         /// <summary>Every <c>switch (...) { case ...: }</c> of the body at any depth; for <c>x switch { }</c> see <see cref="SwitchExpressions"/>.</summary>
         public ImmutableList<SwitchStatement> SwitchStatements => Views.SwitchStatements;
@@ -108,7 +106,7 @@ namespace Solution.Parser.CSharp
         public ImmutableList<ThrowStatement> Throws => Views.Throws;
 
         /// <summary>True when the body has a <c>try</c> with at least one <c>catch</c>.</summary>
-        public bool HasTryCatch => !CatchClauses.IsEmpty;
+        public bool HasTryCatch => TryStatements.Any(t => t.HasCatch);
 
         private Unequated<Cached<StatementViews>> _views;
 

@@ -70,9 +70,9 @@ namespace Solution.Parser.CSharp.Test
                                because: "throw; passes the exception on with its stack trace",
                                fix: "Look for a ThrowStatementSyntax without an expression in the catch block");
 
-            Assert.That.IsTrue(all.CatchesAll && all.IsEmpty && !all.Throws,
+            Assert.That.IsTrue(all.CatchesAnyException && all.IsEmpty && !all.IsThrowing,
                                because: "an empty catch (Exception) swallows everything, the classic finding",
-                               fix: "Set CatchesAll for Exception and IsEmpty for a block without statements");
+                               fix: "Set CatchesAnyException for Exception and IsEmpty for a block without statements");
 
             Assert.That.AreEqual<string>(["SaveAsync"],
                                          tryStatement.Block.Invocations.Select(i => i.Name),

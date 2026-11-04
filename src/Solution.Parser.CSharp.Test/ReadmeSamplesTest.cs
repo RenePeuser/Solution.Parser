@@ -469,9 +469,10 @@ namespace Solution.Parser.CSharp.Test
                 """);
 
             var findings = from member in trees.MembersWithBody
-                           from catchClause in member.CatchClauses
-                           from throwStatement in catchClause.Block.Throws
-                           where catchClause.VariableName is not null && throwStatement.Value?.Name == catchClause.VariableName
+                           from tryStatement in member.TryStatements
+                           from @catch in tryStatement.Catches
+                           from throwStatement in @catch.Throws
+                           where @catch.VariableName is not null && throwStatement.Value?.Name == @catch.VariableName
                            select $"{throwStatement.Location}: {throwStatement.SourceCode} loses the stack trace, write throw;";
 
             Finds(["throw ex; loses the stack trace, write throw;"], findings, "throw keeps the stack trace");

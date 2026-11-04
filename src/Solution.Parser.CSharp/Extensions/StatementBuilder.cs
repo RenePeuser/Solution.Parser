@@ -314,7 +314,7 @@ namespace Solution.Parser.CSharp
                                               Filter = clause.Filter?.FilterExpression.ToExpression(filePath),
                                               Block = Build(clause.Block),
                                               IsRethrowing = throws.Any(t => t is ThrowStatementSyntax { Expression: null }),
-                                              Throws = throws.Count > 0,
+                                              IsThrowing = throws.Count > 0,
                                               SourceNode = clause,
                                               FilePath = filePath,
                                               Location = clause.ToCodeLocation(filePath)

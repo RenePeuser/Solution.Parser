@@ -74,12 +74,6 @@ namespace Solution.Parser.CSharp
         /// <summary>Every <c>try</c> inside this statement at any depth.</summary>
         public ImmutableList<TryStatement> TryStatements => Views.TryStatements;
 
-        /// <summary>
-        /// Every <c>catch</c> of every <c>try</c> inside this statement. The catches of a
-        /// <see cref="TryStatement"/> itself are its <see cref="TryStatement.Catches"/>.
-        /// </summary>
-        public ImmutableList<CatchClause> CatchClauses => Views.CatchClauses;
-
         /// <summary>Every <c>switch (...) { case ...: }</c> inside this statement at any depth.</summary>
         public ImmutableList<SwitchStatement> SwitchStatements => Views.SwitchStatements;
 
@@ -93,9 +87,10 @@ namespace Solution.Parser.CSharp
         /// <example>
         /// <code>
         /// // throw ex; loses the stack trace, throw; keeps it
-        /// from catchClause in method.CatchClauses
-        /// from throwStatement in catchClause.Block.Throws
-        /// where catchClause.VariableName is not null &amp;&amp; throwStatement.Value?.Name == catchClause.VariableName
+        /// from tryStatement in method.TryStatements
+        /// from @catch in tryStatement.Catches
+        /// from throwStatement in @catch.Throws
+        /// where @catch.VariableName is not null &amp;&amp; throwStatement.Value?.Name == @catch.VariableName
         /// select $"{throwStatement.Location}: write throw; to keep the stack trace";
         /// </code>
         /// </example>

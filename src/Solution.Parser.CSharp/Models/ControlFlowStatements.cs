@@ -59,7 +59,10 @@ namespace Solution.Parser.CSharp
     /// </summary>
     /// <example>
     /// <code>
-    /// method.TryStatements.SelectMany(t =&gt; t.Catches).Where(c =&gt; c.CatchesAll &amp;&amp; !c.IsRethrowing)
+    /// from tryStatement in method.TryStatements
+    /// from @catch in tryStatement.Catches
+    /// where @catch.CatchesAnyException &amp;&amp; !@catch.IsRethrowing
+    /// select @catch.Location;
     /// </code>
     /// </example>
     public sealed record TryStatement : Statement
@@ -67,6 +70,11 @@ namespace Solution.Parser.CSharp
         /// <summary>The block after <c>try</c>.</summary>
         public required Statement Block { get; init; }
 
+        /// <summary>
+        /// The catches of this <c>try</c>, in source order. A catch is part of its <c>try</c>, not a
+        /// statement, so it is reached through the <c>try</c>, as a developer reads it; a <c>try</c> nested
+        /// in this one is in <c>Block.TryStatements</c>.
+        /// </summary>
         public ImmutableList<CatchClause> Catches { get; init; } = ImmutableList<CatchClause>.Empty;
 
         /// <summary>The block after <c>finally</c>; null when there is none.</summary>
@@ -77,7 +85,22 @@ namespace Solution.Parser.CSharp
         public bool HasFinally => Finally is not null;
     }
 
-    /// <summary>One <c>catch (Exception ex) when (...) { }</c> of a <see cref="TryStatement"/>.</summary>
+    /// <summary>
+    /// One <c>catch (Exception ex) when (...) { }</c> of a <see cref="TryStatement"/>. It answers what a
+    /// statement answers, for the code of its block: <c>@catch.Throws</c>, <c>@catch.Invocations</c>,
+    /// <c>@catch.Returns</c>, the same as <c>@catch.Block.Throws</c> and so on. The <see cref="Filter"/>
+    /// is not part of the block; walk it with <see cref="Expression.DescendantsAndSelf"/>.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// // a catch that neither throws nor logs swallows the exception
+    /// from method in trees.Methods
+    /// from tryStatement in method.TryStatements
+    /// from @catch in tryStatement.Catches
+    /// where @catch.CatchesAnyException &amp;&amp; !@catch.IsThrowing &amp;&amp; @catch.Invocations.Named("LogError").IsEmpty
+    /// select $"{@catch.Location}: {method.Name} swallows the exception";
+    /// </code>
+    /// </example>
     [DebuggerDisplay("{SourceCode}")]
     public sealed record CatchClause : CodeElement
     {
@@ -92,8 +115,13 @@ namespace Solution.Parser.CSharp
 
         public required Statement Block { get; init; }
 
-        /// <summary>True for a bare <c>catch</c> and for <c>catch (Exception)</c>, which catch everything.</summary>
-        public bool CatchesAll => ExceptionType.Name.Length == 0 || ExceptionType.Is("System.Exception");
+        /// <summary>
+        /// True for a bare <c>catch</c> and for <c>catch (Exception)</c> without a <c>when</c>, which catch
+        /// every exception. A filter narrows what is caught, as in <c>when (ex is not OperationCanceledException)</c>,
+        /// so a catch with one is false here; whether the type alone is <c>Exception</c> is
+        /// <c>ExceptionType.Is("System.Exception")</c>.
+        /// </summary>
+        public bool CatchesAnyException => !HasFilter && (ExceptionType.Name.Length == 0 || ExceptionType.Is("System.Exception"));
 
         /// <summary>True when the block has no statement at all, so the exception is swallowed silently.</summary>
         public bool IsEmpty => Block.Children.IsEmpty;
@@ -101,10 +129,60 @@ namespace Solution.Parser.CSharp
         /// <summary>True when the block contains a <c>throw;</c>, which passes the exception on with its stack trace.</summary>
         public bool IsRethrowing { get; init; }
 
-        /// <summary>True when the block throws anything, a <c>throw;</c>, a <c>throw ex;</c> or a new exception.</summary>
-        public bool Throws { get; init; }
+        /// <summary>
+        /// True when the block throws anything, a <c>throw;</c>, a <c>throw ex;</c>, a new exception or a
+        /// <c>?? throw</c>. A throw inside a lambda does not count, it does not leave the catch; the list of
+        /// throw statements, lambdas included, is <see cref="Throws"/>.
+        /// </summary>
+        public bool IsThrowing { get; init; }
 
         public bool HasFilter => Filter is not null;
+
+        /// <summary>Every statement of the block at any depth, lambdas included; see <see cref="Statement.AllStatements"/>.</summary>
+        public ImmutableList<Statement> AllStatements => Block.AllStatements;
+
+        /// <summary>The method calls of the block, nested statements and lambdas included, in source order.</summary>
+        public ImmutableList<Invocation> Invocations => Block.Invocations;
+
+        public ImmutableList<IfStatement> IfStatements => Block.IfStatements;
+
+        public ImmutableList<LoopStatement> Loops => Block.Loops;
+
+        public ImmutableList<LoopStatement> ForLoops => Block.ForLoops;
+
+        public ImmutableList<LoopStatement> ForEachLoops => Block.ForEachLoops;
+
+        public ImmutableList<LoopStatement> WhileLoops => Block.WhileLoops;
+
+        public ImmutableList<LoopStatement> DoWhileLoops => Block.DoWhileLoops;
+
+        public ImmutableList<TryStatement> TryStatements => Block.TryStatements;
+
+        public ImmutableList<SwitchStatement> SwitchStatements => Block.SwitchStatements;
+
+        public ImmutableList<UsingStatement> UsingStatements => Block.UsingStatements;
+
+        public ImmutableList<ReturnStatement> Returns => Block.Returns;
+
+        /// <summary>Every <c>throw</c> statement of the block at any depth, lambdas included; whether the catch throws at all is <see cref="IsThrowing"/>.</summary>
+        public ImmutableList<ThrowStatement> Throws => Block.Throws;
+
+        public ImmutableList<Expression> AllExpressions => Block.AllExpressions;
+
+        public ImmutableList<Expression> Awaits => Block.Awaits;
+
+        /// <summary>The variables declared in the block; the caught exception is <see cref="VariableName"/>.</summary>
+        public ImmutableList<LocalVariable> LocalVariables => Block.LocalVariables;
+
+        public ImmutableList<ObjectCreation> ObjectCreations => Block.ObjectCreations;
+
+        public ImmutableList<StringLiteral> StringLiterals => Block.StringLiterals;
+
+        public ImmutableList<MemberAccess> MemberAccesses => Block.MemberAccesses;
+
+        public ImmutableList<Lambda> Lambdas => Block.Lambdas;
+
+        public ImmutableList<SwitchExpression> SwitchExpressions => Block.SwitchExpressions;
     }
 
     /// <summary>

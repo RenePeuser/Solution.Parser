@@ -133,15 +133,100 @@ namespace Solution.Parser.CSharp.Test
                 catch (Exception) { throw; }
                 """);
 
-            var findings = from catchClause in method.CatchClauses
-                           from throwStatement in catchClause.Block.Throws
-                           where catchClause.VariableName is not null && throwStatement.Value?.Name == catchClause.VariableName
+            var findings = from tryStatement in method.TryStatements
+                           from @catch in tryStatement.Catches
+                           from throwStatement in @catch.Throws
+                           where @catch.VariableName is not null && throwStatement.Value?.Name == @catch.VariableName
                            select throwStatement.SourceCode;
 
             Assert.That.AreEqual<string>(["throw ex;"],
                                          findings,
                                          because: "throw ex; restarts the stack trace, wrapping and throw; do not",
                                          fix: "Give the block of a catch its own Throws");
+        }
+
+        [TestMethod]
+        public void A_Catch_Reads_Like_A_Statement()
+        {
+            var method = Method("""
+                try { await Save(); }
+                catch (IOException ex) { logger.LogError(ex, "save failed"); return; }
+                catch (Exception) { Retry(() => { throw new InvalidOperationException(); }); }
+                """);
+
+            var catches = method.TryStatements.Single().Catches;
+            var (io, all) = (catches[0], catches[1]);
+
+            Assert.That.IsTrue(io.Invocations.Single().Name == "LogError" && io.Returns.Count == 1 && io.StringLiterals.Count == 1,
+                               because: "a developer reads 'the catch logs and returns', not 'the block of the catch'",
+                               fix: "Hand the lists of the block out on CatchClause");
+
+            Assert.That.IsTrue(!all.IsThrowing && all.Throws.Count == 1,
+                               because: "a throw in a lambda does not leave the catch, but it is a throw statement written in it",
+                               fix: "Keep IsThrowing from the builder and take Throws from the block");
+
+            var swallowing = from tryStatement in method.TryStatements
+                             from @catch in tryStatement.Catches
+                             where @catch.CatchesAnyException && !@catch.IsThrowing && !@catch.Invocations.Any(i => i.Name == "LogError")
+                             select @catch.SourceCode;
+
+            Assert.That.AreEqual<string>(["catch (Exception) { Retry(() => { throw new InvalidOperationException(); }); }"],
+                                         swallowing,
+                                         because: "the rule reads like the code: a catch that neither throws nor logs",
+                                         fix: "Check CatchClause.IsThrowing and CatchClause.Invocations");
+        }
+
+        [TestMethod]
+        public void A_Filter_Narrows_What_A_Catch_Catches()
+        {
+            var method = Method("""
+                try { Save(); }
+                catch (OperationCanceledException) { throw; }
+                catch (Exception ex) when (ex is not OperationCanceledException) { }
+                catch (Exception ex) when (Log(ex)) { }
+                catch (Exception) { }
+                catch { }
+                """);
+
+            Assert.That.AreEqual<bool>([false, false, false, true, true],
+                                       method.TryStatements.Single().Catches.Select(c => c.CatchesAnyException),
+                                       because: "with a when only what passes the filter is caught, not any exception",
+                                       fix: "Return false from CatchesAnyException when the catch has a filter");
+
+            Assert.That.AreEqual<bool>([false, true, true, true, false],
+                                       method.TryStatements.Single().Catches.Select(c => c.ExceptionType.Is("System.Exception")),
+                                       because: "a rule that asks for the type alone still can",
+                                       fix: "Check TypeReference.Is on the caught type");
+        }
+
+        [TestMethod]
+        public void A_Try_Answers_With_Its_Own_Catches()
+        {
+            var method = Method("""
+                try
+                {
+                    try { Save(); }
+                    catch (IOException) { }
+                }
+                catch (Exception) { }
+                """);
+
+            var outer = method.TryStatements[0];
+
+            Assert.That.AreEqual<string>(["Exception"],
+                                         outer.Catches.Select(c => c.ExceptionType.Name),
+                                         because: "the catches of this try are the ones written after it",
+                                         fix: "Keep TryStatement.Catches to the own catches");
+
+            Assert.That.AreEqual<string>(["IOException"],
+                                         outer.Block.TryStatements.Single().Catches.Select(c => c.ExceptionType.Name),
+                                         because: "a nested try is read through the block it is written in, and its catches through it",
+                                         fix: "Check Statement.TryStatements for a block");
+
+            Assert.That.AreEqual<string>(["Exception", "IOException"],
+                                         method.TryStatements.SelectMany(t => t.Catches).Select(c => c.ExceptionType.Name),
+                                         because: "the member lists every try of the body, each with its own catches",
+                                         fix: "Check MemberWithBody.TryStatements");
         }
 
         [TestMethod]
@@ -200,7 +285,7 @@ namespace Solution.Parser.CSharp.Test
 
             var ifStatement = method.IfStatements.Single();
 
-            Assert.That.IsTrue(ifStatement.TryStatements.Count == 1 && ifStatement.CatchClauses.Count == 1 &&
+            Assert.That.IsTrue(ifStatement.TryStatements.Count == 1 && ifStatement.TryStatements.Single().Catches.Count == 1 &&
                                ifStatement.UsingStatements.Count == 1 && ifStatement.SwitchStatements.Count == 1 &&
                                ifStatement.Returns.Count == 1 && ifStatement.Throws.Count == 1,
                                because: "everything here sits inside the if",
