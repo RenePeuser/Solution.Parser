@@ -313,7 +313,10 @@ Beyond that, a declaration reports its `Accessibility` (including the default th
 modifier is written), its `Documentation` (the XML comment), its `Modifiers` (now complete, including
 `sealed`, `virtual`, `override`, `new`, `async` and `readonly`), its `TypeParameters` with their
 constraints, and its `Attributes` split into positional and named arguments. `HasAttribute("Obsolete")`
-matches `[Obsolete]`, `[ObsoleteAttribute]` and `[System.ObsoleteAttribute]` alike.
+matches `[Obsolete]`, `[ObsoleteAttribute]` and `[System.ObsoleteAttribute]` alike. When the rule
+project can reference the attribute class, `HasAttribute<ObsoleteAttribute>()` and
+`Attribute<ObsoleteAttribute>()` take the name from the type instead of a string; the type argument
+is constrained to `Attribute`, and the match still goes by name only.
 
 Types also report `Indexers`, `Operators`, `Delegates` and `Finalizers`, and `TypeKind` tells a
 `record` from a `record struct`. `tree.Diagnostics` surfaces what Roslyn reported while parsing, so a
@@ -377,7 +380,7 @@ Every state is a property, on every type, member and accessor: `IsPublic`, `IsIn
 `IsProtected`, `IsStatic`, `IsSealed`, `IsAbstract`, `IsVirtual`, `IsOverride`, `IsPartial`, `IsNew`,
 and on the declarations they belong to `method.IsAsync`, `method.IsExtension`, `method.ReturnsTask`,
 `field.IsReadOnly`, `parameter.IsOut` and the rest. What needs an argument is a method:
-`HasAttribute(name)`, `Implements(name)`, `InheritsFrom(name)`.
+`HasAttribute(name)` or `HasAttribute<TAttribute>()`, `Implements(name)`, `InheritsFrom(name)`.
 
 Every member with a body reports the method calls in it, lambdas included, a local function on its own:
 

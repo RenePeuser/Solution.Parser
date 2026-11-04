@@ -600,7 +600,9 @@ var findings = from tree in ProductiveCode
 Also new on declarations: `Accessibility`, `Documentation` (the XML comment, with `Summary`,
 `Returns`, `Parameters`, `IsDocumented`), `TypeParameters` with their constraints, `LineCount`, and
 attributes split into `PositionalArguments` and `NamedArguments`. `HasAttribute("Obsolete")` matches
-`[Obsolete]`, `[ObsoleteAttribute]` and `[System.ObsoleteAttribute]` alike.
+`[Obsolete]`, `[ObsoleteAttribute]` and `[System.ObsoleteAttribute]` alike, and
+`HasAttribute<ObsoleteAttribute>()` / `Attribute<ObsoleteAttribute>()` (constrained to `Attribute`)
+replace `HasAttribute(nameof(ObsoleteAttribute))`.
 
 Types report `Indexers`, `Operators`, `Delegates` and `Finalizers`, which were dropped entirely
 before. Methods report `IsExpressionBodied`, `IsIterator`, `IsPartialDefinition` and

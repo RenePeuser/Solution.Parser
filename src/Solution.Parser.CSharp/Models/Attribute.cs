@@ -34,6 +34,20 @@ namespace Solution.Parser.CSharp
             return Simplify(Name).Equals(Simplify(attributeName), StringComparison.Ordinal);
         }
 
+        /// <summary>
+        /// The name of an attribute class as a rule would write it, so <c>ObsoleteAttribute</c> stays
+        /// <c>ObsoleteAttribute</c> and the generic <c>JsonConverterAttribute&lt;T&gt;</c> becomes
+        /// <c>JsonConverterAttribute</c> instead of the runtime name <c>JsonConverterAttribute`1</c>.
+        /// </summary>
+        internal static string NameOf<TAttribute>()
+            where TAttribute : System.Attribute
+        {
+            var name = typeof(TAttribute).Name;
+            var arity = name.IndexOf('`');
+
+            return arity < 0 ? name : name[..arity];
+        }
+
         private static string Simplify(string name)
         {
             var lastDot = name.LastIndexOf('.');
@@ -65,6 +79,16 @@ namespace Solution.Parser.CSharp
         public static bool HasAttribute(this ImmutableList<Attribute> attributes, string attributeName)
         {
             return attributes.Any(a => a.IsNamed(attributeName));
+        }
+
+        /// <summary>
+        /// Like <see cref="HasAttribute(ImmutableList{Attribute}, string)"/> with the name taken from the
+        /// attribute class, as in <c>parsed.AssemblyAttributes.HasAttribute&lt;InternalsVisibleToAttribute&gt;()</c>.
+        /// </summary>
+        public static bool HasAttribute<TAttribute>(this ImmutableList<Attribute> attributes)
+            where TAttribute : System.Attribute
+        {
+            return attributes.HasAttribute(Attribute.NameOf<TAttribute>());
         }
 
         /// <summary>

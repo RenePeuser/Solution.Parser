@@ -234,6 +234,31 @@ namespace Solution.Parser.CSharp.Test
         }
 
         [TestMethod]
+        public void Attribute_Matching_Takes_The_Name_From_The_Attribute_Class()
+        {
+            var go = ParseCode("""
+                public class Holder
+                {
+                    [Obsolete("gone")]
+                    public void Go() { }
+                }
+                """).Classes.Single().Methods.Single();
+
+            Assert.That.IsTrue(go.HasAttribute<System.ObsoleteAttribute>(),
+                               because: "a rule should not have to write nameof for an attribute class it can reference",
+                               fix: "Pass the name of the type argument to HasAttribute(string)");
+
+            Assert.That.IsFalse(go.HasAttribute<System.FlagsAttribute>(),
+                                because: "the type argument must narrow the match like the name does",
+                                fix: "Pass the name of the type argument to HasAttribute(string)");
+
+            Assert.That.AreEqual("\"gone\"",
+                                 go.Attribute<System.ObsoleteAttribute>()?.PositionalArguments.Single(),
+                                 because: "the generic lookup must return the same attribute as the one by name",
+                                 fix: "Pass the name of the type argument to Attribute(string)");
+        }
+
+        [TestMethod]
         public void Usings_Report_How_They_Were_Written()
         {
             var parsed = ParseCode("""

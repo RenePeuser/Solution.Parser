@@ -110,6 +110,24 @@ namespace Solution.Parser.CSharp
         }
 
         /// <summary>
+        /// Like <see cref="HasAttribute(DeclarationWithModifiers, string)"/> with the name taken from the
+        /// attribute class, so <c>record.HasAttribute&lt;DynamoDBPropertyAttribute&gt;()</c> replaces
+        /// <c>record.HasAttribute(nameof(DynamoDBPropertyAttribute))</c>. The match still goes by name only,
+        /// the namespace of the class is not compared.
+        /// </summary>
+        public static bool HasAttribute<TAttribute>(this DeclarationWithModifiers declaration)
+            where TAttribute : System.Attribute
+        {
+            return declaration.HasAttribute(CSharp.Attribute.NameOf<TAttribute>());
+        }
+
+        public static Attribute? Attribute<TAttribute>(this DeclarationWithModifiers declaration)
+            where TAttribute : System.Attribute
+        {
+            return declaration.Attribute(CSharp.Attribute.NameOf<TAttribute>());
+        }
+
+        /// <summary>
         /// True when the base list names the given type. Base classes and interfaces share one list,
         /// because telling them apart needs the semantic model, so this matches either.
         /// </summary>
