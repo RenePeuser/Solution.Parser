@@ -146,6 +146,35 @@ namespace Solution.Parser.CSharp
         }
 
         /// <summary>
+        /// <see cref="InheritsFrom(TypeDeclaration, string)"/> with the type as a type argument, as in
+        /// <c>type.InheritsFrom&lt;ControllerBase&gt;()</c>. Matches like <see cref="TypeReference.Is{T}"/>, so
+        /// a closed generic is exact: <c>InheritsFrom&lt;Collection&lt;int&gt;&gt;()</c> does not match
+        /// <c>Collection&lt;string&gt;</c>.
+        /// </summary>
+        public static bool InheritsFrom<TBase>(this TypeDeclaration type)
+            where TBase : class
+        {
+            return type.BaseTypes.Any(b => b.TypeReference.Is<TBase>());
+        }
+
+        /// <summary>
+        /// <see cref="Implements(TypeDeclaration, string)"/> with the interface as a type argument, as in
+        /// <c>type.Implements&lt;IDisposable&gt;()</c>. Matches like <see cref="TypeReference.Is{T}"/>, so
+        /// <c>Implements&lt;IEquatable&lt;Money&gt;&gt;()</c> does not match <c>IEquatable&lt;Order&gt;</c>.
+        /// </summary>
+        /// <exception cref="ArgumentException">The type argument is no interface; use <see cref="InheritsFrom{TBase}"/>.</exception>
+        public static bool Implements<TInterface>(this TypeDeclaration type)
+            where TInterface : class
+        {
+            if (!typeof(TInterface).IsInterface)
+            {
+                throw new ArgumentException($"'{typeof(TInterface).Name}' is no interface. Use InheritsFrom<{typeof(TInterface).Name}>() for a base class.", nameof(TInterface));
+            }
+
+            return type.BaseTypes.Any(b => b.TypeReference.Is<TInterface>());
+        }
+
+        /// <summary>
         /// Matches the written name against the given one, ignoring a namespace qualifier and matching
         /// an open generic name such as <c>IEnumerable</c> against <c>IEnumerable&lt;int&gt;</c>.
         /// </summary>

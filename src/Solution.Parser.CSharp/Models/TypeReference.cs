@@ -234,6 +234,24 @@ namespace Solution.Parser.CSharp
             return SelfAndDescendants().Any(t => t.Is(typeName));
         }
 
+        /// <summary>
+        /// <see cref="Is(string)"/> with the type as a type argument, as in <c>creation.TypeReference.Is&lt;HttpClient&gt;()</c>.
+        /// The pattern is the full name with its namespace, so it matches <c>HttpClient</c> and
+        /// <c>System.Net.Http.HttpClient</c> but not an <c>Other.HttpClient</c>, and a closed generic only
+        /// matches itself: <c>Is&lt;List&lt;int&gt;&gt;()</c> does not match <c>List&lt;string&gt;</c>. For any
+        /// <c>List</c>, which no type argument can express, use <c>Is("List")</c>.
+        /// </summary>
+        public bool Is<T>()
+        {
+            return Is(ClrTypeName.Of<T>());
+        }
+
+        /// <summary><see cref="Mentions(string)"/> with the type as a type argument, matching like <see cref="Is{T}"/>.</summary>
+        public bool Mentions<T>()
+        {
+            return Mentions(ClrTypeName.Of<T>());
+        }
+
         /// <summary>This type followed by every type written inside it: type arguments, array elements and tuple elements, at any depth.</summary>
         public IEnumerable<TypeReference> SelfAndDescendants()
         {
@@ -301,7 +319,7 @@ namespace Solution.Parser.CSharp
             }
 
             if (pattern.Qualifier is not null && actual.Qualifier is not null &&
-                !pattern.Qualifier.Equals(actual.Qualifier, StringComparison.Ordinal))
+                !QualifiersAgree(pattern.Qualifier, actual.Qualifier))
             {
                 return false;
             }
@@ -309,6 +327,19 @@ namespace Solution.Parser.CSharp
             return pattern.TypeArguments.IsEmpty ||
                    (pattern.TypeArguments.Count == actual.TypeArguments.Count &&
                     pattern.TypeArguments.Zip(actual.TypeArguments).All(p => Matches(p.Second, p.First)));
+        }
+
+        /// <summary>
+        /// Two qualifiers agree when one ends with the other at a dot, because a using directive can
+        /// cover any leading part: <c>System.Environment</c> agrees with <c>Environment</c> in
+        /// <c>Environment.SpecialFolder</c>, but <c>Other.Namespace</c> does not agree with <c>Microsoft.Extensions.Logging</c>.
+        /// </summary>
+        private static bool QualifiersAgree(string pattern, string actual)
+        {
+            var (longer, shorter) = pattern.Length >= actual.Length ? (pattern, actual) : (actual, pattern);
+
+            return longer.Equals(shorter, StringComparison.Ordinal) ||
+                   (longer.EndsWith(shorter, StringComparison.Ordinal) && longer[^(shorter.Length + 1)] == '.');
         }
 
         private static string FrameworkName(string name)

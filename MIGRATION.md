@@ -151,7 +151,9 @@ member and accessor has it. The compiler finds every call site.
 | `field.IsStatic`, `constructor.IsStatic` | unchanged, now inherited |
 
 `HasAttribute(name)`, `Attribute(name)`, `InheritsFrom(name)` and `Implements(name)` take an argument
-and stay methods.
+and stay methods. Each also has a generic sibling, `HasAttribute<ObsoleteAttribute>()`,
+`Implements<IDisposable>()` and so on, and `TypeReference` has `Is<T>()` and `Mentions<T>()`, so a
+rule no longer needs `nameof(...)` for a type it can reference.
 
 The accessibility checks read the effective accessibility, the language default included: a class member
 without a modifier is `IsPrivate`, an interface member `IsPublic`. The modifier checks read what is

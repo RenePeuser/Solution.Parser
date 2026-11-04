@@ -155,6 +155,73 @@ namespace Solution.Parser.CSharp.Test
         }
 
         [TestMethod]
+        public void Is_Takes_The_Type_As_Type_Argument()
+        {
+            Assert.That.IsTrue(TypeReference.Parse("Guid").Is<System.Guid>() && TypeReference.Parse("System.Guid").Is<System.Guid>(),
+                               because: "the full name of the runtime type must match with and without a written namespace",
+                               fix: "Write the namespace into the pattern in ClrTypeName and compare qualifiers only when both are written");
+
+            Assert.That.IsFalse(TypeReference.Parse("Other.Guid").Is<System.Guid>(),
+                                because: "the type argument knows its namespace, a different written one is a different type",
+                                fix: "Write the namespace into the pattern in ClrTypeName");
+
+            Assert.That.IsTrue(TypeReference.Parse("int").Is<int>() && TypeReference.Parse("string").Is<string>(),
+                               because: "typeof(int) is System.Int32, which is the keyword int",
+                               fix: "Map keywords to their framework names before comparing");
+
+            Assert.That.IsTrue(TypeReference.Parse("List<int>").Is<System.Collections.Generic.List<int>>() &&
+                               !TypeReference.Parse("List<string>").Is<System.Collections.Generic.List<int>>(),
+                               because: "a closed generic type argument names exactly one type",
+                               fix: "Write the type arguments as C# in ClrTypeName instead of the runtime name List`1");
+
+            Assert.That.IsTrue(TypeReference.Parse("int?").Is<int?>() && !TypeReference.Parse("int").Is<int?>(),
+                               because: "Nullable<int> is written int? in source",
+                               fix: "Write a Nullable<T> as T? in ClrTypeName");
+
+            Assert.That.IsTrue(TypeReference.Parse("(int, string)").Is<(int, string)>(),
+                               because: "a ValueTuple is written as tuple in source",
+                               fix: "Write a ValueTuple as (A, B) in ClrTypeName");
+
+            Assert.That.IsTrue(TypeReference.Parse("int[]").Is<int[]>() && !TypeReference.Parse("int").Is<int[]>(),
+                               because: "an array is written with brackets",
+                               fix: "Write an array as element[] in ClrTypeName");
+
+            Assert.That.IsTrue(TypeReference.Parse("Environment.SpecialFolder").Is<System.Environment.SpecialFolder>() &&
+                               TypeReference.Parse("SpecialFolder").Is<System.Environment.SpecialFolder>(),
+                               because: "a nested type is written through its containing type, which a using covers only partly",
+                               fix: "Write the containing type into the pattern and let qualifiers agree when one ends with the other");
+
+            Assert.That.IsTrue(TypeReference.Parse("Task<List<DateTime?>>").Mentions<System.DateTime>(),
+                               because: "Mentions must find the type argument however deeply it is nested",
+                               fix: "Pass the name from ClrTypeName to Mentions(string)");
+        }
+
+        [TestMethod]
+        public void Base_Types_Match_By_Type_Argument()
+        {
+            var holder = ParseCode("""
+                public class Holder : System.Collections.ObjectModel.Collection<int>, IDisposable, IEquatable<Holder>
+                {
+                }
+                """).Classes.Single();
+
+            Assert.That.IsTrue(holder.Implements<System.IDisposable>() && holder.InheritsFrom<System.Collections.ObjectModel.Collection<int>>(),
+                               because: "a rule should not have to write nameof for a framework type it can reference",
+                               fix: "Compare the TypeReference of each base type through Is<T>");
+
+            Assert.That.IsFalse(holder.InheritsFrom<System.Collections.ObjectModel.Collection<string>>(),
+                                because: "a closed generic type argument names exactly one type",
+                                fix: "Compare the TypeReference of each base type through Is<T>, not through the simplified name");
+
+            Assert.That.IsFalse(holder.Implements<System.IAsyncDisposable>(),
+                                because: "an interface that is not in the base list is not implemented",
+                                fix: "Compare the TypeReference of each base type through Is<T>");
+
+            // Implements with a class is a mistake in the rule that should show at once.
+            Assert.ThrowsExactly<System.ArgumentException>(() => holder.Implements<System.Exception>());
+        }
+
+        [TestMethod]
         public void Mentions_Looks_Inside_The_Type()
         {
             var type = TypeReference.Parse("Task<(int Id, List<DateTime?>[] Dates)>");

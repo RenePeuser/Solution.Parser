@@ -380,7 +380,11 @@ Every state is a property, on every type, member and accessor: `IsPublic`, `IsIn
 `IsProtected`, `IsStatic`, `IsSealed`, `IsAbstract`, `IsVirtual`, `IsOverride`, `IsPartial`, `IsNew`,
 and on the declarations they belong to `method.IsAsync`, `method.IsExtension`, `method.ReturnsTask`,
 `field.IsReadOnly`, `parameter.IsOut` and the rest. What needs an argument is a method:
-`HasAttribute(name)` or `HasAttribute<TAttribute>()`, `Implements(name)`, `InheritsFrom(name)`.
+`HasAttribute(name)`, `Implements(name)`, `InheritsFrom(name)`. When the rule project can reference the
+type, each has a generic sibling that takes the name from it: `HasAttribute<ObsoleteAttribute>()`,
+`Implements<IDisposable>()`, `InheritsFrom<ControllerBase>()`. `Implements<T>` throws when `T` is no
+interface, and a closed generic is exact there: `Implements<IEquatable<Money>>()` does not match
+`IEquatable<Order>`.
 
 Every member with a body reports the method calls in it, lambdas included, a local function on its own:
 
@@ -535,6 +539,8 @@ method.ReturnType.UnwrapTask().IsCollection          // Task<List<Foo>> -> true
 method.ReturnType.UnwrapTask().ElementType?.Name     // "Foo"
 property.TypeReference.TypeArguments                 // each one a TypeReference again
 parameter.TypeReference.Mentions("DateTime")         // anywhere inside, List<DateTime?> included
+creation.TypeReference.Is<HttpClient>()              // the same from a type: namespace checked, List<int> exact
+@catch.ExceptionType.Is<OperationCanceledException>()
 variable.TypeReference.IsVar
 TypeReference.Parse("Dictionary<string, int>")       // the same for a type written as text
 ```
