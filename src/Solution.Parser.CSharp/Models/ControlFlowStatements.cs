@@ -162,6 +162,8 @@ namespace Solution.Parser.CSharp
 
         public ImmutableList<UsingStatement> UsingStatements => Block.UsingStatements;
 
+        public ImmutableList<LockStatement> LockStatements => Block.LockStatements;
+
         public ImmutableList<ReturnStatement> Returns => Block.Returns;
 
         /// <summary>Every <c>throw</c> statement of the block at any depth, lambdas included; whether the catch throws at all is <see cref="IsThrowing"/>.</summary>
@@ -202,15 +204,103 @@ namespace Solution.Parser.CSharp
         public ImmutableList<SwitchLabel> Labels => Sections.SelectMany(s => s.Labels).ToImmutableList();
     }
 
-    /// <summary>One or more labels with the statements they share.</summary>
+    /// <summary>
+    /// One or more labels with the statements they share. It answers what a statement answers, for the
+    /// code after its labels: <c>section.Throws</c>, <c>section.Invocations</c>, <c>section.Returns</c>.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// from switchStatement in method.SwitchStatements
+    /// from section in switchStatement.Sections
+    /// where section.Invocations.Count &gt; 5
+    /// select $"{section.Location}: the case does too much, extract a method";
+    /// </code>
+    /// </example>
     [DebuggerDisplay("{SourceCode}")]
     public sealed record SwitchSection : CodeElement
     {
         public ImmutableList<SwitchLabel> Labels { get; init; } = ImmutableList<SwitchLabel>.Empty;
 
+        /// <summary>The statements after the labels, as written; nested ones are inside them, see <see cref="AllStatements"/>.</summary>
         public ImmutableList<Statement> Statements { get; init; } = ImmutableList<Statement>.Empty;
 
         public bool IsDefault => Labels.Any(l => l.IsDefault);
+
+        /// <summary>Every statement of the section at any depth, in source order, lambdas included.</summary>
+        public ImmutableList<Statement> AllStatements => Contents.Views.All;
+
+        /// <summary>The method calls of the section, nested statements and lambdas included, in source order.</summary>
+        public ImmutableList<Invocation> Invocations => Contents.Invocations;
+
+        public ImmutableList<IfStatement> IfStatements => Contents.Views.IfStatements;
+
+        public ImmutableList<LoopStatement> Loops => Contents.Views.Loops;
+
+        public ImmutableList<LoopStatement> ForLoops => Contents.Views.ForLoops;
+
+        public ImmutableList<LoopStatement> ForEachLoops => Contents.Views.ForEachLoops;
+
+        public ImmutableList<LoopStatement> WhileLoops => Contents.Views.WhileLoops;
+
+        public ImmutableList<LoopStatement> DoWhileLoops => Contents.Views.DoWhileLoops;
+
+        public ImmutableList<TryStatement> TryStatements => Contents.Views.TryStatements;
+
+        public ImmutableList<SwitchStatement> SwitchStatements => Contents.Views.SwitchStatements;
+
+        public ImmutableList<UsingStatement> UsingStatements => Contents.Views.UsingStatements;
+
+        public ImmutableList<LockStatement> LockStatements => Contents.Views.LockStatements;
+
+        public ImmutableList<ReturnStatement> Returns => Contents.Views.Returns;
+
+        public ImmutableList<ThrowStatement> Throws => Contents.Views.Throws;
+
+        public ImmutableList<Expression> AllExpressions => Contents.Views.AllExpressions;
+
+        public ImmutableList<Expression> Awaits => Contents.Awaits;
+
+        public ImmutableList<LocalVariable> LocalVariables => Contents.LocalVariables;
+
+        public ImmutableList<ObjectCreation> ObjectCreations => Contents.ObjectCreations;
+
+        public ImmutableList<StringLiteral> StringLiterals => Contents.StringLiterals;
+
+        public ImmutableList<MemberAccess> MemberAccesses => Contents.MemberAccesses;
+
+        public ImmutableList<Lambda> Lambdas => Contents.Lambdas;
+
+        public ImmutableList<SwitchExpression> SwitchExpressions => Contents.SwitchExpressions;
+
+        private Unequated<Cached<SectionContents>> _contents;
+
+        private SectionContents Contents => Cache.For(ref _contents, this, static section => new SectionContents(section.Statements));
+
+        /// <summary>
+        /// A section is no statement, so it adds up the lists of the statements written in it; each of
+        /// them already holds what is nested inside it, so nothing is counted twice.
+        /// </summary>
+        private sealed class SectionContents(ImmutableList<Statement> statements)
+        {
+            internal StatementViews Views => field ??= new StatementViews(statements.SelectMany(s => s.AllStatements.Prepend(s)).ToImmutableList(),
+                                                                          () => statements.SelectMany(s => s.AllExpressions).ToImmutableList());
+
+            internal ImmutableList<Invocation> Invocations => field ??= statements.SelectMany(s => s.Invocations).ToImmutableList();
+
+            internal ImmutableList<Expression> Awaits => field ??= statements.SelectMany(s => s.Awaits).ToImmutableList();
+
+            internal ImmutableList<LocalVariable> LocalVariables => field ??= statements.SelectMany(s => s.LocalVariables).ToImmutableList();
+
+            internal ImmutableList<ObjectCreation> ObjectCreations => field ??= statements.SelectMany(s => s.ObjectCreations).ToImmutableList();
+
+            internal ImmutableList<StringLiteral> StringLiterals => field ??= statements.SelectMany(s => s.StringLiterals).ToImmutableList();
+
+            internal ImmutableList<MemberAccess> MemberAccesses => field ??= statements.SelectMany(s => s.MemberAccesses).ToImmutableList();
+
+            internal ImmutableList<Lambda> Lambdas => field ??= statements.SelectMany(s => s.Lambdas).ToImmutableList();
+
+            internal ImmutableList<SwitchExpression> SwitchExpressions => field ??= statements.SelectMany(s => s.SwitchExpressions).ToImmutableList();
+        }
     }
 
     /// <summary><c>case 1:</c>, <c>case Foo f when f.IsValid:</c> or <c>default:</c>.</summary>

@@ -99,6 +99,9 @@ namespace Solution.Parser.CSharp
         /// <summary>Every <c>using (...) { }</c> of the body at any depth; a <c>using var</c> is a local variable, see <see cref="LocalVariables"/>.</summary>
         public ImmutableList<UsingStatement> UsingStatements => Views.UsingStatements;
 
+        /// <summary>Every <c>lock (...) { }</c> of the body at any depth.</summary>
+        public ImmutableList<LockStatement> LockStatements => Views.LockStatements;
+
         /// <summary>Every <c>return</c> of the body at any depth.</summary>
         public ImmutableList<ReturnStatement> Returns => Views.Returns;
 

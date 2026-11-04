@@ -80,6 +80,9 @@ namespace Solution.Parser.CSharp
         /// <summary>Every <c>using (...) { }</c> inside this statement at any depth.</summary>
         public ImmutableList<UsingStatement> UsingStatements => Views.UsingStatements;
 
+        /// <summary>Every <c>lock (...) { }</c> inside this statement at any depth.</summary>
+        public ImmutableList<LockStatement> LockStatements => Views.LockStatements;
+
         /// <summary>Every <c>return</c> inside this statement at any depth.</summary>
         public ImmutableList<ReturnStatement> Returns => Views.Returns;
 

@@ -200,6 +200,55 @@ namespace Solution.Parser.CSharp.Test
         }
 
         [TestMethod]
+        public void A_Switch_Section_Reads_Like_A_Statement()
+        {
+            var method = Method("""
+                switch (state)
+                {
+                    case State.Open:
+                        foreach (var line in lines) { line.Close(); }
+                        Save("closed");
+                        return;
+                    default:
+                        throw new InvalidOperationException();
+                }
+                """);
+
+            var (open, other) = (method.SwitchStatements.Single().Sections[0], method.SwitchStatements.Single().Sections[1]);
+
+            Assert.That.AreEqual<string>(["Close", "Save"],
+                                         open.Invocations.Select(i => i.Name),
+                                         because: "a developer reads 'the case closes and saves', the calls of the loop included",
+                                         fix: "Add up the Invocations of the statements in SwitchSection");
+
+            Assert.That.IsTrue(open.ForEachLoops.Count == 1 && open.Returns.Count == 1 && open.StringLiterals.Single().Value == "closed" &&
+                               open.LocalVariables.Single().Name == "line" && open.AllStatements.Count == 5,
+                               because: "a section answers every question a statement answers, for its own code",
+                               fix: "Check SwitchSection.Contents");
+
+            Assert.That.IsTrue(other.IsDefault && other.Throws.Count == 1 && other.Invocations.IsEmpty,
+                               because: "each section has only its own code",
+                               fix: "Build the lists of a section from its own statements");
+        }
+
+        [TestMethod]
+        public void Locks_Are_Listed_Like_Every_Statement()
+        {
+            var method = Method("""
+                lock (_gate) { Refresh(); }
+                try { lock (_other) { } }
+                catch (Exception) { lock (_gate) { } }
+                """);
+
+            Assert.That.IsTrue(method.LockStatements.Count == 3 &&
+                               method.TryStatements.Single().Block.LockStatements.Count == 1 &&
+                               method.TryStatements.Single().Catches.Single().LockStatements.Count == 1 &&
+                               method.LockStatements[0].Invocations.Single().Name == "Refresh",
+                               because: "a lock is a statement a rule asks about, like using and switch",
+                               fix: "Add LockStatements to StatementViews");
+        }
+
+        [TestMethod]
         public void A_Try_Answers_With_Its_Own_Catches()
         {
             var method = Method("""

@@ -101,7 +101,8 @@ New, and the way the README writes rules now:
 | `trees.AllTypes().OfType<Record>()` | `trees.Records`, and so on for every kind |
 | `trees.SelectMany(t => t.AllTypes()).SelectMany(t => t.Constructors)` | `trees.Constructors` |
 | `method.Loops.Where(l => l.Kind == StatementKind.ForEach)` | `method.ForEachLoops`, also `ForLoops`, `WhileLoops`, `DoWhileLoops`; `loop.IsForEach` and the like |
-| a loop inside a loop, an await in a loop, a throw in a catch: walked by hand | every statement and every catch has the lists of its member: `loop.Loops`, `loop.Awaits`, `@catch.Throws` |
+| a loop inside a loop, an await in a loop, a throw in a catch: walked by hand | every statement, every catch and every switch section has the lists of its member: `loop.Loops`, `loop.Awaits`, `@catch.Throws`, `section.Invocations` |
+| `method.AllStatements.OfType<LockStatement>()` | `method.LockStatements`, also on every statement, catch and section |
 | `catchClause.Throws`, the `bool` | `@catch.IsThrowing`; `@catch.Throws` is the list of throw statements now, like `method.Throws` |
 | `catchClause.CatchesAll` | `@catch.CatchesAnyException`: a bare `catch` or `catch (Exception)`, now only without a `when`, see below |
 | `catchClause.CatchesAll` on `catch (Exception ex) when (...)`, meaning "the type is `Exception`" | `@catch.ExceptionType.Is("System.Exception")` |

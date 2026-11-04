@@ -421,7 +421,7 @@ method.TryStatements                       // Block, Catches, Finally, HasCatch,
 tryStatement.Catches                       // ExceptionType, Filter, IsEmpty, CatchesAnyException, IsRethrowing, IsThrowing
 method.SwitchStatements                    // Subject, Sections with Labels (Value, WhenClause), HasDefault
 method.SwitchExpressions                   // Arms with Pattern, TypedPattern, WhenClause, Result; HasDiscardArm
-method.IfStatements / Returns / Throws / UsingStatements
+method.IfStatements / Returns / Throws / UsingStatements / LockStatements
 method.Loops / ForLoops / ForEachLoops / WhileLoops / DoWhileLoops
 loop.IsFor / IsForEach / IsWhile / IsDoWhile / IsAwait
 ifStatement.ElseCount / ElseIfs / IsElseIf // the else-if chain, counted once from its first if
@@ -443,7 +443,8 @@ select $"{@catch.Location}: the catch neither throws nor logs";
 
 A statement asks the same as its member, for the code inside it: `loop.Loops`, `loop.Awaits`,
 `ifStatement.Throws`, `tryStatement.Block.Invocations`, `tryStatement.Finally?.Invocations`. A catch
-does too, for its block: `@catch.Returns`, `@catch.Invocations`. A catch is part of its `try`, not a
+does too, for its block: `@catch.Returns`, `@catch.Invocations`, and so does a switch section for the code
+after its labels: `section.Throws`, `section.Invocations`. A catch is part of its `try`, not a
 statement, so it is reached the way the code reads: the method, its `try`, its catches. The lists are
 `AllStatements`, the shortcuts above, `AllExpressions`, `Invocations`, `Awaits`, `LocalVariables`,
 `ObjectCreations`, `StringLiterals`, `MemberAccesses`, `Lambdas` and `SwitchExpressions`; like the

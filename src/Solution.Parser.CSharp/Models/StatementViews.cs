@@ -31,6 +31,8 @@ namespace Solution.Parser.CSharp
 
         internal ImmutableList<UsingStatement> UsingStatements => field ??= statements.OfType<UsingStatement>().ToImmutableList();
 
+        internal ImmutableList<LockStatement> LockStatements => field ??= statements.OfType<LockStatement>().ToImmutableList();
+
         internal ImmutableList<ReturnStatement> Returns => field ??= statements.OfType<ReturnStatement>().ToImmutableList();
 
         internal ImmutableList<ThrowStatement> Throws => field ??= statements.OfType<ThrowStatement>().ToImmutableList();
