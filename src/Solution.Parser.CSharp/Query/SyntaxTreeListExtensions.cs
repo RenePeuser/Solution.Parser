@@ -68,6 +68,9 @@ namespace Solution.Parser.CSharp
             /// <summary>Every local variable in the files, in every member and local function of every type.</summary>
             public ImmutableList<LocalVariable> LocalVariables => ViewsOf(trees).LocalVariables;
 
+            /// <summary>Every <c>#pragma warning disable</c> and <c>restore</c> of the files, in file and source order.</summary>
+            public ImmutableList<PragmaWarning> PragmaWarnings => ViewsOf(trees).PragmaWarnings;
+
             /// <summary>
             /// Every type of the files as the compiler sees it: the parts of a <c>partial</c> type, written in
             /// several files, joined into one. <c>Classes</c> and the like list each part on its own.
@@ -119,6 +122,8 @@ namespace Solution.Parser.CSharp
         internal ImmutableList<Invocation> Invocations => field ??= trees.SelectMany(t => t.Invocations).ToImmutableList();
 
         internal ImmutableList<LocalVariable> LocalVariables => field ??= trees.SelectMany(t => t.LocalVariables).ToImmutableList();
+
+        internal ImmutableList<PragmaWarning> PragmaWarnings => field ??= trees.SelectMany(t => t.PragmaWarnings).ToImmutableList();
 
         internal ImmutableList<WholeType> WholeTypes => field ??= WholeType.Join(trees.SelectMany(t => t.AllTypesOfFile));
     }

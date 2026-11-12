@@ -53,6 +53,12 @@ namespace Solution.Parser.CSharp
         /// <summary>What Roslyn reported while parsing, see <see cref="ParseDiagnostic"/>.</summary>
         public ImmutableList<ParseDiagnostic> Diagnostics { get; init; } = ImmutableList<ParseDiagnostic>.Empty;
 
+        /// <summary>
+        /// Every <c>#pragma warning disable</c> and <c>#pragma warning restore</c> of the file in source
+        /// order, those inside types and method bodies included, see <see cref="PragmaWarning"/>.
+        /// </summary>
+        public ImmutableList<PragmaWarning> PragmaWarnings { get; init; } = ImmutableList<PragmaWarning>.Empty;
+
         /// <summary>The source of the whole file.</summary>
         public required string SourceCode { get; init; }
 

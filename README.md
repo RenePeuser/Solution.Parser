@@ -322,6 +322,18 @@ Types also report `Indexers`, `Operators`, `Delegates` and `Finalizers`, and `Ty
 `record` from a `record struct`. `tree.Diagnostics` surfaces what Roslyn reported while parsing, so a
 rule can assert that no file has a syntax error rather than silently trusting an incomplete model.
 
+`tree.PragmaWarnings` lists every `#pragma warning disable` and `restore` of the file, those inside
+types and method bodies included, with its `Action`, its `Ids` (a bare `618` reads as `CS0618`, no id
+means `AppliesToAllWarnings`), the `//` comment on its line and its `Location`. The parser reports what
+is written; which lines a pragma covers is up to the rule:
+
+```csharp
+var findings = from pragma in solution.ProductionTrees.PragmaWarnings
+               where pragma.Action == PragmaWarningAction.Disable
+               where string.IsNullOrWhiteSpace(pragma.Comment) || pragma.Ids.Contains("CA2007")
+               select $"{pragma.Location}: suppression without a reason, or of CA2007";
+```
+
 ## Read it like the code
 
 One file is one `CSharpSyntaxTree`. A rule walks it the way you read the file: its classes, their

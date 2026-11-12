@@ -47,6 +47,7 @@ public static class CSharpParser
             Statements = compilationUnit?.ToTopLevelStatements(fixedFilePath) ?? ImmutableList<Statement>.Empty,
             AssemblyAttributes = compilationUnit?.AttributeLists.ToAttributes(fixedFilePath) ?? ImmutableList<Attribute>.Empty,
             Diagnostics = syntaxTree.ToParseDiagnostics(fixedFilePath),
+            PragmaWarnings = syntaxTree.ToPragmaWarnings(fixedFilePath),
             SourceCode = syntaxTree.GetText().ToString()
         };
     }
